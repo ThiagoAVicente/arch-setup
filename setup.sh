@@ -195,7 +195,7 @@ mkdir -p ~/{Desktop,Documents,Downloads,Music,Pictures/{Wallpapers,Screenshots},
 
 # install wallpaper and a cursor
 print_step "Installing wallpaper and setup wal"
-curl -L https://wallpapercave.com/wp/wp16055214.jpg ~/Pictures/Wallpapers/wallpaper.jpg
+wget --user-agent="Mozilla/5.0" -O ~/Pictures/Wallpapers/wallpaper.jpg https://wallpapercave.com/wp/wp16055214.jpg
 wal -i ~/Pictures/Wallpapers/wallpaper.jpg
 
 # Final message
