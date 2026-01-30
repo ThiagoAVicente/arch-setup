@@ -46,14 +46,29 @@ echo -e "${GREEN}╚════════════════════
 echo ""
 
 print_step "Configuring pacman"
-# Enable multilib (uncomment the [multilib] section and Include line)
-sudo sed -i '/^\[multilib\]/,/^Include/ s/^#//' /etc/pacman.conf
+# Enable multilib repository
+if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
+    echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+fi
 
-# Add performance tweaks if not already present
-grep -q '^ParallelDownloads = 5' /etc/pacman.conf || echo 'ParallelDownloads = 5' | sudo tee -a /etc/pacman.conf
-grep -q '^Color' /etc/pacman.conf || echo 'Color' | sudo tee -a /etc/pacman.conf
-grep -q '^ILoveCandy' /etc/pacman.conf || echo 'ILoveCandy' | sudo tee -a /etc/pacman.conf
+# Enable ParallelDownloads (uncomment or add)
+if grep -q "^#*ParallelDownloads" /etc/pacman.conf; then
+    sudo sed -i 's/^#*ParallelDownloads.*/ParallelDownloads = 5/' /etc/pacman.conf
+else
+    sudo sed -i '/^\[options\]/a ParallelDownloads = 5' /etc/pacman.conf
+fi
 
+# Enable Color (uncomment or add)
+if grep -q "^#*Color" /etc/pacman.conf; then
+    sudo sed -i 's/^#*Color$/Color/' /etc/pacman.conf
+else
+    sudo sed -i '/^\[options\]/a Color' /etc/pacman.conf
+fi
+
+# Add ILoveCandy (if not present)
+if ! grep -q "^ILoveCandy" /etc/pacman.conf; then
+    sudo sed -i '/^Color$/a ILoveCandy' /etc/pacman.conf
+fi
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
