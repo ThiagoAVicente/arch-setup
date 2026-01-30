@@ -334,18 +334,17 @@ sed -i "s|ROOT_PART_DECRYPT|$ROOT_PART_DECRYPT|g" /mnt/root/chroot-setup.sh
 
 # Add encryption support if needed
 if [ "$USE_ENCRYPTION" = true ]; then
-    cat >> /mnt/root/chroot-setup.sh << 'CHROOT_EOF'
+    ROOT_PART_UUID_VALUE=$(blkid -s UUID -o value "$ROOT_PART")
+    cat >> /mnt/root/chroot-setup.sh << CHROOT_EOF
 # Configure mkinitcpio for encryption
 sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block encrypt filesystems fsck)/' /etc/mkinitcpio.conf
 mkinitcpio -P
 
 # Update boot entry with cryptdevice
-ROOT_PART_UUID=$(blkid -s UUID -o value ROOT_PART)
-sed -i "s|root=UUID=|cryptdevice=UUID=$ROOT_PART_UUID:cryptroot root=UUID=|" /boot/loader/entries/arch.conf
+sed -i "s|options root=|options cryptdevice=UUID=$ROOT_PART_UUID_VALUE:cryptroot root=|" /boot/loader/entries/arch.conf
 CHROOT_EOF
-    sed -i "s|ROOT_PART|$ROOT_PART|g" /mnt/root/chroot-setup.sh
 else
-    cat >> /mnt/root/chroot-setup.sh << 'CHROOT_EOF'
+    cat >> /mnt/root/chroot-setup.sh << CHROOT_EOF
 # Configure mkinitcpio
 sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/' /etc/mkinitcpio.conf
 mkinitcpio -P
