@@ -29,6 +29,7 @@ wl-clip-persist
 xdg-desktop-portal-gtk
 zip
 tar
+curl
 flatpak
 ly
 networkmanager-openvpn
