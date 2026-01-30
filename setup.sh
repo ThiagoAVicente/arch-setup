@@ -168,12 +168,9 @@ if [ -f "services.txt" ]; then
         # Skip empty lines and comments
         [[ -z "$service" || "$service" =~ ^# ]] && continue
 
-        if systemctl list-unit-files | grep -q "^$service"; then
-            sudo systemctl enable --now "$service" 2>/dev/null && \
-                echo "Enabled: $service" || \
-                echo "Service $service exists but couldn't be enabled (may need reboot)"
-        else
-            echo "Skipping: $service (not found)"
+        sudo systemctl enable --now "$service" 2>/dev/null && \
+            echo "Enabled: $service" || \
+            echo "Service $service exists but couldn't be enabled (may need reboot)"
         fi
     done < services.txt
 fi
