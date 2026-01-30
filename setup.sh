@@ -197,6 +197,11 @@ fi
 mkdir -p ~/.local/share/icons/
 mkdir -p ~/{Desktop,Documents,Downloads,Music,Pictures/{Wallpapers,Screenshots},Public,Templates,Videos}
 
+# install wallpaper and a cursor
+print_step "Installing wallpaper and setup wal"
+curl -L https://wallpapercave.com/wp/wp16055214.jpg ~/Pictures/Wallpapers/wallpaper.jpg
+wal -i ~/Pictures/Wallpapers/wallpaper.jpg
+
 # Final message
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
