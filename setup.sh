@@ -159,6 +159,9 @@ if [ -d "dotfiles" ]; then
 fi
 
 # Enable services
+sudo systemctl disable getty@tty1
+sudo systemctl mask getty@tty1
+
 if [ -f "services.txt" ]; then
     print_step "Enabling services"
     while IFS= read -r service; do
