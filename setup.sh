@@ -36,7 +36,7 @@ fi
 
 # Check internet connection
 print_step "Checking internet connection"
-if ! ping -c 1 archlinux.org &>/dev/null; then
+if ! ping -c 1 8.8.8.8 &>/dev/null; then
     print_error "No internet connection. Please connect and try again."
 fi
 
@@ -44,6 +44,16 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║  Arch Linux Post-Installation Setup    ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
 echo ""
+
+print_step "Configuring pacman"
+# Enable multilib (uncomment the [multilib] section and Include line)
+sudo sed -i '/^\[multilib\]/,/^Include/ s/^#//' /etc/pacman.conf
+
+# Add performance tweaks if not already present
+grep -q '^ParallelDownloads = 5' /etc/pacman.conf || echo 'ParallelDownloads = 5' | sudo tee -a /etc/pacman.conf
+grep -q '^Color' /etc/pacman.conf || echo 'Color' | sudo tee -a /etc/pacman.conf
+grep -q '^ILoveCandy' /etc/pacman.conf || echo 'ILoveCandy' | sudo tee -a /etc/pacman.conf
+
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
