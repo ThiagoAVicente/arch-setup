@@ -44,7 +44,7 @@ fi
 
 # Check internet connection
 print_step "Checking internet connection"
-if ! ping -c 1 archlinux.org &>/dev/null; then
+if ! ping -c 1 8.8.8.8 &>/dev/null; then
     print_error "No internet connection. Connect using 'iwctl' or 'ip' and try again."
 fi
 
