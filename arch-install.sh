@@ -95,6 +95,10 @@ echo ""
 print_step "System Configuration"
 read -p "Hostname: " HOSTNAME
 read -p "Username: " USERNAME
+read -p "Keymap [us]: " keymap_input
+if [ -n "$keymap_input" ]; then
+    KEYMAP="$keymap_input"
+fi
 
 # User password
 while true; do
@@ -162,6 +166,7 @@ echo "Hostname: $HOSTNAME"
 echo "Username: $USERNAME"
 echo "Timezone: $TIMEZONE"
 echo "Locale: $LOCALE"
+echo "Keymap: $KEYMAP"
 echo "Encryption: $([ "$USE_ENCRYPTION" = true ] && echo "Yes" || echo "No")"
 echo "Swap: $([ "$USE_SWAP" = true ] && echo "Yes ($SWAP_SIZE)" || echo "No")"
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
