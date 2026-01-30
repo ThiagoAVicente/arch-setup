@@ -171,7 +171,6 @@ if [ -f "services.txt" ]; then
         sudo systemctl enable --now "$service" 2>/dev/null && \
             echo "Enabled: $service" || \
             echo "Service $service exists but couldn't be enabled (may need reboot)"
-        fi
     done < services.txt
 fi
 
