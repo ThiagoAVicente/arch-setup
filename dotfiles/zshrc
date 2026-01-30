@@ -1,0 +1,4 @@
+source $HOME/.config/rc/specific/zshInit.sh
+
+export GOPATH="$HOME/go"
+export PATH="$PATH:$GOPATH/bin"

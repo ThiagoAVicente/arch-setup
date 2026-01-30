@@ -1,0 +1,10 @@
+@import "~/.cache/wal/colors-myrofi.rasi"
+
+// *{
+//     background:     #000000CC;
+//     foreground:     #ffffffff;
+//     border-color:   #ffffff44;
+//     selected-normal-background: #ffffff22;
+//     normal-background: transparent;
+//     alternate-normal-background: transparent;
+// }

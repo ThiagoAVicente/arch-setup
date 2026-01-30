@@ -1,0 +1,7 @@
+NetworkManager
+docker
+tlp
+ufw
+bluetooth
+systemd-timesyncd
+libvirtd

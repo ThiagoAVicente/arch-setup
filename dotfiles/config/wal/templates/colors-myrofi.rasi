@@ -1,0 +1,13 @@
+* {{
+    background:     {background}CC;
+    foreground:     {foreground};
+    border-color:   {color4}44;
+    selected-normal-background: {color1}88;
+    selected-normal-foreground: {foreground};
+    normal-background: transparent;
+    alternate-normal-background: transparent;
+    active-background: {color2}44;
+    urgent-background: {color1}44;
+    selected-active-background: {color2}88;
+    selected-urgent-background: {color1}88;
+}}

@@ -1,0 +1,8 @@
+bridge-utils
+claude-code
+curd
+jump
+protonup-qt-bin
+slack-desktop-wayland
+swaylock-effects
+wdisplays

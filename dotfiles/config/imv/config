@@ -1,0 +1,9 @@
+[binds]
+<Return> = exec echo "$imv_current_file"
+q = exec echo "$imv_current_file"; quit
+<Escape> = quit
+<Left> = prev
+<Right> = next
+
+[options]
+background = 000000

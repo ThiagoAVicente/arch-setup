@@ -1,0 +1,33 @@
+# Environment and secrets
+.env
+.env.*
+*_secret*
+*.key
+*.pem
+*.crt
+credentials.json
+secrets.yaml
+assets
+# SSH keys
+id_rsa
+id_ed25519
+*.pub
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.log

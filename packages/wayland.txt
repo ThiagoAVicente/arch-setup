@@ -1,0 +1,15 @@
+hyprland
+waybar
+foot
+mako
+swww
+slurp
+grim
+wl-clipboard
+xdg-desktop-portal-gtk
+xorg-xwayland
+qt5-wayland
+hypridle
+hyprpicker
+imv
+gammastep

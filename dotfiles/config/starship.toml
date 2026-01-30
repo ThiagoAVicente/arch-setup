@@ -1,0 +1,29 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = true
+scan_timeout = 30
+
+format = "$character"
+right_format = "$directory$git_branch$time"
+
+[character]
+format = "$symbol "
+success_symbol = "[◎](bold italic bright-yellow)"
+error_symbol = "[○](italic purple)"
+
+[directory]
+home_symbol = "⌂"
+truncation_length = 3
+style = "italic blue"
+format = '[$path]($style) '
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = "△ "
+style = "italic bright-blue"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+time_format = "%R"
+style = "dimmed white"
