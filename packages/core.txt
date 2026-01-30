@@ -40,3 +40,4 @@ dosfstools
 efibootmgr
 intel-ucode
 htop
+direnv

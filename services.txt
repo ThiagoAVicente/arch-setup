@@ -5,3 +5,4 @@ ufw
 bluetooth
 systemd-timesyncd
 libvirtd
+ly@tty1
