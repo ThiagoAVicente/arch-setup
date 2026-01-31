@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Anime (dub)
+Comment=Sandboxed anime streaming
+Exec=/home/vcnt/.local/bin/curd-secure-dub
+Icon=video-display
+Terminal=false
+Categories=AudioVideo;Network;Anime;
+StartupNotify=false

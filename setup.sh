@@ -24,7 +24,17 @@ print_warning() {
     echo -e "${YELLOW}WARNING:${NC} $1"
 }
 
-# Safety check: must NOT run from live ISO
+link(){
+    target=$1
+    source=$2
+    name=$3
+    [ -L "$target" ] && rm "$target"
+
+    sudo ln -sf "$source" "$target"
+    echo -e "${GREEN}Linked ${BLUE}$name${NC} to ${BLUE}$source${NC}"
+}
+
+#  Safety check: must NOT run from live ISO
 if grep -q "archiso" /proc/cmdline 2>/dev/null; then
     print_error "This script must NOT be run from Arch Live ISO. Reboot into your installed system first!"
 fi
@@ -136,12 +146,7 @@ if [ -d "dotfiles" ]; then
                     mv "$target" "${target}.backup"
                 fi
 
-                # Remove old symlink if it exists
-                [ -L "$target" ] && rm "$target"
-
-                # Create new symlink
-                ln -s "$SCRIPT_DIR/$item" "$target"
-                echo "Linked: $name"
+                link "$target" "$SCRIPT_DIR/$item" "$name"
             fi
         done
     fi
@@ -157,6 +162,44 @@ if [ -d "dotfiles" ]; then
         echo "Linked: .zshrc"
     fi
 fi
+
+# link bin
+if [ -d "bin" ]; then
+    mkdir -p "$HOME/.local/bin"
+
+    for item in bin/*; do
+        name=$(basename "$item")
+        target="$HOME/.local/bin/$name"
+
+        # Backup existing config
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+            echo "Backing up existing $name to $name.backup"
+            mv "$target" "${target}.backup"
+        fi
+
+        link "$target" "$SCRIPT_DIR/$item" "$name"
+    done
+fi
+
+# link apps
+if [ -d "apps" ]; then
+    mkdir -p "$HOME/.local/share/applications"
+
+    for item in apps/*; do
+        name=$(basename "$item")
+        target="$HOME/.local/share/applications/$name"
+
+        # Backup existing config
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+            echo "Backing up existing $name to $name.backup"
+            mv "$target" "${target}.backup"
+        fi
+
+        link "$target" "$SCRIPT_DIR/$item" "$name"
+    done
+fi
+
+
 #symlink scripts
 ln -s "$SCRIPT_DIR/scripts" "$HOME/scripts"
 

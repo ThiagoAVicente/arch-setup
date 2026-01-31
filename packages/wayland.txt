@@ -13,3 +13,4 @@ hypridle
 hyprpicker
 imv
 gammastep
+hyprlock

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# curd-secure with bubblewrap
+
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+exec bwrap \
+  --ro-bind /usr /usr \
+  --ro-bind /lib /lib \
+  --ro-bind /lib64 /lib64 \
+  --ro-bind /bin /bin \
+  --ro-bind /sbin /sbin \
+  --ro-bind /etc /etc \
+  --dev /dev \
+  --dev-bind /dev/dri /dev/dri \
+  --proc /proc \
+  --ro-bind /sys /sys \
+  --tmpfs /tmp \
+  --bind "$XDG_RUNTIME_DIR" "$XDG_RUNTIME_DIR" \
+  --bind "$HOME/.config/curd" "$HOME/.config/curd" \
+  --bind "$HOME/.local/share/curd" "$HOME/.local/share/curd" \
+  --bind "$HOME/.cache/curd" "$HOME/.cache/curd" \
+  --ro-bind-try "$HOME/.config/mpv" "$HOME/.config/mpv" \
+  --setenv HOME "$HOME" \
+  --setenv XDG_RUNTIME_DIR "$XDG_RUNTIME_DIR" \
+  --setenv WAYLAND_DISPLAY "$WAYLAND_DISPLAY" \
+  --setenv PATH "/usr/local/bin:/usr/bin:/bin" \
+  --unshare-pid \
+  --unshare-ipc \
+  --unshare-uts \
+  --share-net \
+  --die-with-parent \
+  --new-session \
+  /usr/sbin/curd --rofi --dub
