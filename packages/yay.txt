@@ -5,4 +5,3 @@ jump
 protonup-qt-bin
 slack-desktop-wayland
 swaylock-effects
-wdisplays

@@ -42,3 +42,4 @@ efibootmgr
 intel-ucode
 htop
 direnv
+nwg-displays
