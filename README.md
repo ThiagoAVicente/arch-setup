@@ -95,7 +95,6 @@ Each `.txt` file in `packages/` contains one package per line:
 
 - UEFI system (not BIOS)
 - Internet connection
-- At least 20GB disk space
 - 2GB+ RAM recommended
 
 ## Safety Features
@@ -132,8 +131,7 @@ Note: Assets (wallpapers, cursor themes) may have different licenses. See `WALLP
 
 - Hyprland configuration inspired by the Hyprland community
 - Various shell utilities from the Arch Linux ecosystem
-- Wallpapers from Wallpaper Cave contributors
+- Wallpaper from Wallpaper Cave contributors
 
 ---
 
-**Note**: This is a personal configuration. Review and test in a VM before deploying to production systems.
