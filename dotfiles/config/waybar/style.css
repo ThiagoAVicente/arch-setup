@@ -10,6 +10,14 @@
   font-size: 16px;
 }
 
+#waybar {
+  margin: 20px;
+  border-radius: 16px;
+  background: rgba(20, 20, 20, 0.85);
+
+}
+
+
 .modules-left {
   margin-left: 8px;
   margin-top: 5px;
@@ -43,6 +51,11 @@
 #custom-update {
   min-width: 12px;
   margin: 0 7.5px;
+}
+
+#custom-logo {
+  margin-right: 15px;
+  padding-right: 10px;
 }
 
 #custom-expand-icon {

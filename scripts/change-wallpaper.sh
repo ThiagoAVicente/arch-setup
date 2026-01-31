@@ -24,7 +24,7 @@ if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
 
   # reload waybar
   pkill waybar && waybar &
-
+  swaync-client -rs
   # Update kitty colors
   kitty @ set-colors --all --config "$WAL_KITTY"
 

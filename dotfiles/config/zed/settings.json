@@ -50,7 +50,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "One Dark"
+    "dark": "Ayu Dark"
   },
   "language_models": {
       "openai_compatible": {

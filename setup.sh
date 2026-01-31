@@ -157,6 +157,8 @@ if [ -d "dotfiles" ]; then
         echo "Linked: .zshrc"
     fi
 fi
+#symlink scripts
+ln -s "$SCRIPT_DIR/scripts" "$HOME/scripts"
 
 # Enable services
 sudo systemctl disable getty@tty1
@@ -197,6 +199,10 @@ mkdir -p ~/{Desktop,Documents,Downloads,Music,Pictures/{Wallpapers,Screenshots},
 print_step "Installing wallpaper and setup wal"
 wget --user-agent="Mozilla/5.0" -O ~/Pictures/Wallpapers/wallpaper.jpg https://wallpapercave.com/wp/wp16055214.jpg
 wal -i ~/Pictures/Wallpapers/wallpaper.jpg
+
+# mako setup
+mkdir -p ~/.config/mako
+ln -sf ~/.cache/wal/colors-mako ~/.config/mako/config
 
 # Final message
 echo ""

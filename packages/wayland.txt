@@ -1,7 +1,7 @@
 hyprland
 waybar
 foot
-mako
+swaync
 swww
 slurp
 grim

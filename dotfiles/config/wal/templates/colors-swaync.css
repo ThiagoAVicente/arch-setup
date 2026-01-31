@@ -1,0 +1,237 @@
+/* === Pywal Colors for SwayNC === */
+* {{
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 13px;
+}}
+
+/* === Control Center === */
+.control-center {{
+  background: {background}F8;
+  border: 4px solid {color5};
+  border-radius: 20px;
+  margin: 10px;
+  padding: 0;
+}}
+
+.control-center .notification {{
+  background: {color4}50;
+  border: 3px solid {color4}DD;
+  border-radius: 16px;
+  margin: 8px;
+  padding: 12px;
+}}
+
+/* === Notification Window === */
+.notification-row {{
+  outline: none;
+  margin: 0;
+  padding: 0;
+}}
+
+.notification {{
+  background: {color4}50;
+  border: 4px solid {color5};
+  border-radius: 20px;
+  margin: 15px;
+  padding: 20px 24px;
+}}
+
+.notification-content {{
+  margin: 8px;
+  padding: 0;
+}}
+
+.notification-default-action {{
+  margin: 0;
+  padding: 0;
+  border-radius: 16px;
+}}
+
+/* === Notification Elements === */
+.summary {{
+  color: {foreground};
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}}
+
+.body {{
+  color: {foreground}DD;
+  font-size: 13px;
+  margin-top: 4px;
+}}
+
+.time {{
+  color: {color7}99;
+  font-size: 11px;
+  margin-top: 4px;
+}}
+
+.app-name {{
+  color: {color5};
+  font-size: 11px;
+  font-weight: bold;
+}}
+
+/* === Images === */
+.image {{
+  margin-right: 12px;
+  border-radius: 12px;
+}}
+
+.body-image {{
+  margin-top: 8px;
+  border-radius: 12px;
+}}
+
+/* === Close Button === */
+.close-button {{
+  background: {color1}DD;
+  color: {background};
+  border-radius: 50%;
+  margin: 4px;
+  padding: 4px;
+  min-width: 20px;
+  min-height: 20px;
+}}
+
+.close-button:hover {{
+  background: {color1};
+  color: {foreground};
+}}
+
+/* === Control Center Header === */
+.control-center .notification-row:focus,
+.control-center .notification-row:hover {{
+  background: {color4}15;
+  border-radius: 12px;
+}}
+
+/* === Widget Titles === */
+.widget-title {{
+  color: {foreground};
+  font-size: 16px;
+  font-weight: bold;
+  margin: 12px;
+}}
+
+.widget-title > button {{
+  background: {color2}DD;
+  color: {foreground};
+  border-radius: 12px;
+  padding: 8px 16px;
+  margin: 4px;
+}}
+
+.widget-title > button:hover {{
+  background: {color2};
+}}
+
+/* === DND Widget === */
+.widget-dnd {{
+  margin: 12px;
+  padding: 8px;
+  background: {color3}20;
+  border: 2px solid {color3};
+  border-radius: 12px;
+}}
+
+.widget-dnd > switch {{
+  background: {color0}88;
+  border-radius: 20px;
+  padding: 2px;
+}}
+
+.widget-dnd > switch:checked {{
+  background: {color3};
+}}
+
+.widget-dnd > switch slider {{
+  background: {foreground};
+  border-radius: 50%;
+}}
+
+/* === Urgency Levels === */
+.critical {{
+  background: {color1}EE;
+  border: 6px solid {color1};
+  border-radius: 24px;
+}}
+
+.critical .summary {{
+  color: {foreground};
+  font-size: 17px;
+}}
+
+.critical .body {{
+  color: {foreground}EE;
+  font-size: 14px;
+}}
+
+.low {{
+  background: {color0}60;
+  border: 3px solid {color4};
+  opacity: 0.95;
+}}
+
+/* === Buttons === */
+.notification-action {{
+  background: {color5}99;
+  color: {foreground};
+  border-radius: 12px;
+  margin: 4px;
+  padding: 8px 12px;
+}}
+
+.notification-action:hover {{
+  background: {color5};
+}}
+
+/* === Inline Reply === */
+.inline-reply {{
+  background: {background}DD;
+  color: {foreground};
+  border: 2px solid {color4};
+  border-radius: 12px;
+  padding: 8px;
+  margin-top: 8px;
+}}
+
+.inline-reply-entry {{
+  background: transparent;
+  color: {foreground};
+}}
+
+.inline-reply-button {{
+  background: {color2};
+  color: {foreground};
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin-left: 8px;
+}}
+
+/* === Scrollbar === */
+.floating-notifications.background .notification-row .notification.low {{
+  background: {color0}40;
+}}
+
+scrollbar {{
+  background: transparent;
+  width: 8px;
+}}
+
+scrollbar trough {{
+  background: {color0}40;
+  border-radius: 8px;
+}}
+
+scrollbar slider {{
+  background: {color5}99;
+  border-radius: 8px;
+  min-height: 40px;
+}}
+
+scrollbar slider:hover {{
+  background: {color5};
+}}

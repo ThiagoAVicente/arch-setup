@@ -3,16 +3,17 @@
   "layer": "top",
   "position": "top",
   "spacing": 0,
-  "height": 26,
+  "height": 30,
   "modules-left": ["custom/logo", "hyprland/workspaces"],
-  "modules-center": ["mpris", "custom/notifications"],
+  "modules-center": ["mpris"],
   "modules-right": [
     "tray",
     "bluetooth",
     "pulseaudio",
     "cpu",
     "battery",
-    "clock"
+    "clock",
+    "custom/notifications"
   ],
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -25,7 +26,7 @@
       "4": "4",
       "5": "5",
       "6": "6",
-      "active": "󱓻"
+      "active": "◉"
     },
     "persistent-workspaces": {
       "1": [],
@@ -37,9 +38,9 @@
     }
   },
   "custom/logo": {
-    "format": "<span font='Symbols Nerd Font'>󰣇</span>",
+    "format": "<span font='Symbols Nerd Font'>♣</span>",
     "on-click": "rofi -show drun",
-    "tooltip-format": "Hyprland Menu\nSuper + Space"
+    "tooltip-format": "Menu"
   },
   "mpris": {
     "format": "{player_icon} {dynamic}",
@@ -54,7 +55,8 @@
     },
     "dynamic-order": ["title", "artist"],
     "dynamic-separator": " - ",
-    "max-length": 60,
+    "max-length": 30,
+    "min-length": 30,
     "on-click": "playerctl play-pause",
     "on-click-right": "playerctl next",
     "on-click-middle": "playerctl previous"
@@ -65,7 +67,8 @@
   "cpu": {
     "interval": 5,
     "format": "󰍛",
-    "on-click": "kitty --class TUI.float btop -t"
+    "on-click": "foot --app-id R.float -- btop -t"
+
   },
   "clock": {
     "format": "{:%A %H:%M}",
@@ -86,23 +89,24 @@
     "spacing": 1,
     "on-click": "iwgtk"
   },
-  "custom/iwd_ssid": {
-    "exec": "~/.config/waybar/iwd_wifi.sh",
-    "interval": 5,
-    "format": "{}",
-    "tooltip": false
-  },
 
   "custom/notifications": {
-    "format": "<span font='18'>{} </span>",
-    "exec": "makoctl mode | grep -q do-not-disturb && echo '󰂛' || echo '󰂚'",
-    "interval": 2,
-    "on-click": "~/.config/waybar/toggle_mako.sh",
-    "tooltip": "Toggle Do Not Disturb",
-    "on-click-right": "dunstctl history-pop",
-    "on-scroll-up": "dunstctl history-pop",
-    "on-scroll-down": "dunstctl close-all",
-    "tooltip": false
+    "tooltip": false,
+    "format": " <span font='14'>{icon}</span> ",
+    "format-icons": {
+      "notification": "󰥭",
+      "none": "󰂜",
+      "dnd-notification": "󰥭",
+      "dnd-none": "󰔟",
+      "inhibited-notification": "󰥭",
+      "inhibited-none": "󰂜"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
   },
   "battery": {
     "format": "{capacity}% {icon}",
