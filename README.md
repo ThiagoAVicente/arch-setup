@@ -24,9 +24,6 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 ├── dotfiles/            # Configuration files
 │   ├── config/         # ~/.config directory contents
 │   └── zshrc           # Zsh configuration
-├── assets/              # Binary assets
-│   ├── cursor.tar.gz   # Cursor theme
-│   └── wallpapers.tar.gz # Wallpaper collection
 └── services.txt         # System services to enable
 ```
 
@@ -74,28 +71,6 @@ chmod +x setup.sh
 
 See `packages/*.txt` for complete lists.
 
-### Custom Scripts
-
-Located in `dotfiles/config/scripts/`:
-- `change-wallpaper.sh` - Random wallpaper selector
-- `gammastep-toggle.sh` - Blue light filter toggle
-- `lock.sh` - Screen lock with hyprlock
-- `powermenu.sh` - Power options menu
-- `cava-float.sh` - Floating audio visualizer
-
-### Shell Aliases
-
-Notable aliases (see `dotfiles/config/rc/alias.sh`):
-- `nv` - nvim
-- `pacup` - sudo pacman -Syu
-- `docc` - docker compose
-- `revive` - reboot
-- `fall` - shutdown now
-
-### Key Bindings
-
-Hyprland keybindings configured in `dotfiles/config/hypr/parts/keybinds.conf`.
-
 ## Customization
 
 ### Before Running on a New Machine
@@ -116,19 +91,10 @@ Each `.txt` file in `packages/` contains one package per line:
 - Empty lines are ignored
 - Just add/remove package names
 
-## Assets Attribution
-
-### Wallpapers
-Wallpapers sourced from Wallpaper Cave. See `WALLPAPERS.md` for details.
-
-### Cursor Theme
-Modified "modest-dark" cursor theme included.
-
 ## Requirements
 
 - UEFI system (not BIOS)
 - Internet connection
-- At least 20GB disk space
 - 2GB+ RAM recommended
 
 ## Safety Features
@@ -165,8 +131,7 @@ Note: Assets (wallpapers, cursor themes) may have different licenses. See `WALLP
 
 - Hyprland configuration inspired by the Hyprland community
 - Various shell utilities from the Arch Linux ecosystem
-- Wallpapers from Wallpaper Cave contributors
+- Wallpaper from Wallpaper Cave contributors
 
 ---
 
-**Note**: This is a personal configuration. Review and test in a VM before deploying to production systems.
