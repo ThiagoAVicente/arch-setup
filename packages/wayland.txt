@@ -9,6 +9,7 @@ wl-clipboard
 xdg-desktop-portal-gtk
 xorg-xwayland
 qt5-wayland
+hyprpwcenter
 hypridle
 hyprpicker
 imv
