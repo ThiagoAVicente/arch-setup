@@ -22,7 +22,6 @@ chafa
 cava
 btop
 shotcut
-spotify-launcher
 zathura
 zathura-pdf-mupdf
 lxappearance
