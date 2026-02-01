@@ -1,237 +1,448 @@
-/* === Pywal Colors for SwayNC === */
+/* === Modern SwayNC Theme with Pywal === */
+
+/* === Base Styling === */
 * {{
-  all: unset;
-  font-family: "JetBrainsMono Nerd Font";
-  font-size: 13px;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-weight: 500;
 }}
 
-/* === Control Center === */
+/* === Control Center Window === */
 .control-center {{
-  background: {background}F8;
-  border: 4px solid {color5};
-  border-radius: 20px;
-  margin: 10px;
-  padding: 0;
-}}
-
-.control-center .notification {{
-  background: {color4}50;
-  border: 3px solid {color4}DD;
+  background: {background};
+  color: {foreground};
+  border: 2px solid {color4};
   border-radius: 16px;
-  margin: 8px;
-  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }}
 
-/* === Notification Window === */
+.control-center-list {{
+  background: transparent;
+}}
+
+.control-center-list-placeholder {{
+  opacity: 0.5;
+}}
+
+/* === Blank Window === */
+.blank-window {{
+  background: transparent;
+}}
+
+/* === Widget Titles === */
+.widget-title {{
+  color: {foreground};
+  font-size: 18px;
+  font-weight: bold;
+  margin: 16px 16px 8px 16px;
+}}
+
+.widget-title > button {{
+  background: {color2};
+  color: {background};
+  border: 2px solid {color4};
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 200ms ease;
+}}
+
+.widget-title > button:hover {{
+  background: {color3};
+  color: {background};
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}}
+
+.widget-title > button:active {{
+  background: {color4};
+  color: {background};
+  transform: translateY(0);
+}}
+
+/* === Do Not Disturb Widget === */
+.widget-dnd {{
+  background: {color0};
+  color: {foreground};
+  border: 2px solid {color3};
+  border-radius: 12px;
+  margin: 8px 16px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+}}
+
+.widget-dnd > switch {{
+  background: {color1};
+  border-radius: 20px;
+  border: none;
+  min-width: 50px;
+  min-height: 26px;
+}}
+
+.widget-dnd > switch:checked {{
+  background: {color2};
+}}
+
+.widget-dnd > switch slider {{
+  background: {foreground};
+  border-radius: 50%;
+  margin: 2px;
+  min-width: 22px;
+  min-height: 22px;
+}}
+
+/* === Notification Row === */
 .notification-row {{
   outline: none;
   margin: 0;
   padding: 0;
 }}
 
-.notification {{
-  background: {color4}50;
-  border: 4px solid {color5};
-  border-radius: 20px;
-  margin: 15px;
-  padding: 20px 24px;
+.notification-row:focus,
+.notification-row:hover {{
+  background: {color0};
+  border-radius: 12px;
 }}
 
+/* === Individual Notifications === */
+.notification-background {{
+  background: transparent;
+  margin: 8px 12px;
+}}
+
+.notification {{
+  background: {color0};
+  color: {foreground};
+  border: 2px solid {color4};
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}}
+
+.notification.critical {{
+  background: {color1};
+  border: 3px solid {color1};
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}}
+
+.notification.low {{
+  background: {color0};
+  border: 2px solid {color8};
+}}
+
+/* === Notification Content === */
 .notification-content {{
-  margin: 8px;
   padding: 0;
+  margin: 0;
 }}
 
 .notification-default-action {{
+  border-radius: 10px;
+  padding: 4px;
   margin: 0;
-  padding: 0;
-  border-radius: 16px;
 }}
 
-/* === Notification Elements === */
+.notification-default-action:hover {{
+  background: {color8};
+}}
+
+/* === Summary and Body === */
 .summary {{
   color: {foreground};
-  font-size: 15px;
-  font-weight: bold;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }}
 
 .body {{
-  color: {foreground}DD;
-  font-size: 13px;
+  color: {color7};
+  font-size: 14px;
   margin-top: 4px;
+  line-height: 1.4;
 }}
 
-.time {{
-  color: {color7}99;
-  font-size: 11px;
-  margin-top: 4px;
-}}
-
-.app-name {{
-  color: {color5};
-  font-size: 11px;
-  font-weight: bold;
-}}
-
-/* === Images === */
-.image {{
-  margin-right: 12px;
-  border-radius: 12px;
-}}
-
-.body-image {{
-  margin-top: 8px;
-  border-radius: 12px;
-}}
-
-/* === Close Button === */
-.close-button {{
-  background: {color1}DD;
-  color: {background};
-  border-radius: 50%;
-  margin: 4px;
-  padding: 4px;
-  min-width: 20px;
-  min-height: 20px;
-}}
-
-.close-button:hover {{
-  background: {color1};
-  color: {foreground};
-}}
-
-/* === Control Center Header === */
-.control-center .notification-row:focus,
-.control-center .notification-row:hover {{
-  background: {color4}15;
-  border-radius: 12px;
-}}
-
-/* === Widget Titles === */
-.widget-title {{
-  color: {foreground};
-  font-size: 16px;
-  font-weight: bold;
-  margin: 12px;
-}}
-
-.widget-title > button {{
-  background: {color2}DD;
-  color: {foreground};
-  border-radius: 12px;
-  padding: 8px 16px;
-  margin: 4px;
-}}
-
-.widget-title > button:hover {{
-  background: {color2};
-}}
-
-/* === DND Widget === */
-.widget-dnd {{
-  margin: 12px;
-  padding: 8px;
-  background: {color3}20;
-  border: 2px solid {color3};
-  border-radius: 12px;
-}}
-
-.widget-dnd > switch {{
-  background: {color0}88;
-  border-radius: 20px;
-  padding: 2px;
-}}
-
-.widget-dnd > switch:checked {{
-  background: {color3};
-}}
-
-.widget-dnd > switch slider {{
-  background: {foreground};
-  border-radius: 50%;
-}}
-
-/* === Urgency Levels === */
-.critical {{
-  background: {color1}EE;
-  border: 6px solid {color1};
-  border-radius: 24px;
-}}
-
-.critical .summary {{
+.notification.critical .summary {{
   color: {foreground};
   font-size: 17px;
 }}
 
-.critical .body {{
-  color: {foreground}EE;
-  font-size: 14px;
-}}
-
-.low {{
-  background: {color0}60;
-  border: 3px solid {color4};
-  opacity: 0.95;
-}}
-
-/* === Buttons === */
-.notification-action {{
-  background: {color5}99;
+.notification.critical .body {{
   color: {foreground};
-  border-radius: 12px;
+}}
+
+/* === Time and App Name === */
+.time {{
+  color: {color6};
+  font-size: 12px;
+  margin-top: 6px;
+  opacity: 0.8;
+}}
+
+.app-name {{
+  color: {color5};
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}}
+
+/* === Close Button === */
+.close-button {{
+  background: {color1};
+  color: {foreground};
+  border-radius: 50%;
+  border: none;
+  min-width: 24px;
+  min-height: 24px;
   margin: 4px;
-  padding: 8px 12px;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 150ms ease;
+}}
+
+.close-button:hover {{
+  background: {color9};
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}}
+
+.close-button:active {{
+  transform: scale(0.95);
+}}
+
+/* === Notification Images === */
+.image {{
+  margin-right: 14px;
+  border-radius: 10px;
+  border: 2px solid {color4};
+}}
+
+.body-image {{
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 2px solid {color4};
+}}
+
+/* === Action Buttons === */
+.notification-action {{
+  background: {color2};
+  color: {foreground};
+  border: none;
+  border-radius: 10px;
+  margin: 6px 4px 4px 4px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 150ms ease;
 }}
 
 .notification-action:hover {{
-  background: {color5};
+  background: {color10};
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}}
+
+.notification-action:active {{
+  background: {color3};
+  transform: translateY(0);
 }}
 
 /* === Inline Reply === */
 .inline-reply {{
-  background: {background}DD;
+  background: {color0};
   color: {foreground};
   border: 2px solid {color4};
-  border-radius: 12px;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 10px;
   margin-top: 8px;
 }}
 
 .inline-reply-entry {{
-  background: transparent;
+  background: {background};
   color: {foreground};
+  border: 1px solid {color8};
+  border-radius: 8px;
+  padding: 8px;
+  margin-right: 8px;
 }}
 
 .inline-reply-button {{
   background: {color2};
   color: {foreground};
+  border: none;
   border-radius: 8px;
-  padding: 4px 12px;
-  margin-left: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+}}
+
+.inline-reply-button:hover {{
+  background: {color10};
+}}
+
+/* === Progress Bar === */
+progressbar {{
+  background: {color0};
+  border-radius: 8px;
+  border: 1px solid {color8};
+}}
+
+progressbar > trough > progress {{
+  background: {color4};
+  border-radius: 6px;
 }}
 
 /* === Scrollbar === */
-.floating-notifications.background .notification-row .notification.low {{
-  background: {color0}40;
-}}
-
 scrollbar {{
   background: transparent;
-  width: 8px;
+  width: 10px;
+  margin: 4px;
 }}
 
 scrollbar trough {{
-  background: {color0}40;
+  background: {color0};
   border-radius: 8px;
 }}
 
 scrollbar slider {{
-  background: {color5}99;
+  background: {color5};
   border-radius: 8px;
   min-height: 40px;
+  border: 2px solid {color0};
 }}
 
 scrollbar slider:hover {{
-  background: {color5};
+  background: {color13};
+}}
+
+scrollbar slider:active {{
+  background: {color6};
+}}
+
+/* === Button Grid Widget === */
+.widget-buttons-grid {{
+  padding: 8px;
+  margin: 8px 12px;
+}}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {{
+  background: {color0};
+  color: {foreground};
+  border: 2px solid {color4};
+  border-radius: 12px;
+  padding: 12px;
+  margin: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {{
+  background: {color8};
+  border-color: {color5};
+}}
+
+/* === MPRIS Widget (Media Player) === */
+.widget-mpris {{
+  background: {color0};
+  border: 2px solid {color4};
+  border-radius: 14px;
+  margin: 8px 12px;
+  padding: 12px;
+}}
+
+.widget-mpris-player {{
+  background: transparent;
+  padding: 8px;
+}}
+
+.widget-mpris-title {{
+  color: {foreground};
+  font-size: 15px;
+  font-weight: 700;
+}}
+
+.widget-mpris-subtitle {{
+  color: {color7};
+  font-size: 13px;
+}}
+
+.widget-mpris > button {{
+  background: {color2};
+  color: {foreground};
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 2px;
+}}
+
+.widget-mpris > button:hover {{
+  background: {color10};
+}}
+
+/* === Volume and Backlight Widgets === */
+.widget-volume,
+.widget-backlight {{
+  background: {color0};
+  border: 2px solid {color4};
+  border-radius: 12px;
+  margin: 8px 12px;
+  padding: 12px;
+}}
+
+.widget-volume > box > label,
+.widget-backlight > box > label {{
+  color: {foreground};
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 8px;
+}}
+
+/* === Menubar Widget === */
+.widget-menubar {{
+  background: {color0};
+  border: 2px solid {color4};
+  border-radius: 12px;
+  margin: 8px 12px;
+  padding: 8px;
+}}
+
+.widget-menubar > box > button {{
+  background: {color2};
+  color: {foreground};
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}}
+
+.widget-menubar > box > button:hover {{
+  background: {color10};
+  transform: scale(1.05);
+}}
+
+/* === Inhibitors Widget === */
+.widget-inhibitors {{
+  background: {color0};
+  border: 2px solid {color3};
+  border-radius: 12px;
+  margin: 8px 12px;
+  padding: 12px;
+}}
+
+.widget-inhibitors > button {{
+  background: {color1};
+  color: {foreground};
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin: 4px;
+  font-weight: 600;
+}}
+
+.widget-inhibitors > button:hover {{
+  background: {color9};
 }}

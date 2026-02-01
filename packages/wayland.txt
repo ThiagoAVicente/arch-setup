@@ -4,7 +4,6 @@ foot
 swaync
 swww
 slurp
-grim
 wl-clipboard
 xdg-desktop-portal-gtk
 xorg-xwayland

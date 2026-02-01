@@ -4,4 +4,4 @@ curd
 jump
 protonup-qt-bin
 slack-desktop-wayland
-swaylock-effects
+grimblast-git
