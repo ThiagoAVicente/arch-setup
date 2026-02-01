@@ -219,6 +219,12 @@ if [ -f "services.txt" ]; then
     done < services.txt
 fi
 
+# Configure geoclue for location services
+print_step "Configuring geoclue location service"
+# Switch to BeaconDB to avoid Google API rate limits
+sudo sed -i 's|#url=https://api.beacondb.net/v1/geolocate|url=https://api.beacondb.net/v1/geolocate|' /etc/geoclue/geoclue.conf
+echo "Configured geoclue to use BeaconDB geolocation service"
+
 # Install groups
 if [ -f "groups.txt" ]; then
     print_step "Installing groups"

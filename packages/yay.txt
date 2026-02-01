@@ -6,3 +6,4 @@ protonup-qt-bin
 slack-desktop-wayland
 grimblast-git
 spotify
+github-copilot-cli

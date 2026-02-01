@@ -6,3 +6,4 @@ bluetooth
 systemd-timesyncd
 libvirtd
 ly@tty1
+avahi-daemon
