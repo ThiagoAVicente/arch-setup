@@ -6,7 +6,7 @@ WALL_DIR="$HOME/Pictures/Wallpapers"
 IMAGES=$(find "$WALL_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" -o -iname "*.bmp" \))
 WAL_KITTY="$HOME/.cache/wal/colors-kitty.conf"
 # Extract selected path
-WALLPAPER="$(echo "$IMAGES" | imv -b 000000)"
+WALLPAPER="$(echo "$IMAGES" | imv -b 000000 -i wallpaper_selector)"
 
 echo "Selected wallpaper: $WALLPAPER"
 # Apply the wallpaper if selection is valid
