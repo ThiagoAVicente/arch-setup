@@ -14,3 +14,4 @@ hyprpicker
 imv
 gammastep
 hyprlock
+wf-recorder

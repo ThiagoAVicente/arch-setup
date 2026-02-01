@@ -7,6 +7,7 @@
   "modules-left": ["custom/logo", "hyprland/workspaces"],
   "modules-center": ["mpris"],
   "modules-right": [
+    "custom/recording",
     "tray",
     "bluetooth",
     "pulseaudio",
@@ -90,6 +91,13 @@
     "on-click": "iwgtk"
   },
 
+  "custom/recording": {
+    "format": "{}",
+    "exec": "~/.config/waybar/recording-status.sh",
+    "return-type": "json",
+    "tooltip": true,
+    "signal": 8
+  },
   "custom/notifications": {
     "tooltip": false,
     "format": " <span font='14'>{icon}</span> ",

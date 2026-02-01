@@ -236,7 +236,7 @@ fi
 
 # mkdirs
 mkdir -p ~/.local/share/icons/
-mkdir -p ~/{Desktop,Documents,Downloads,Music,Pictures/{Wallpapers,Screenshots},Public,Templates,Videos}
+mkdir -p ~/{Desktop,Documents,Downloads,Music,Pictures/{Wallpapers,Screenshots},Public,Templates,Videos/Recordings}
 
 # install wallpaper and a cursor
 print_step "Installing wallpaper and setup wal"

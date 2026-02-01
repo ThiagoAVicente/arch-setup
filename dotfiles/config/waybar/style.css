@@ -77,3 +77,22 @@ tooltip {
 .hidden {
   opacity: 0;
 }
+
+#custom-recording {
+  margin: 0 7.5px;
+}
+
+#custom-recording.recording {
+  color: #ff0000;
+  animation: blink 1s ease-in-out infinite;
+}
+
+#custom-recording.not-recording {
+  opacity: 0;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
