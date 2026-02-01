@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cava Visualizer
+Comment=Audio visualizer in floating window
+Exec=/home/vcnt/scripts/cava-float.sh
+Icon=audio-card
+Terminal=false
+Categories=AudioVideo;Audio;
