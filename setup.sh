@@ -12,42 +12,37 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 print_step() {
-    echo -e "\n${GREEN}==>${NC} ${BLUE}$1${NC}\n"
+  echo -e "\n${GREEN}==>${NC} ${BLUE}$1${NC}\n"
 }
 
 print_error() {
-    echo -e "${RED}ERROR:${NC} $1"
-    exit 1
+  echo -e "${RED}ERROR:${NC} $1"
+  exit 1
 }
 
 print_warning() {
-    echo -e "${YELLOW}WARNING:${NC} $1"
+  echo -e "${YELLOW}WARNING:${NC} $1"
 }
 
-link(){
-    target=$1
-    source=$2
-    name=$3
-    [ -L "$target" ] && rm "$target"
+link() {
+  target=$1
+  source=$2
+  name=$3
+  [ -L "$target" ] && rm "$target"
 
-    sudo ln -sf "$source" "$target"
-    echo -e "${GREEN}Linked ${BLUE}$name${NC} to ${BLUE}$source${NC}"
+  sudo ln -sf "$source" "$target"
+  echo -e "${GREEN}Linked ${BLUE}$name${NC} to ${BLUE}$source${NC}"
 }
-
-#  Safety check: must NOT run from live ISO
-if grep -q "archiso" /proc/cmdline 2>/dev/null; then
-    print_error "This script must NOT be run from Arch Live ISO. Reboot into your installed system first!"
-fi
 
 # Check if running as regular user (not root)
 if [[ $EUID -eq 0 ]]; then
-   print_error "This script should NOT be run as root. Run as your regular user."
+  print_error "This script should NOT be run as root. Run as your regular user."
 fi
 
 # Check internet connection
 print_step "Checking internet connection"
 if ! ping -c 1 8.8.8.8 &>/dev/null; then
-    print_error "No internet connection. Please connect and try again."
+  print_error "No internet connection. Please connect and try again."
 fi
 
 echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
@@ -58,26 +53,26 @@ echo ""
 print_step "Configuring pacman"
 # Enable multilib repository
 if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
-    echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+  echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
 fi
 
 # Enable ParallelDownloads (uncomment or add)
 if grep -q "^#*ParallelDownloads" /etc/pacman.conf; then
-    sudo sed -i 's/^#*ParallelDownloads.*/ParallelDownloads = 5/' /etc/pacman.conf
+  sudo sed -i 's/^#*ParallelDownloads.*/ParallelDownloads = 5/' /etc/pacman.conf
 else
-    sudo sed -i '/^\[options\]/a ParallelDownloads = 5' /etc/pacman.conf
+  sudo sed -i '/^\[options\]/a ParallelDownloads = 5' /etc/pacman.conf
 fi
 
 # Enable Color (uncomment or add)
 if grep -q "^#*Color" /etc/pacman.conf; then
-    sudo sed -i 's/^#*Color$/Color/' /etc/pacman.conf
+  sudo sed -i 's/^#*Color$/Color/' /etc/pacman.conf
 else
-    sudo sed -i '/^\[options\]/a Color' /etc/pacman.conf
+  sudo sed -i '/^\[options\]/a Color' /etc/pacman.conf
 fi
 
 # Add ILoveCandy (if not present)
 if ! grep -q "^ILoveCandy" /etc/pacman.conf; then
-    sudo sed -i '/^Color$/a ILoveCandy' /etc/pacman.conf
+  sudo sed -i '/^Color$/a ILoveCandy' /etc/pacman.conf
 fi
 
 # Get script directory
@@ -86,11 +81,11 @@ cd "$SCRIPT_DIR"
 
 # Verify required directories
 if [ ! -d "packages" ]; then
-    print_warning "packages directory not found - skipping package installation"
+  print_warning "packages directory not found - skipping package installation"
 fi
 
 if [ ! -d "dotfiles" ]; then
-    print_warning "dotfiles directory not found - skipping dotfiles setup"
+  print_warning "dotfiles directory not found - skipping dotfiles setup"
 fi
 
 # Update system first
@@ -99,106 +94,105 @@ sudo pacman -Syu --noconfirm
 
 # Install official packages
 if [ -d "packages" ]; then
-    PACKAGE_FILES=""
-    [ -f "packages/core.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/core.txt"
-    [ -f "packages/dev.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/dev.txt"
-    [ -f "packages/media.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/media.txt"
-    [ -f "packages/wayland.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/wayland.txt"
+  PACKAGE_FILES=""
+  [ -f "packages/core.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/core.txt"
+  [ -f "packages/dev.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/dev.txt"
+  [ -f "packages/media.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/media.txt"
+  [ -f "packages/wayland.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/wayland.txt"
 
-    if [ -n "$PACKAGE_FILES" ]; then
-        print_step "Installing official packages"
-        sudo pacman -S --needed --noconfirm $(cat $PACKAGE_FILES)
-    fi
+  if [ -n "$PACKAGE_FILES" ]; then
+    print_step "Installing official packages"
+    sudo pacman -S --needed --noconfirm $(cat $PACKAGE_FILES)
+  fi
 fi
 
 # Install yay (AUR helper)
 if ! command -v yay &>/dev/null; then
-    print_step "Installing yay AUR helper"
-    cd /tmp
-    git clone https://aur.archlinux.org/yay.git
-    cd yay
-    makepkg -si --noconfirm
-    cd "$SCRIPT_DIR"
-    rm -rf /tmp/yay
+  print_step "Installing yay AUR helper"
+  cd /tmp
+  git clone https://aur.archlinux.org/yay.git
+  cd yay
+  makepkg -si --noconfirm
+  cd "$SCRIPT_DIR"
+  rm -rf /tmp/yay
 fi
 
 # Install AUR packages
 if [ -f "packages/yay.txt" ]; then
-    print_step "Installing AUR packages (this may take a while)"
-    yay -S --needed --noconfirm $(cat packages/yay.txt)
+  print_step "Installing AUR packages (this may take a while)"
+  yay -S --needed --noconfirm $(cat packages/yay.txt)
 fi
 
 # Setup dotfiles
 if [ -d "dotfiles" ]; then
-    print_step "Setting up dotfiles"
-    mkdir -p ~/.config/
+  print_step "Setting up dotfiles"
+  mkdir -p ~/.config/
 
-    # Link config directories
-    if [ -d "dotfiles/config" ]; then
-        for item in dotfiles/config/*; do
-            if [ -e "$item" ]; then
-                name=$(basename "$item")
-                target="$HOME/.config/$name"
+  # Link config directories
+  if [ -d "dotfiles/config" ]; then
+    for item in dotfiles/config/*; do
+      if [ -e "$item" ]; then
+        name=$(basename "$item")
+        target="$HOME/.config/$name"
 
-                # Backup existing config
-                if [ -e "$target" ] && [ ! -L "$target" ]; then
-                    echo "Backing up existing $name to $name.backup"
-                    mv "$target" "${target}.backup"
-                fi
-
-                link "$target" "$SCRIPT_DIR/$item" "$name"
-            fi
-        done
-    fi
-
-    # Link zshrc
-    if [ -f "dotfiles/zshrc" ]; then
-        if [ -e "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
-            echo "Backing up existing .zshrc to .zshrc.backup"
-            mv "$HOME/.zshrc" "$HOME/.zshrc.backup"
+        # Backup existing config
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+          echo "Backing up existing $name to $name.backup"
+          mv "$target" "${target}.backup"
         fi
-        [ -L "$HOME/.zshrc" ] && rm "$HOME/.zshrc"
-        ln -s "$SCRIPT_DIR/dotfiles/zshrc" "$HOME/.zshrc"
-        echo "Linked: .zshrc"
+
+        link "$target" "$SCRIPT_DIR/$item" "$name"
+      fi
+    done
+  fi
+
+  # Link zshrc
+  if [ -f "dotfiles/zshrc" ]; then
+    if [ -e "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+      echo "Backing up existing .zshrc to .zshrc.backup"
+      mv "$HOME/.zshrc" "$HOME/.zshrc.backup"
     fi
+    [ -L "$HOME/.zshrc" ] && rm "$HOME/.zshrc"
+    ln -s "$SCRIPT_DIR/dotfiles/zshrc" "$HOME/.zshrc"
+    echo "Linked: .zshrc"
+  fi
 fi
 
 # link bin
 if [ -d "bin" ]; then
-    mkdir -p "$HOME/.local/bin"
+  mkdir -p "$HOME/.local/bin"
 
-    for item in bin/*; do
-        name=$(basename "$item")
-        target="$HOME/.local/bin/$name"
+  for item in bin/*; do
+    name=$(basename "$item")
+    target="$HOME/.local/bin/$name"
 
-        # Backup existing config
-        if [ -e "$target" ] && [ ! -L "$target" ]; then
-            echo "Backing up existing $name to $name.backup"
-            mv "$target" "${target}.backup"
-        fi
+    # Backup existing config
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      echo "Backing up existing $name to $name.backup"
+      mv "$target" "${target}.backup"
+    fi
 
-        link "$target" "$SCRIPT_DIR/$item" "$name"
-    done
+    link "$target" "$SCRIPT_DIR/$item" "$name"
+  done
 fi
 
 # link apps
 if [ -d "apps" ]; then
-    mkdir -p "$HOME/.local/share/applications"
+  mkdir -p "$HOME/.local/share/applications"
 
-    for item in apps/*; do
-        name=$(basename "$item")
-        target="$HOME/.local/share/applications/$name"
+  for item in apps/*; do
+    name=$(basename "$item")
+    target="$HOME/.local/share/applications/$name"
 
-        # Backup existing config
-        if [ -e "$target" ] && [ ! -L "$target" ]; then
-            echo "Backing up existing $name to $name.backup"
-            mv "$target" "${target}.backup"
-        fi
+    # Backup existing config
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      echo "Backing up existing $name to $name.backup"
+      mv "$target" "${target}.backup"
+    fi
 
-        link "$target" "$SCRIPT_DIR/$item" "$name"
-    done
+    link "$target" "$SCRIPT_DIR/$item" "$name"
+  done
 fi
-
 
 #symlink scripts
 ln -s "$SCRIPT_DIR/scripts" "$HOME/scripts"
@@ -208,15 +202,15 @@ sudo systemctl disable getty@tty1
 sudo systemctl mask getty@tty1
 
 if [ -f "services.txt" ]; then
-    print_step "Enabling services"
-    while IFS= read -r service; do
-        # Skip empty lines and comments
-        [[ -z "$service" || "$service" =~ ^# ]] && continue
+  print_step "Enabling services"
+  while IFS= read -r service; do
+    # Skip empty lines and comments
+    [[ -z "$service" || "$service" =~ ^# ]] && continue
 
-        sudo systemctl enable --now "$service" 2>/dev/null && \
-            echo "Enabled: $service" || \
-            echo "Service $service exists but couldn't be enabled (may need reboot)"
-    done < services.txt
+    sudo systemctl enable --now "$service" 2>/dev/null &&
+      echo "Enabled: $service" ||
+      echo "Service $service exists but couldn't be enabled (may need reboot)"
+  done <services.txt
 fi
 
 # Configure geoclue for location services
@@ -227,17 +221,17 @@ echo "Configured geoclue to use BeaconDB geolocation service"
 
 # Install groups
 if [ -f "groups.txt" ]; then
-    print_step "Installing groups"
-    while IFS= read -r group; do
-        [[ -z "$group" || "$group" =~ ^# ]] && continue
+  print_step "Installing groups"
+  while IFS= read -r group; do
+    [[ -z "$group" || "$group" =~ ^# ]] && continue
 
-        if ! groups | grep -q "\b$group\b"; then
-            sudo usermod -aG "$group" "$USER"
-            echo "Added user to group: $group"
-        else
-            echo "User already in group: $group"
-        fi
-    done < groups.txt
+    if ! groups | grep -q "\b$group\b"; then
+      sudo usermod -aG "$group" "$USER"
+      echo "Added user to group: $group"
+    else
+      echo "User already in group: $group"
+    fi
+  done <groups.txt
 fi
 
 # mkdirs
@@ -266,9 +260,9 @@ echo ""
 
 # Skip reboot prompt if called from arch-install.sh (inside chroot)
 if [ -z "$SKIP_REBOOT_PROMPT" ]; then
-    read -p "Reboot now? (y/N): " do_reboot
+  read -p "Reboot now? (y/N): " do_reboot
 
-    if [[ "$do_reboot" =~ ^[Yy]$ ]]; then
-        sudo reboot
-    fi
+  if [[ "$do_reboot" =~ ^[Yy]$ ]]; then
+    sudo reboot
+  fi
 fi
