@@ -257,12 +257,8 @@ echo "Additional steps:"
 echo "1. Install wallpapers to ~/.local/share/icons/Wallpapers"
 echo "2. Install cursors (recommend https://vsthemes.org/en/cursors/black/68239-modest-dark.html) to ~/.local/share/icons/"
 echo ""
+read -p "Reboot now? (y/N): " do_reboot
 
-# Skip reboot prompt if called from arch-install.sh (inside chroot)
-if [ -z "$SKIP_REBOOT_PROMPT" ]; then
-  read -p "Reboot now? (y/N): " do_reboot
-
-  if [[ "$do_reboot" =~ ^[Yy]$ ]]; then
-    sudo reboot
-  fi
+if [[ "$do_reboot" =~ ^[Yy]$ ]]; then
+  sudo reboot
 fi

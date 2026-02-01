@@ -365,10 +365,6 @@ if [ -d "$SCRIPT_DIR" ]; then
     cp -r "$SCRIPT_DIR" /mnt/home/$USERNAME/installation
     arch-chroot /mnt chown -R $USERNAME:$USERNAME /home/$USERNAME/installation
     echo -e "${GREEN}Installation repo copied to /home/$USERNAME/installation${NC}"
-
-    # Run setup.sh in chroot to complete full installation
-    print_step "Running post-installation setup"
-    arch-chroot /mnt su - $USERNAME -c "cd ~/installation && SKIP_REBOOT_PROMPT=1 ./setup.sh"
 fi
 
 # Installation complete
