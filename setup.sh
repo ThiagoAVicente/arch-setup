@@ -288,6 +288,11 @@ EOF
   echo "Battery will charge to max 80% to extend lifespan."
 fi
 
+# Set GTK theme via gsettings
+gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
+
 # Final message
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
