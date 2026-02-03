@@ -211,7 +211,7 @@ See `dotfiles/config/hypr/hyprland.conf` for full list. Key bindings:
 - **UEFI system** 
 - **Internet connection** during installation
 - **2GB+ RAM** recommended
-- 
+ 
 ## Additional Resources
 
 **Optional Downloads:**
