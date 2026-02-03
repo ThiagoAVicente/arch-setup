@@ -250,6 +250,15 @@ wal -i ~/Pictures/Wallpapers/wallpaper.jpg
 mkdir -p ~/.config/mako
 ln -sf ~/.cache/wal/colors-mako ~/.config/mako/config
 
+read -p "Would you like to setup nvidia? (y/n): " answer
+
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+  sudo pacman -S $(cat packages/nvidia.txt) --needed
+  sudo sed -i 's/^MODULES=.*/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
+  sudo mkinitcpio -P
+  sudo sed -i 's/quiet splash/quiet splash nvidia_drm.modeset=1 nvidia_drm.fbdev=1/' /boot/loader/entries/arch.conf
+fi
+
 # Final message
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
