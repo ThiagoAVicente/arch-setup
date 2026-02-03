@@ -259,6 +259,35 @@ if [[ "$answer" =~ ^[Yy]$ ]]; then
   sudo sed -i 's/quiet splash/quiet splash nvidia_drm.modeset=1 nvidia_drm.fbdev=1/' /boot/loader/entries/arch.conf
 fi
 
+echo ""
+read -p "Would you like to optimize battery/power management? (y/n): " tlp_answer
+if [[ "$tlp_answer" =~ ^[Yy]$ ]]; then
+  echo "Installing TLP and power management tools..."
+  sudo pacman -S tlp tlp-rdw ethtool smartmontools --needed --noconfirm
+
+  echo "Enabling battery conservation mode (80% charge limit)..."
+  echo "options ideapad_laptop conservation_mode=1" | sudo tee /etc/modprobe.d/ideapad.conf
+
+  echo "Creating optimized TLP configuration..."
+  sudo mkdir -p /etc/tlp.d
+  sudo tee /etc/tlp.d/01-legion.conf >/dev/null <<'EOF'
+# Lenovo Legion 5 Optimized Configuration
+CPU_SCALING_GOVERNOR_ON_AC=performance
+CPU_SCALING_GOVERNOR_ON_BAT=powersave
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+PLATFORM_PROFILE_ON_AC=performance
+PLATFORM_PROFILE_ON_BAT=balanced
+RUNTIME_PM_DRIVER_DENYLIST="mei_me nouveau radeon nvidia"
+WIFI_PWR_ON_AC=off
+WIFI_PWR_ON_BAT=on
+STOP_CHARGE_THRESH_BAT0=1
+EOF
+
+  echo -e "${GREEN}✅ Power management optimized!${NC}"
+  echo "Battery will charge to max 80% to extend lifespan."
+fi
+
 # Final message
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
