@@ -195,6 +195,9 @@ if [ -d "apps" ]; then
 fi
 
 #symlink scripts
+if [ -L "$HOME/scripts" ] || [ -e "$HOME/scripts" ]; then
+  rm -rf "$HOME/scripts"
+fi
 ln -s "$SCRIPT_DIR/scripts" "$HOME/scripts"
 
 # Enable services

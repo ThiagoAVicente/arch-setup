@@ -26,6 +26,7 @@ python-pywal
 rofi
 starship
 tlp
+fastfetch
 wl-clip-persist
 xdg-desktop-portal
 xdg-desktop-portal-hyprland

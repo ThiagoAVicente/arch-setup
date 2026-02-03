@@ -28,3 +28,4 @@ alias glm="claude --model \"glm-4.7\" --settings ~/.claude/zai_settings.json"
 
 alias show="chafa"
 alias ssh="export TERM=xterm && ssh"
+alias ff="fastfetch"
