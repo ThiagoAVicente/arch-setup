@@ -5,5 +5,4 @@ env = QT6CT_STYLE_OVERRIDE,Fusion
 env = GTK_THEME,Adwaita:dark
 env = XCURSOR_THEME,modest-dark
 env = MOZ_ENABLE_WAYLAND,1
-env = WLR_NO_HARDWARE_CURSORS,1
 env = SDL_VIDEODRIVER,wayland
