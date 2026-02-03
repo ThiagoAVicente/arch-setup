@@ -11,6 +11,19 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 - **Location Services**: Configured geoclue with BeaconDB (no rate limits)
 - **Custom Utilities**: Sandboxed application launchers and helper scripts
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="images/i1.png" alt="Screenshot 1"></td>
+    <td><img src="images/i2.png" alt="Screenshot 2"></td>
+  </tr>
+  <tr>
+    <td><img src="images/i3.png" alt="Screenshot 3"></td>
+    <td></td>
+  </tr>
+</table>
+
 ## Repository Structure
 
 ```
