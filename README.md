@@ -1,30 +1,68 @@
 # Arch Linux Installation & Dotfiles
 
-Personal Arch Linux setup with automated installation scripts and dotfiles configuration. Designed for easy deployment on new machines.
+Personal Arch Linux setup with automated installation scripts and dotfiles configuration. Designed for easy deployment on new machines with a focus on Wayland/Hyprland environment.
 
 ## Features
 
-- **Automated Arch Linux Installation**: Base system installer with LUKS encryption support
-- **Post-Installation Setup**: Automated package installation and dotfiles configuration
-- **Wayland Environment**: Hyprland compositor with custom configurations
-- **Complete Development Setup**: Pre-configured development tools and environments
+- **Automated Base Installation**: Complete Arch Linux installer with LUKS encryption and swap support
+- **Post-Installation Automation**: One-command package installation and configuration
+- **Wayland Environment**: Hyprland compositor with custom theming via pywal
+- **Development Ready**: Pre-configured development tools and environments
+- **Location Services**: Configured geoclue with BeaconDB (no rate limits)
+- **Custom Utilities**: Sandboxed application launchers and helper scripts
 
-## Structure
+## Repository Structure
 
 ```
 .
-├── arch-install.sh      # Base Arch Linux installer (run from live ISO)
-├── setup.sh             # Post-installation setup (run after reboot)
-├── packages/            # Package lists for pacman and AUR
-│   ├── core.txt        # Essential system packages
-│   ├── dev.txt         # Development tools
-│   ├── media.txt       # Media applications
-│   ├── wayland.txt     # Wayland/Hyprland environment
-│   └── yay.txt         # AUR packages
-├── dotfiles/            # Configuration files
-│   ├── config/         # ~/.config directory contents
-│   └── zshrc           # Zsh configuration
-└── services.txt         # System services to enable
+├── arch-install.sh          # Base system installer (run from live ISO)
+├── setup.sh                 # Post-installation setup (run after reboot)
+│
+├── packages/                # Package lists
+│   ├── core.txt            # Essential system packages
+│   ├── dev.txt             # Development tools
+│   ├── media.txt           # Media applications
+│   ├── wayland.txt         # Wayland/Hyprland environment
+│   └── yay.txt             # AUR packages
+│
+├── dotfiles/               # Configuration files
+│   ├── config/             # ~/.config directory contents
+│   │   ├── hypr/           # Hyprland configuration
+│   │   ├── waybar/         # Status bar configuration
+│   │   ├── rofi/           # Application launcher
+│   │   ├── foot/           # Terminal emulator
+│   │   ├── nvim/           # Neovim configuration
+│   │   ├── swaync/         # Notification daemon
+│   │   ├── cava/           # Audio visualizer
+│   │   ├── wal/            # Pywal color schemes
+│   │   ├── gtk-3.0/        # GTK3 theme settings
+│   │   ├── gtk-4.0/        # GTK4 theme settings
+│   │   ├── mpv/            # Media player config
+│   │   ├── imv/            # Image viewer config
+│   │   ├── zed/            # Zed editor config
+│   │   ├── rc/             # Shell config
+│   │   └── starship.toml   # Shell prompt config
+│   └── zshrc               # Zsh shell configuration
+│
+├── scripts/                # Helper scripts
+│   ├── change-wallpaper.sh # Wallpaper changer with pywal integration
+│   ├── powermenu.sh        # Power management menu
+│   ├── record-toggle.sh    # Screen recording toggle
+│   ├── gammastep-toggle.sh # Blue light filter toggle
+│   ├── cava-float.sh       # Floating audio visualizer
+│   └── toggle_debug.sh     # Debug mode toggle
+│
+├── bin/                    # Custom executables
+│   ├── curd-secure         # Sandboxed curd (bubblewrap)
+│   └── curd-secure-dub     # Sandboxed curd with audio
+│
+├── apps/                   # Desktop application entries
+│   ├── curd-secure.desktop
+│   ├── curd-secure-dub.desktop
+│   └── cava.desktop
+│
+├── services.txt            # System services to enable
+└── groups.txt              # User groups to add
 ```
 
 ## Installation
@@ -34,14 +72,30 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 Boot from Arch Linux ISO and run:
 
 ```bash
+# Connect to internet (if needed)
+iwctl station wlan0 connect "SSID"
+
+# Install git if not already installed
+sudo pacman -S git
+
 # Download this repository
 git clone https://github.com/ThiagoAVicente/arch-setup.git
-cd installation
+cd arch-setup
 
 # Run the installer
 chmod +x arch-install.sh
 sudo ./arch-install.sh
 ```
+
+The installer will:
+- Partition your disk (UEFI/GPT)
+- Optionally set up LUKS encryption
+- Optionally create swap partition
+- Install base system with systemd-boot
+- Configure locale, timezone, and users
+- Copy installation files to `/home/username/installation`
+
+**Reboot after completion.**
 
 ### Step 2: Post-Installation Setup
 
@@ -53,85 +107,117 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## Configuration Details
+The setup script automatically handles:
+- Pacman configuration (multilib, parallel downloads, color)
+- All package installation (official + AUR)
+- Yay AUR helper installation
+- Dotfiles setup via symlinks
+- System services enablement
+- Geoclue location services configuration
+- User group membership
+- Initial wallpaper download and pywal setup
+- Directory structure creation
 
-### Included Software
+**That's it! Everything is configured automatically.**
 
-- **Display Server**: Wayland
+## Included Software
+
+### Core System
+- **Display Protocol**: Wayland
 - **Compositor**: Hyprland
-- **Terminal**: Foot
+- **Display Manager**: ly (TTY-based)
 - **Shell**: Zsh with Starship prompt
-- **Editor**: Neovim (with custom config)
-- **Application Launcher**: Rofi
-- **Bar**: Waybar
-- **Notifications**: Mako
+- **Terminal**: Foot
+- **Editor**: Neovim ([Lazyvim config](https://www.lazyvim.org/))
+
+### Desktop Environment
+- **Launcher**: Rofi
+- **Status Bar**: Waybar
+- **Notifications**: SwayNC
 - **File Manager**: Thunar
-- **Browser**: Firefox
-- **Development**: Docker, Git, various language toolchains
+- **Audio Visualizer**: CAVA
+- **Color Scheme**: Pywal 
+- **Blue Light Filter**: Gammastep
+- **Screenshot**: Grimblast
 
-See `packages/*.txt` for complete lists.
+### Applications
+- **Browser**: Firefox 
+- **Media Player**: MPV
+- **Image Viewer**: imv and chafa(terminal based)
+- **PDF Viewer**: Zathura
+- **Office**: LibreOffice
+- **Music**: Spotify 
 
-## Customization
+### Development Tools
+- **Containers**: Docker(-compose)
+- **Virtualization**: libvirt/QEMU
+- **Version Control**: Git
+- **Code Editors**: Neovim, Zed, Claude-code, etc
+- **Languages**: Python, Node.js, Go, Rust toolchains
 
-### Before Running on a New Machine
+### System Services
 
-1. **Update user-specific settings** in `arch-install.sh`:
-   - Timezone (default: Europe/Lisbon)
-   - Locale (default: en_US.UTF-8)
-   - Keymap (default: us)
+Automatically enabled services:
+- `NetworkManager` - Network management
+- `docker` - Container runtime
+- `tlp` - Power management
+- `ufw` - Firewall
+- `bluetooth` - Bluetooth support
+- `systemd-timesyncd` - Time synchronization
+- `libvirtd` - Virtualization
+- `ly@tty1` - Display manager
+- `avahi-daemon` - Network service discovery (required for location services)
 
-2. **Review packages**: Edit files in `packages/` to add/remove software
+See `services.txt` for the complete list.
 
-3. **Adjust dotfiles**: Customize configs in `dotfiles/config/` as needed
 
-### Modifying Package Lists
+### Dotfile Modifications
 
-Each `.txt` file in `packages/` contains one package per line:
-- Lines starting with `#` are ignored
-- Empty lines are ignored
-- Just add/remove package names
+All dotfiles are symlinked from `~/installation/dotfiles/`, so you can:
+1. Edit files in the repository
+2. Changes take effect immediately (no re-linking needed)
+3. Commit and push changes to keep them synced
+
+### Keybindings (Hyprland)
+
+See `dotfiles/config/hypr/hyprland.conf` for full list. Key bindings:
+
+- `SUPER + Q` - Close window
+- `SUPER + Return` - Terminal
+- `SUPER + D` - Rofi launcher
+- `SUPER + T` - Toggle floating
+- `SUPER + F` - Toggle fullscreen
+- `SUPER + [1-6,9,10]` - Switch workspace
+- `SUPER + Shift + [1-6,9,10]` - Move window to workspace
+- `SUPER + Esc` - Power menu
+- `SUPER + Shift + S` - Screenshot region
+- `SUPER + Shift + V` - Start/Stop region recording
 
 ## Requirements
 
-- UEFI system (not BIOS)
-- Internet connection
-- 2GB+ RAM recommended
+- **UEFI system** 
+- **Internet connection** during installation
+- **2GB+ RAM** recommended
+- 
+## Additional Resources
 
-## Safety Features
+**Optional Downloads:**
+- **Wallpapers**: Download to `~/Pictures/Wallpapers/` and use `SUPER+ALT+W` to select
+- **Cursor Theme**: [Modest Dark Cursors](https://vsthemes.org/en/cursors/black/68239-modest-dark.html) - Extract to `~/.local/share/icons/`
 
-- Multiple confirmations before disk operations
-- Safety checks to prevent running installer on wrong system
-- Automatic backups of existing dotfiles
-- Non-destructive symlinking
-
-## Troubleshooting
-
-### Installation fails with "disk not found"
-Verify disk path with `lsblk` before running installer.
-
-### Services fail to enable
-Some services require reboot before they can start. Reboot and check with:
-```bash
-systemctl status <service-name>
-```
-
-### Dotfiles not loading
-Ensure you're using zsh as your shell:
-```bash
-chsh -s /bin/zsh
-```
+**Useful Links:**
+- [Envycontrol](https://github.com/bayasdev/envycontrol) - GPU mode switcher for NVIDIA Optimus laptops
+- [NVIDIA on Hyprland](https://wiki.hypr.land/Nvidia/) - Configuration guide for NVIDIA GPUs
+- [Looking Glass](https://looking-glass.io/) - Low-latency KVM framebuffer sharing for GPU passthrough
+- [Windows 11 Download](https://www.microsoft.com/en-us/software-download/windows11) - For VM setup
 
 ## License
 
 MIT License - See [LICENSE](LICENSE) file for details.
 
-Note: Assets (wallpapers, cursor themes) may have different licenses. See `WALLPAPERS.md`.
-
 ## Credits
 
 - Hyprland configuration inspired by the Hyprland community
-- Various shell utilities from the Arch Linux ecosystem
-- Wallpaper from Wallpaper Cave contributors
+- Dotfiles structure influenced by various Arch Linux ricing communities
 
 ---
-

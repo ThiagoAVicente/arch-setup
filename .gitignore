@@ -17,7 +17,7 @@ id_ed25519
 *.backup
 *.bak
 *~
-
+*extra.conf
 # OS files
 .DS_Store
 Thumbs.db

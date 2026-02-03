@@ -7,3 +7,4 @@ slack-desktop-wayland
 grimblast-git
 spotify
 github-copilot-cli
+envycontrol
