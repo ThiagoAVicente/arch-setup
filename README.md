@@ -193,7 +193,7 @@ All dotfiles are symlinked from `~/installation/dotfiles/`, so you can:
 
 ### Keybindings (Hyprland)
 
-See `dotfiles/config/hypr/hyprland.conf` for full list. Key bindings:
+See [KEYBINDINGS](docs/keybindings.md) for full list. Key bindings:
 
 - `SUPER + Q` - Close window
 - `SUPER + Return` - Terminal
@@ -211,18 +211,24 @@ See `dotfiles/config/hypr/hyprland.conf` for full list. Key bindings:
 - **UEFI system** 
 - **Internet connection** during installation
 - **2GB+ RAM** recommended
+- **20GB+ RAM** recommended
  
 ## Additional Resources
 
-**Optional Downloads:**
-- **Wallpapers**: Download to `~/Pictures/Wallpapers/` and use `SUPER+ALT+W` to select
-- **Cursor Theme**: [Modest Dark Cursors](https://vsthemes.org/en/cursors/black/68239-modest-dark.html) - Extract to `~/.local/share/icons/`
-
-**Useful Links:**
 - [Envycontrol](https://github.com/bayasdev/envycontrol) - GPU mode switcher for NVIDIA Optimus laptops
 - [NVIDIA on Hyprland](https://wiki.hypr.land/Nvidia/) - Configuration guide for NVIDIA GPUs
 - [Looking Glass](https://looking-glass.io/) - Low-latency KVM framebuffer sharing for GPU passthrough
 - [Windows 11 Download](https://www.microsoft.com/en-us/software-download/windows11) - For VM setup
+
+## Documentation
+
+| Topic | Description |
+|-------|-------------|
+| [Post-Installation](docs/post-install.md) | Final steps after setup |
+| [GPU Drivers](docs/gpu.md) | Install Intel/NVIDIA GPU drivers |
+| [Hyprland Configuration](docs/hyprland.md) | Machine-specific config with `extra.conf` |
+| [Keybindings](docs/keybindings.md) | Full keyboard shortcuts reference |
+| [Steam Launch Options](docs/steam.md) | NVIDIA GPU launch options for Steam games |
 
 ## License
 

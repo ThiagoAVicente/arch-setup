@@ -1,5 +1,7 @@
 # Steam Launch Options (NVIDIA GPU)
 
+**NOTE**: `prime-run` will run apps on xwayland.
+
 ## Normal Games (with NVIDIA)
 
 ```bash
