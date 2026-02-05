@@ -5,6 +5,6 @@ jump
 protonup-qt-bin
 slack-desktop-wayland
 grimblast-git
+opencode-bin
 spotify
-github-copilot-cli
 envycontrol

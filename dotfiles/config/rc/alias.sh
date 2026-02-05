@@ -23,8 +23,7 @@ alias gck="git checkout"
 alias cup="nmcli connection up "
 alias cdown="nmcli connection down "
 
-alias claude="claude --model sonnet"
-alias glm="claude --model \"glm-4.7\" --settings ~/.claude/zai_settings.json"
+alias oc="opencode"
 
 alias show="chafa"
 alias ssh="export TERM=xterm && ssh"
