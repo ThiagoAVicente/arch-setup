@@ -47,3 +47,5 @@ intel-ucode
 htop
 direnv
 nwg-displays
+tumbler
+ffmpegthumbnailer
