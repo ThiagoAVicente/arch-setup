@@ -1,8 +1,6 @@
-env = XCURSOR_SIZE,30
 env = QT_QPA_PLATFORMTHEME,qt5ct
 env = QT_STYLE_OVERRIDE,Fusion
 env = QT6CT_STYLE_OVERRIDE,Fusion
 env = GTK_THEME,Adwaita:dark
-env = XCURSOR_THEME,modest-dark
 env = MOZ_ENABLE_WAYLAND,1
 env = SDL_VIDEODRIVER,wayland
