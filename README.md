@@ -52,7 +52,7 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 │   │   ├── gtk-4.0/        # GTK4 theme settings
 │   │   ├── mpv/            # Media player config
 │   │   ├── imv/            # Image viewer config
-│   │   ├── zed/            # Zed editor config
+│   │   ├── helix/          # Helix editor config
 │   │   ├── rc/             # Shell config
 │   │   └── starship.toml   # Shell prompt config
 │   └── zshrc               # Zsh shell configuration
@@ -165,7 +165,7 @@ The setup script automatically handles:
 - **Containers**: Docker(-compose)
 - **Virtualization**: libvirt/QEMU
 - **Version Control**: Git
-- **Code Editors**: Neovim, Zed, Claude-code, etc
+- **Code Editors**: Neovim, helix
 - **Languages**: Python, Node.js, Go, Rust toolchains
 
 ### System Services
@@ -229,7 +229,7 @@ See [KEYBINDINGS](docs/keybindings.md) for full list. Key bindings:
 | [Hyprland Configuration](docs/hyprland.md) | Machine-specific config with `extra.conf` |
 | [Keybindings](docs/keybindings.md) | Full keyboard shortcuts reference |
 | [Steam Launch Options](docs/steam.md) | NVIDIA GPU launch options for Steam games |
-
+| [LSPs (**needed for helix**) ](docs/lsp-helix.md) | NVIDIA GPU launch options for Steam games |
 ## License
 
 MIT License - See [LICENSE](LICENSE) file for details.

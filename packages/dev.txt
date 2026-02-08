@@ -5,6 +5,7 @@ valgrind
 qemu-full
 swtpm
 ufw
+pyright
 bat
 docker
 docker-compose

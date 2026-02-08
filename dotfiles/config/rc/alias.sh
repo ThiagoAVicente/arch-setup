@@ -15,7 +15,7 @@ alias pacrm="sudo pacman -Rns"
 alias organize='FileOrganizer'
 
 alias cl="claude"
-alias z="zeditor ."
+alias hx="helix ."
 alias gcl="git clone"
 alias gck="git checkout"
 

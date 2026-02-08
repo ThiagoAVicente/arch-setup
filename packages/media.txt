@@ -20,7 +20,7 @@ discord
 obs-studio
 chafa
 cava
-btop
+bottom
 shotcut
 zathura
 zathura-pdf-mupdf

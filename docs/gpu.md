@@ -3,13 +3,13 @@
 ## Intel GPU
 
 ```bash
-yay -S --needed $(cat packages/intel.conf)
+yay -S --needed $(cat packages/intel.txt)
 ```
 
 ## NVIDIA GPU
 
 ```bash
-yay -S --needed $(cat packages/nvidia.conf)
+yay -S --needed $(cat packages/nvidia.txt)
 ```
 
 ## Hybrid Laptops

@@ -1,0 +1,9 @@
+[[language]]
+name = "python"
+language-servers = ["pyright"]
+auto-format = true
+roots = ["pyproject.toml", "setup.py", "requirements.txt", ".git"]
+
+[language-server.pyright]
+command = "pyright-langserver"
+args = ["--stdio"]
