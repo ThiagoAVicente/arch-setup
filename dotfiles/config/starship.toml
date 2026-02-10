@@ -1,15 +1,15 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 add_newline = true
-scan_timeout = 30
+scan_timeout = 15
 
 format = "$character"
 right_format = "$directory$git_branch$time"
 
 [character]
 format = "$symbol "
-success_symbol = "[◎](bold italic bright-yellow)"
-error_symbol = "[○](italic purple)"
+success_symbol = "[♚](bold italic bright-yellow)"
+error_symbol = "[♚](italic purple)"
 
 [directory]
 home_symbol = "⌂"
