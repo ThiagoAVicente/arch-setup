@@ -7,3 +7,14 @@ roots = ["pyproject.toml", "setup.py", "requirements.txt", ".git"]
 [language-server.pyright]
 command = "pyright-langserver"
 args = ["--stdio"]
+
+[[language]]
+name = "java"
+language-servers = ["jdtls"]
+auto-format = true
+roots = ["pom.xml", "build.gradle", "settings.gradle", ".git"]
+
+[language-server.jdtls]
+command = "jdtls"
+config = { java = { contentProvider = { preferred = "fernflower" } } }
+

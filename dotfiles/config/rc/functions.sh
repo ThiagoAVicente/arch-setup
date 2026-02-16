@@ -62,3 +62,21 @@ __verify_package() {
   done
   return $res
 }
+
+ 
+new-java() {
+  if [[ $# -ne 2 ]]; then
+    echo "Usage: new-java <group_id> <project_name>"
+    return 1
+  fi
+
+  local group_id="$1"
+  local project_name="$2"
+
+  mvn archetype:generate \
+    -DgroupId="$group_id" \
+    -DartifactId="$project_name" \
+    -DarchetypeArtifactId=maven-archetype-quickstart \
+    -DarchetypeVersion=1.4 \
+    -DinteractiveMode=false
+}

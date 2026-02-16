@@ -2,3 +2,5 @@ source $HOME/.config/rc/specific/zshInit.sh
 
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
+alias stp="spotify_player"
+alias z="zeditor ."
