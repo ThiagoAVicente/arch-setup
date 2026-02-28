@@ -13,7 +13,6 @@ id_rsa
 id_ed25519
 *.pub
 *monitors.conf
-*workspaces.conf
 # Backup files
 *.backup
 *.bak
@@ -30,5 +29,5 @@ Thumbs.db
 *.swo
 
 # Temporary files
-*.tmp 
+*.tmp
 *.log
