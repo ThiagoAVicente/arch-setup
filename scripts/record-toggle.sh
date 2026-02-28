@@ -8,7 +8,7 @@ if pgrep -x wf-recorder >/dev/null; then
   pkill -RTMIN+8 waybar
 else
   # Start recording
-  FILENAME=~/Videos/recording_$(date +'%Y-%m-%d_%H-%M-%S').mp4
+  FILENAME=~/Videos/Recordings/recording_$(date +'%Y-%m-%d_%H-%M-%S').mp4
   wf-recorder --no-dmabuf -x yuv420p -g "$(slurp)" -f "$FILENAME" &
   sleep 0.5
   pkill -RTMIN+8 waybar

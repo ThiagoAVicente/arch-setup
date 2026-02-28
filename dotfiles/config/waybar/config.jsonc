@@ -112,6 +112,7 @@
     "exec": "~/.config/waybar/recording-status.sh",
     "return-type": "json",
     "tooltip": true,
+    "interval": 3,
     "signal": 8
   },
   "custom/notifications": {
