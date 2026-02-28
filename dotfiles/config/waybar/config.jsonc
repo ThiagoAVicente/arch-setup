@@ -1,11 +1,16 @@
 {
   "reload_style_on_change": true,
-  "layer": "bottom",
-  "position": "bottom",
+  "layer": "top",
+  "position": "top",
   "spacing": 0,
   "height": 30,
-  "modules-left": ["custom/logo", "hyprland/workspaces"],
-  "modules-center": ["mpris"],
+  "modules-left": [
+    "custom/logo",
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "mpris"
+  ],
   "modules-right": [
     "custom/recording",
     "tray",
@@ -58,7 +63,10 @@
     "status-icons": {
       "paused": "⏸"
     },
-    "dynamic-order": ["title", "artist"],
+    "dynamic-order": [
+      "title",
+      "artist"
+    ],
     "dynamic-separator": " - ",
     "max-length": 30,
     "min-length": 30,
@@ -67,13 +75,12 @@
     "on-click-middle": "playerctl previous"
   },
   "tray": {
-  "icon-size": 16
-},
+    "icon-size": 16
+  },
   "cpu": {
     "interval": 5,
     "format": "󰍛",
     "on-click": "foot --app-id R.float -- btop -t"
-
   },
   "clock": {
     "format": "{:%A %H:%M}",
@@ -82,7 +89,13 @@
     "on-click-right": "timedatectl set-ntp true"
   },
   "network": {
-    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-icons": [
+      "󰤯",
+      "󰤟",
+      "󰤢",
+      "󰤥",
+      "󰤨"
+    ],
     "format": "{icon}",
     "format-wifi": "{icon}",
     "format-ethernet": "󰀂",
@@ -94,7 +107,6 @@
     "spacing": 1,
     "on-click": "iwgtk"
   },
-
   "custom/recording": {
     "format": "{}",
     "exec": "~/.config/waybar/recording-status.sh",
@@ -126,8 +138,30 @@
     "format-charging": "{icon}",
     "format-plugged": "",
     "format-icons": {
-      "charging": ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"],
-      "default": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+      "charging": [
+        "󰢜",
+        "󰂆",
+        "󰂇",
+        "󰂈",
+        "󰢝",
+        "󰂉",
+        "󰢞",
+        "󰂊",
+        "󰂋",
+        "󰂅"
+      ],
+      "default": [
+        "󰁺",
+        "󰁻",
+        "󰁼",
+        "󰁽",
+        "󰁾",
+        "󰁿",
+        "󰂀",
+        "󰂁",
+        "󰂂",
+        "󰁹"
+      ]
     },
     "format-full": "󰂅",
     "tooltip-format-discharging": "{power:>1.0f}W↓ {capacity}%",
@@ -153,8 +187,11 @@
     "scroll-step": 5,
     "format-muted": "󰝟",
     "format-icons": {
-      "default": ["", "", ""]
+      "default": [
+        "",
+        "",
+        ""
+      ]
     }
   },
-
 }
