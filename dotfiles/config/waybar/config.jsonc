@@ -57,11 +57,12 @@
     "format": "{dynamic}",
     "format-paused": "<i>{dynamic}</i>",
     "dynamic-order": [
-      "title"
+      "title",
+      "artist",
     ],
-    "dynamic-separator": " - ",
-    "max-length": 20,
-    "min-length": 20,
+    "dynamic-separator": " @ ",
+    "max-length": 30,
+    "min-length": 30,
     "on-click": "playerctl -p spotify play-pause",
     "on-click-right": "playerctl -p spotify next",
     "on-click-middle": "playerctl -p spotify previous"
