@@ -8,9 +8,7 @@
     "custom/logo",
     "hyprland/workspaces"
   ],
-  "modules-center": [
-    "mpris"
-  ],
+  "modules-center": [],
   "modules-right": [
     "custom/recording",
     "tray",
@@ -53,7 +51,7 @@
     "tooltip-format": "Menu"
   },
   "mpris": {
-    "player": "spotify",
+    "ignored-players": ["firefox", "chromium", "brave"],
     "format": "{dynamic}",
     "format-paused": "<i>{dynamic}</i>",
     "dynamic-order": [
@@ -104,25 +102,20 @@
     "exec": "~/.config/waybar/recording-status.sh",
     "return-type": "json",
     "tooltip": true,
+    "interval": 3600,
     "signal": 8
   },
   "custom/notifications": {
-    "tooltip": false,
-    "format": " <span font='14'>{icon}</span> ",
+    "format": "{icon}",
     "format-icons": {
-      "notification": "󰥭",
-      "none": "󰂜",
-      "dnd-notification": "󰥭",
-      "dnd-none": "󰔟",
-      "inhibited-notification": "󰥭",
-      "inhibited-none": "󰂜"
+      "default": "󰂚",
+      "dnd": "󰂛"
     },
     "return-type": "json",
-    "exec-if": "which swaync-client",
-    "exec": "swaync-client -swb",
-    "on-click": "swaync-client -t -sw",
-    "on-click-right": "swaync-client -d -sw",
-    "escape": true
+    "exec": "makoctl mode | grep -q do-not-disturb && echo '{\"text\":\"\",\"class\":\"dnd\",\"tooltip\":\"Notifications muted\",\"alt\":\"dnd\"}' || echo '{\"text\":\"\",\"class\":\"default\",\"tooltip\":\"Notifications active\",\"alt\":\"default\"}'",
+    "on-click": "makoctl mode | grep -q do-not-disturb && makoctl mode -r do-not-disturb || makoctl mode -a do-not-disturb; pkill -RTMIN+9 waybar",
+    "interval": 3600,
+    "signal": 9
   },
   "battery": {
     "format": "{capacity}% {icon}",

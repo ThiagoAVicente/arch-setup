@@ -4,4 +4,5 @@ export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 alias stp="spotify_player"
 alias z="prime-run zeditor ."
-alias clk="tty-clock -cn"
+alias clk="tty-clock -cn
+export IDEA_JDK=/usr/lib/jvm/java-25-openjdk "

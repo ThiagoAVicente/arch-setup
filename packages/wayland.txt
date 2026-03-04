@@ -1,7 +1,6 @@
 hyprland
 waybar
 foot
-swaync
 swww
 slurp
 wl-clipboard
@@ -14,4 +13,6 @@ hyprpicker
 imv
 gammastep
 hyprlock
+swayosd
+mako
 wf-recorder
