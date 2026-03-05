@@ -1,5 +1,6 @@
 bridge-utils
 claude-code
+hyprexpose-git                                         ⌂ 17:13
 curd
 jump
 protonup-qt-bin
