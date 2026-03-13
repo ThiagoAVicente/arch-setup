@@ -10,3 +10,4 @@ spotify
 envycontrol
 tty-clock
 spotify-player
+hyprexpose
