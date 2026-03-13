@@ -1,4 +1,4 @@
-thunar
+pcmanfm
 firefox
 pavucontrol
 pipewire-alsa
