@@ -11,3 +11,4 @@ envycontrol
 tty-clock
 spotify-player
 hyprexpose
+hyprwave
