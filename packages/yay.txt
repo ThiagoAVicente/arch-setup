@@ -6,6 +6,7 @@ jump
 protonup-qt-bin
 slack-desktop-wayland
 grimblast-git
-opencode-bin
 spotify
 envycontrol
+tty-clock
+spotify-player
