@@ -1,5 +1,4 @@
 hyprland
-waybar
 foot
 swww
 slurp
@@ -13,6 +12,5 @@ hyprpicker
 imv
 gammastep
 hyprlock
-swayosd
-mako
+quickshell
 wf-recorder

@@ -22,7 +22,7 @@ alias gck="git checkout"
 #connections
 alias cup="nmcli connection up "
 alias cdown="nmcli connection down "
-
+alias z="zeditor ."
 
 alias show="chafa"
 alias ssh="export TERM=xterm && ssh"

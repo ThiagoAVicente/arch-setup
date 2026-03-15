@@ -1,0 +1,8 @@
+module Root
+singleton State 1.0 State.qml
+Bar 1.0 Bar.qml
+NotificationManager 1.0 NotificationManager.qml
+OSD 1.0 OSD.qml
+Launcher 1.0 Launcher.qml
+WallpaperSelector 1.0 WallpaperSelector.qml
+PowerMenu 1.0 PowerMenu.qml

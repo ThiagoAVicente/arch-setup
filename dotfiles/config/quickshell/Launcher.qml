@@ -1,0 +1,328 @@
+import Quickshell
+import Quickshell.Io
+import Quickshell.Widgets
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+
+Scope {
+    id: launcher
+    property bool visible: false
+    property int selectedIndex: 0
+
+    // ── Palette ────────────────────────────────────────────────────────────
+    readonly property color cBg:      "#0D0D0D"
+    readonly property color cSurface: "#131313"
+    readonly property color cBorder:  "#1C1C1C"
+    readonly property color cText:    "#E0E0E0"
+    readonly property color cMuted:   "#484848"
+    readonly property color cSel:     "#FFFFFF"
+    readonly property color cSelText: "#0D0D0D"
+
+    function toggle() {
+        visible = !visible
+        if (visible) {
+            searchField.text = ""
+            selectedIndex = 0
+            searchField.forceActiveFocus()
+        }
+    }
+
+    property var allApps: []
+    property var filteredApps: []
+
+    Component.onCompleted: appListProcess.running = true
+
+    // ── App loader ─────────────────────────────────────────────────────────
+    Process {
+        id: appListProcess
+        command: ["sh", "-c", `
+            lookup_icon() {
+                local n="$1"
+                [ -z "$n" ] && return
+                [ -f "$n" ] && echo "$n" && return
+                for d in /usr/share/icons/Papirus/48x48 /usr/share/icons/Papirus/32x32 \
+                          /usr/share/icons/hicolor/48x48 /usr/share/icons/hicolor/scalable \
+                          /usr/share/pixmaps; do
+                    for ext in png svg; do
+                        for sub in apps devices categories mimetypes actions; do
+                            [ -f "$d/$sub/$n.$ext" ] && echo "$d/$sub/$n.$ext" && return
+                        done
+                        [ -f "$d/$n.$ext" ] && echo "$d/$n.$ext" && return
+                    done
+                done
+            }
+            find /usr/share/applications ~/.local/share/applications \
+                 -name '*.desktop' 2>/dev/null | sort | while IFS= read -r f; do
+                name=$(grep -m1 '^Name='      "$f" 2>/dev/null | cut -d= -f2-)
+                exec=$(grep -m1 '^Exec='      "$f" 2>/dev/null | cut -d= -f2-)
+                icon=$(grep -m1 '^Icon='      "$f" 2>/dev/null | cut -d= -f2-)
+                cmnt=$(grep -m1 '^Comment='   "$f" 2>/dev/null | cut -d= -f2-)
+                nod=$( grep -m1 '^NoDisplay=' "$f" 2>/dev/null | cut -d= -f2-)
+                [ -z "$name" ] && continue
+                [ "$nod" = "true" ] && continue
+                iconpath=$(lookup_icon "$icon")
+                echo "$name|||$iconpath|||$f|||$exec|||$cmnt"
+            done
+        `]
+        stdout: SplitParser {
+            onRead: data => {
+                const line = data.trim()
+                if (!line || !line.includes("|||")) return
+                const p = line.split("|||")
+                if (p.length < 4) return
+                const name    = p[0] || ""
+                const ipath   = p[1] || ""
+                const dpath   = p[2] || ""
+                const execRaw = p[3] || ""
+                const comment = p[4] || ""
+                if (!name) return
+                // Strip XDG field codes
+                const execCmd = execRaw.replace(/%[a-zA-Z]/g, "").trim()
+                launcher.allApps = [...launcher.allApps, {
+                    name, comment, dpath, execCmd,
+                    iconPath: ipath ? "file://" + ipath : ""
+                }]
+            }
+        }
+        onExited: (code, status) => {
+            console.log("[launcher] loaded", launcher.allApps.length,
+                        "apps, exit:", code)
+            launcher.allApps = launcher.allApps.sort(
+                (a, b) => a.name.localeCompare(b.name))
+            launcher.filteredApps = launcher.allApps.slice(0, 50)
+        }
+    }
+
+    // ── Launch process (reused, avoids QML string-interpolation hell) ──────
+    Process {
+        id: launchProc
+        onExited: (code, status) =>
+            console.log("[launcher] process exited code:", code,
+                        "status:", status)
+        stderr: SplitParser {
+            onRead: data => console.log("[launcher] stderr:", data)
+        }
+    }
+
+    function filterApps(query) {
+        if (!query) {
+            filteredApps = allApps.slice(0, 50)
+        } else {
+            const q = query.toLowerCase()
+            filteredApps = allApps.filter(a =>
+                a.name.toLowerCase().includes(q) ||
+                a.comment.toLowerCase().includes(q)
+            ).slice(0, 50)
+        }
+        selectedIndex = 0
+    }
+
+    function launchApp(app) {
+        console.log("[launcher] ─── launch ───────────────────────────")
+        console.log("[launcher] name:    ", app.name)
+        console.log("[launcher] dpath:   ", app.dpath)
+        console.log("[launcher] execCmd: ", app.execCmd)
+        if (app.execCmd) {
+            launchProc.command = ["sh", "-c", app.execCmd]
+        } else {
+            // Absolute last resort
+            launchProc.command = ["gio", "launch", app.dpath]
+            console.log("[launcher] WARN: execCmd empty, falling back to gio launch")
+        }
+        launchProc.running = true
+        visible = false
+    }
+
+    // ── Window ─────────────────────────────────────────────────────────────
+    PanelWindow {
+        visible: launcher.visible
+        anchors { top: true; left: true; right: true; bottom: true }
+        exclusiveZone: 0
+        focusable: true
+        color: Qt.rgba(0, 0, 0, 0.6)
+
+        // Backdrop dismiss
+        MouseArea {
+            anchors.fill: parent
+            onClicked: launcher.visible = false
+        }
+
+        // ── Main card ────────────────────────────────────────────────────
+        Rectangle {
+            id: card
+            anchors.centerIn: parent
+            width: 520
+            height: 480
+            color: launcher.cBg
+            border.color: launcher.cBorder
+            border.width: 1
+            radius: 6
+
+            MouseArea { anchors.fill: parent; onClicked: {} }
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 0
+
+                // ── Search ───────────────────────────────────────────────
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    Layout.bottomMargin: 8
+                    color: launcher.cSurface
+                    border.color: launcher.cBorder
+                    border.width: 1
+                    radius: 4
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        spacing: 10
+
+                        Text {
+                            text: "/"
+                            color: launcher.cMuted
+                            font.pixelSize: 14
+                            font.family: "FiraCode Nerd Font"
+                        }
+
+                        TextInput {
+                            id: searchField
+                            Layout.fillWidth: true
+                            color: launcher.cText
+                            font.pixelSize: 14
+                            font.family: "FiraCode Nerd Font"
+                            clip: true
+                            focus: true
+                            selectionColor: Qt.rgba(1, 1, 1, 0.2)
+
+                            onTextChanged: launcher.filterApps(text)
+                            Component.onCompleted: forceActiveFocus()
+
+                            Keys.onEscapePressed: launcher.visible = false
+                            Keys.onReturnPressed: {
+                                if (launcher.filteredApps.length > 0)
+                                    launcher.launchApp(launcher.filteredApps[launcher.selectedIndex])
+                            }
+                            Keys.onDownPressed: {
+                                if (launcher.selectedIndex < launcher.filteredApps.length - 1)
+                                    launcher.selectedIndex++
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+                            Keys.onUpPressed: {
+                                if (launcher.selectedIndex > 0)
+                                    launcher.selectedIndex--
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+                            Keys.onTabPressed: {
+                                launcher.selectedIndex =
+                                    (launcher.selectedIndex + 1) % Math.max(1, launcher.filteredApps.length)
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+
+                            Text {
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                text: "search..."
+                                color: launcher.cMuted
+                                font.pixelSize: 14
+                                font.family: "FiraCode Nerd Font"
+                                visible: !searchField.text
+                            }
+                        }
+                    }
+                }
+
+                // ── App list ─────────────────────────────────────────────
+                ListView {
+                    id: appList
+                    Layout.fillWidth: true
+                    height: 408
+                    clip: true
+                    spacing: 1
+                    model: launcher.filteredApps
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    ScrollBar.vertical: ScrollBar {
+                        policy: ScrollBar.AsNeeded
+                        width: 3
+                        contentItem: Rectangle {
+                            radius: 2
+                            color: Qt.rgba(1, 1, 1, 0.2)
+                        }
+                        background: Item {}
+                    }
+
+                    delegate: Rectangle {
+                        required property var modelData
+                        required property int index
+                        width: ListView.view.width - 4
+                        height: 46
+                        color: index === launcher.selectedIndex
+                            ? launcher.cSel
+                            : "transparent"
+                        radius: 4
+
+                        Behavior on color { ColorAnimation { duration: 80 } }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
+                            spacing: 12
+
+                            Image {
+                                id: ico
+                                source: modelData.iconPath || ""
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
+                                fillMode: Image.PreserveAspectFit
+                                visible: status === Image.Ready
+                                asynchronous: true
+                                smooth: true
+                            }
+
+                            Text {
+                                text: ""
+                                font.pixelSize: 15
+                                font.family: "FiraCode Nerd Font"
+                                color: index === launcher.selectedIndex
+                                    ? launcher.cSelText
+                                    : launcher.cMuted
+                                visible: !ico.visible
+                                Layout.preferredWidth: 24
+                            }
+
+                            Text {
+                                text: modelData.name
+                                color: index === launcher.selectedIndex
+                                    ? launcher.cSelText
+                                    : launcher.cText
+                                font.pixelSize: 13
+                                font.family: "FiraCode Nerd Font"
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: launcher.selectedIndex = index
+                            onClicked: launcher.launchApp(modelData)
+                        }
+                    }
+                }
+            }
+        }
+
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Escape)
+                launcher.visible = false
+        }
+    }
+}
