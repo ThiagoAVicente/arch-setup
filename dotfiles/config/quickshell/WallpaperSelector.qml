@@ -17,8 +17,11 @@ Scope {
     function toggle() {
         visible = !visible
         if (visible) {
-            selectedIndex = 0
             if (wallpapers.length === 0) wallpaperListProcess.running = true
+            // Start on the currently applied wallpaper
+            const idx = wallpapers.findIndex(w => w.path === appliedPath)
+            selectedIndex = idx >= 0 ? idx : 0
+            jumpTimer.start()
             focusRetry.attempts = 0
             focusRetry.start()
         } else {
@@ -58,7 +61,7 @@ Scope {
         anchors { top: true; left: true; right: true; bottom: true }
         exclusiveZone: 0
         focusable: true
-        color: Qt.rgba(0, 0, 0, 0.6)
+        color: "transparent"
 
         TextInput {
             id: focusInput
@@ -91,24 +94,53 @@ Scope {
             }
         }
 
-        onVisibleChanged: {
-            if (visible) { focusRetry.attempts = 0; focusRetry.start() }
-            else focusRetry.stop()
+        Timer {
+            id: jumpTimer
+            interval: 30; repeat: false
+            onTriggered: thumbList.positionViewAtIndex(wallpaperSelector.selectedIndex, ListView.Center)
         }
 
-        MouseArea {
+        ParallelAnimation {
+            id: wsOpenAnim
+            OpacityAnimator  { target: wsBackdrop; from: 0;   to: 0.6; duration: 200; easing.type: Easing.OutCubic }
+            OpacityAnimator  { target: wsStrip;    from: 0;   to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+            NumberAnimation  { target: wsStrip; property: "anchors.leftMargin"; from: 0; to: 24; duration: 220; easing.type: Easing.OutCubic }
+        }
+
+        onVisibleChanged: {
+            if (visible) {
+                wsBackdrop.opacity = 0
+                wsStrip.opacity = 0
+                wsStrip.anchors.leftMargin = 0
+                wsOpenAnim.start()
+                focusRetry.attempts = 0
+                focusRetry.start()
+            } else {
+                focusRetry.stop()
+            }
+        }
+
+        Rectangle {
+            id: wsBackdrop
             anchors.fill: parent
-            onClicked: wallpaperSelector.visible = false
-            propagateComposedEvents: false
+            color: "black"
+            opacity: 0
+            MouseArea {
+                anchors.fill: parent
+                onClicked: wallpaperSelector.visible = false
+                propagateComposedEvents: false
+            }
         }
 
         // ── Drum-roller strip — no background, thumbnails float ────────────
         Item {
+            id: wsStrip
             anchors.left: parent.left
             anchors.leftMargin: 24
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: wallpaperSelector.thumbW
+            opacity: 0
 
             // Stop click-through
             MouseArea { anchors.fill: parent; onClicked: {} }

@@ -10,7 +10,6 @@ Scope {
     property bool visible: false
     property int selectedIndex: 0
 
-    // ── Palette ────────────────────────────────────────────────────────────
     readonly property color cBg:      "#0D0D0D"
     readonly property color cSurface: "#131313"
     readonly property color cBorder:  "#1C1C1C"
@@ -30,10 +29,10 @@ Scope {
 
     property var allApps: []
     property var filteredApps: []
+    property var _tempApps: []   // accumulator — avoids O(n²) array spreading
 
     Component.onCompleted: appListProcess.running = true
 
-    // ── App loader ─────────────────────────────────────────────────────────
     Process {
         id: appListProcess
         command: ["sh", "-c", `
@@ -41,8 +40,14 @@ Scope {
                 local n="$1"
                 [ -z "$n" ] && return
                 [ -f "$n" ] && echo "$n" && return
-                for d in /usr/share/icons/Papirus/48x48 /usr/share/icons/Papirus/32x32 \
-                          /usr/share/icons/hicolor/48x48 /usr/share/icons/hicolor/scalable \
+                for d in $HOME/.local/share/icons/hicolor/256x256 \
+                          $HOME/.local/share/icons/hicolor/128x128 \
+                          $HOME/.local/share/icons/hicolor/48x48 \
+                          $HOME/.local/share/icons/hicolor/32x32 \
+                          /usr/share/icons/Papirus/48x48 \
+                          /usr/share/icons/Papirus/32x32 \
+                          /usr/share/icons/hicolor/48x48 \
+                          /usr/share/icons/hicolor/scalable \
                           /usr/share/pixmaps; do
                     for ext in png svg; do
                         for sub in apps devices categories mimetypes actions; do
@@ -77,31 +82,19 @@ Scope {
                 const execRaw = p[3] || ""
                 const comment = p[4] || ""
                 if (!name) return
-                // Strip XDG field codes
                 const execCmd = execRaw.replace(/%[a-zA-Z]/g, "").trim()
-                launcher.allApps = [...launcher.allApps, {
+                // push — no QML binding triggered per item (single assign in onExited)
+                launcher._tempApps.push({
                     name, comment, dpath, execCmd,
                     iconPath: ipath ? "file://" + ipath : ""
-                }]
+                })
             }
         }
-        onExited: (code, status) => {
-            console.log("[launcher] loaded", launcher.allApps.length,
-                        "apps, exit:", code)
-            launcher.allApps = launcher.allApps.sort(
-                (a, b) => a.name.localeCompare(b.name))
+        onExited: (code) => {
+            console.log("[launcher] loaded", launcher._tempApps.length, "apps, exit:", code)
+            launcher._tempApps.sort((a, b) => a.name.localeCompare(b.name))
+            launcher.allApps = launcher._tempApps      // single QML assignment
             launcher.filteredApps = launcher.allApps.slice(0, 50)
-        }
-    }
-
-    // ── Launch process (reused, avoids QML string-interpolation hell) ──────
-    Process {
-        id: launchProc
-        onExited: (code, status) =>
-            console.log("[launcher] process exited code:", code,
-                        "status:", status)
-        stderr: SplitParser {
-            onRead: data => console.log("[launcher] stderr:", data)
         }
     }
 
@@ -119,33 +112,35 @@ Scope {
     }
 
     function launchApp(app) {
-        console.log("[launcher] ─── launch ───────────────────────────")
-        console.log("[launcher] name:    ", app.name)
-        console.log("[launcher] dpath:   ", app.dpath)
-        console.log("[launcher] execCmd: ", app.execCmd)
-        if (app.execCmd) {
-            launchProc.command = ["sh", "-c", app.execCmd]
-        } else {
-            // Absolute last resort
-            launchProc.command = ["gio", "launch", app.dpath]
-            console.log("[launcher] WARN: execCmd empty, falling back to gio launch")
-        }
-        launchProc.running = true
+        console.log("[launcher] launch:", app.name, "|", app.execCmd)
+        const cmd = app.execCmd ? ["sh", "-c", app.execCmd] : ["gio", "launch", app.dpath]
+        Qt.createQmlObject(
+            'import Quickshell.Io; Process { command: ' + JSON.stringify(cmd) +
+            '; running: true; onExited: (c) => { console.log("[launcher] exited:", c); destroy() } }',
+            launcher
+        )
         visible = false
     }
 
-    // ── Window ─────────────────────────────────────────────────────────────
     PanelWindow {
+        id: win
         visible: launcher.visible
         anchors { top: true; left: true; right: true; bottom: true }
         exclusiveZone: 0
         focusable: true
-        color: Qt.rgba(0, 0, 0, 0.6)
+        color: "transparent"
 
-        // Backdrop dismiss
-        MouseArea {
+        // Animated backdrop
+        Rectangle {
+            id: backdrop
             anchors.fill: parent
-            onClicked: launcher.visible = false
+            color: "black"
+            opacity: 0
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: launcher.visible = false
+            }
         }
 
         // ── Main card ────────────────────────────────────────────────────
@@ -158,6 +153,8 @@ Scope {
             border.color: launcher.cBorder
             border.width: 1
             radius: 6
+            opacity: 0
+            scale: 0.96
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
@@ -245,6 +242,7 @@ Scope {
                     spacing: 1
                     model: launcher.filteredApps
                     boundsBehavior: Flickable.StopAtBounds
+                    cacheBuffer: 300   // pre-render ~6 items outside viewport
 
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AsNeeded
@@ -261,12 +259,10 @@ Scope {
                         required property int index
                         width: ListView.view.width - 4
                         height: 46
-                        color: index === launcher.selectedIndex
-                            ? launcher.cSel
-                            : "transparent"
+                        color: index === launcher.selectedIndex ? launcher.cSel : "transparent"
                         radius: 4
 
-                        Behavior on color { ColorAnimation { duration: 80 } }
+                        Behavior on color { ColorAnimation { duration: 90 } }
 
                         RowLayout {
                             anchors.fill: parent
@@ -283,24 +279,23 @@ Scope {
                                 visible: status === Image.Ready
                                 asynchronous: true
                                 smooth: true
+                                // Fade in once loaded
+                                opacity: status === Image.Ready ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
                             }
 
                             Text {
                                 text: ""
                                 font.pixelSize: 15
                                 font.family: "FiraCode Nerd Font"
-                                color: index === launcher.selectedIndex
-                                    ? launcher.cSelText
-                                    : launcher.cMuted
+                                color: index === launcher.selectedIndex ? launcher.cSelText : launcher.cMuted
                                 visible: !ico.visible
                                 Layout.preferredWidth: 24
                             }
 
                             Text {
                                 text: modelData.name
-                                color: index === launcher.selectedIndex
-                                    ? launcher.cSelText
-                                    : launcher.cText
+                                color: index === launcher.selectedIndex ? launcher.cSelText : launcher.cText
                                 font.pixelSize: 13
                                 font.family: "FiraCode Nerd Font"
                                 Layout.fillWidth: true
@@ -320,9 +315,25 @@ Scope {
             }
         }
 
+        // ── Enter animations (render-thread Animators) ────────────────────
+        ParallelAnimation {
+            id: openAnim
+            OpacityAnimator  { target: backdrop; from: 0;    to: 0.6;  duration: 200; easing.type: Easing.OutCubic }
+            OpacityAnimator  { target: card;     from: 0;    to: 1.0;  duration: 160; easing.type: Easing.OutCubic }
+            ScaleAnimator    { target: card;     from: 0.96; to: 1.0;  duration: 220; easing.type: Easing.OutCubic }
+        }
+
+        onVisibleChanged: {
+            if (visible) {
+                backdrop.opacity = 0
+                card.opacity     = 0
+                card.scale       = 0.96
+                openAnim.start()
+            }
+        }
+
         Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape)
-                launcher.visible = false
+            if (event.key === Qt.Key_Escape) launcher.visible = false
         }
     }
 }

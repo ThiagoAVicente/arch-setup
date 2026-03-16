@@ -46,7 +46,7 @@ Scope {
         visible: powermenu.visible
         anchors { top: true; bottom: true; left: true; right: true }
         exclusiveZone: 0
-        color: Qt.rgba(0, 0, 0, 0.65)
+        color: "transparent"
         focusable: true
 
         TextInput {
@@ -81,19 +81,41 @@ Scope {
             }
         }
 
-        onVisibleChanged: {
-            if (visible) { focusRetry.attempts = 0; focusRetry.start() }
-            else focusRetry.stop()
+        ParallelAnimation {
+            id: pmOpenAnim
+            OpacityAnimator { target: pmBackdrop; from: 0;    to: 0.65; duration: 200; easing.type: Easing.OutCubic }
+            OpacityAnimator { target: pmCard;     from: 0;    to: 1.0;  duration: 160; easing.type: Easing.OutCubic }
+            ScaleAnimator   { target: pmCard;     from: 0.94; to: 1.0;  duration: 220; easing.type: Easing.OutCubic }
         }
 
-        MouseArea {
+        onVisibleChanged: {
+            if (visible) {
+                pmBackdrop.opacity = 0
+                pmCard.opacity = 0
+                pmCard.scale = 0.94
+                pmOpenAnim.start()
+                focusRetry.attempts = 0
+                focusRetry.start()
+            } else {
+                focusRetry.stop()
+            }
+        }
+
+        Rectangle {
+            id: pmBackdrop
             anchors.fill: parent
-            onClicked: powermenu.visible = false
-            propagateComposedEvents: false
+            color: "black"
+            opacity: 0
+            MouseArea {
+                anchors.fill: parent
+                onClicked: powermenu.visible = false
+                propagateComposedEvents: false
+            }
         }
 
         // ── Card ───────────────────────────────────────────────────────────
         Rectangle {
+            id: pmCard
             anchors.centerIn: parent
             width: 220
             height: optionCol.implicitHeight + 32
@@ -101,6 +123,8 @@ Scope {
             border.color: powermenu.cBorder
             border.width: 1
             radius: 6
+            opacity: 0
+            scale: 0.94
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
