@@ -12,11 +12,9 @@ Scope {
 
     readonly property color cBg:      "#0D0D0D"
     readonly property color cSurface: "#131313"
-    readonly property color cBorder:  "#1C1C1C"
+    readonly property color cBorder:  Qt.rgba(1, 1, 1, 0.07)
     readonly property color cText:    "#E0E0E0"
     readonly property color cMuted:   "#484848"
-    readonly property color cSel:     "#FFFFFF"
-    readonly property color cSelText: "#0D0D0D"
 
     function toggle() {
         visible = !visible
@@ -29,7 +27,7 @@ Scope {
 
     property var allApps: []
     property var filteredApps: []
-    property var _tempApps: []   // accumulator — avoids O(n²) array spreading
+    property var _tempApps: []
 
     Component.onCompleted: appListProcess.running = true
 
@@ -83,7 +81,6 @@ Scope {
                 const comment = p[4] || ""
                 if (!name) return
                 const execCmd = execRaw.replace(/%[a-zA-Z]/g, "").trim()
-                // push — no QML binding triggered per item (single assign in onExited)
                 launcher._tempApps.push({
                     name, comment, dpath, execCmd,
                     iconPath: ipath ? "file://" + ipath : ""
@@ -93,7 +90,7 @@ Scope {
         onExited: (code) => {
             console.log("[launcher] loaded", launcher._tempApps.length, "apps, exit:", code)
             launcher._tempApps.sort((a, b) => a.name.localeCompare(b.name))
-            launcher.allApps = launcher._tempApps      // single QML assignment
+            launcher.allApps = launcher._tempApps
             launcher.filteredApps = launcher.allApps.slice(0, 50)
         }
     }
@@ -130,7 +127,6 @@ Scope {
         focusable: true
         color: "transparent"
 
-        // Animated backdrop
         Rectangle {
             id: backdrop
             anchors.fill: parent
@@ -152,11 +148,24 @@ Scope {
             color: launcher.cBg
             border.color: launcher.cBorder
             border.width: 1
-            radius: 6
+            radius: 10
             opacity: 0
-            scale: 0.96
+            scale: 0.94
 
             MouseArea { anchors.fill: parent; onClicked: {} }
+
+            // Inner top highlight — glass ridge
+            Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: 1
+                anchors.leftMargin: 1
+                anchors.rightMargin: 1
+                height: 1
+                radius: 9
+                color: Qt.rgba(1, 1, 1, 0.06)
+            }
 
             ColumnLayout {
                 anchors.fill: parent
@@ -171,7 +180,7 @@ Scope {
                     color: launcher.cSurface
                     border.color: launcher.cBorder
                     border.width: 1
-                    radius: 4
+                    radius: 6
 
                     RowLayout {
                         anchors.fill: parent
@@ -180,7 +189,7 @@ Scope {
                         spacing: 10
 
                         Text {
-                            text: "/"
+                            text: "\u{f002}"
                             color: launcher.cMuted
                             font.pixelSize: 14
                             font.family: "FiraCode Nerd Font"
@@ -223,111 +232,243 @@ Scope {
                             Text {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
-                                text: "search..."
+                                text: "Search applications"
                                 color: launcher.cMuted
                                 font.pixelSize: 14
                                 font.family: "FiraCode Nerd Font"
+                                font.letterSpacing: 0.5
                                 visible: !searchField.text
                             }
+                        }
+
+                        // Result count badge
+                        Text {
+                            text: launcher.filteredApps.length
+                            color: launcher.cMuted
+                            font.pixelSize: 10
+                            font.family: "FiraCode Nerd Font"
+                            opacity: searchField.text ? 1.0 : 0.0
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
                         }
                     }
                 }
 
-                // ── App list ─────────────────────────────────────────────
-                ListView {
-                    id: appList
+                // ── App list container ─────────────────────────────────
+                Item {
                     Layout.fillWidth: true
-                    height: 408
-                    clip: true
-                    spacing: 1
-                    model: launcher.filteredApps
-                    boundsBehavior: Flickable.StopAtBounds
-                    cacheBuffer: 300   // pre-render ~6 items outside viewport
+                    Layout.fillHeight: true
 
-                    ScrollBar.vertical: ScrollBar {
-                        policy: ScrollBar.AsNeeded
-                        width: 3
-                        contentItem: Rectangle {
-                            radius: 2
-                            color: Qt.rgba(1, 1, 1, 0.2)
+                    // Empty state
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        visible: launcher.filteredApps.length === 0 && searchField.text
+                        opacity: 0.5
+
+                        Text {
+                            text: "\u{f0349}"
+                            font.pixelSize: 28
+                            font.family: "FiraCode Nerd Font"
+                            color: launcher.cMuted
+                            anchors.horizontalCenter: parent.horizontalCenter
                         }
-                        background: Item {}
+                        Text {
+                            text: "no matches"
+                            font.pixelSize: 12
+                            font.family: "FiraCode Nerd Font"
+                            color: launcher.cMuted
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
                     }
 
-                    delegate: Rectangle {
-                        required property var modelData
-                        required property int index
-                        width: ListView.view.width - 4
-                        height: 46
-                        color: index === launcher.selectedIndex ? launcher.cSel : "transparent"
-                        radius: 4
+                    ListView {
+                        id: appList
+                        anchors.fill: parent
+                        clip: true
+                        spacing: 1
+                        model: launcher.filteredApps
+                        boundsBehavior: Flickable.StopAtBounds
+                        cacheBuffer: 300
 
-                        Behavior on color { ColorAnimation { duration: 90 } }
-
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                            spacing: 12
-
-                            Image {
-                                id: ico
-                                source: modelData.iconPath || ""
-                                Layout.preferredWidth: 24
-                                Layout.preferredHeight: 24
-                                fillMode: Image.PreserveAspectFit
-                                visible: status === Image.Ready
-                                asynchronous: true
-                                smooth: true
-                                // Fade in once loaded
-                                opacity: status === Image.Ready ? 1.0 : 0.0
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                        ScrollBar.vertical: ScrollBar {
+                            policy: ScrollBar.AsNeeded
+                            width: 2
+                            opacity: appList.moving ? 1.0 : 0.0
+                            Behavior on opacity { NumberAnimation { duration: 300 } }
+                            contentItem: Rectangle {
+                                radius: 1
+                                color: Qt.rgba(1, 1, 1, 0.2)
                             }
-
-                            Text {
-                                text: ""
-                                font.pixelSize: 15
-                                font.family: "FiraCode Nerd Font"
-                                color: index === launcher.selectedIndex ? launcher.cSelText : launcher.cMuted
-                                visible: !ico.visible
-                                Layout.preferredWidth: 24
-                            }
-
-                            Text {
-                                text: modelData.name
-                                color: index === launcher.selectedIndex ? launcher.cSelText : launcher.cText
-                                font.pixelSize: 13
-                                font.family: "FiraCode Nerd Font"
-                                Layout.fillWidth: true
-                                elide: Text.ElideRight
-                            }
+                            background: Item {}
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onEntered: launcher.selectedIndex = index
-                            onClicked: launcher.launchApp(modelData)
+                        delegate: Rectangle {
+                            id: delegateRoot
+                            required property var modelData
+                            required property int index
+                            width: ListView.view.width - 4
+                            height: 52
+                            color: index === launcher.selectedIndex ? Qt.rgba(1, 1, 1, 0.10) : "transparent"
+                            radius: 4
+                            scale: index === launcher.selectedIndex ? 1.0 : 0.98
+                            opacity: 0
+
+                            Behavior on color { ColorAnimation { duration: 90 } }
+                            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
+
+                            // Staggered entrance animation
+                            Timer {
+                                id: entranceTimer
+                                interval: Math.min(index, 10) * 20
+                                running: launcher.visible
+                                onTriggered: entranceAnim.start()
+                            }
+                            NumberAnimation {
+                                id: entranceAnim
+                                target: delegateRoot
+                                property: "opacity"
+                                from: 0; to: 1.0
+                                duration: 150
+                                easing.type: Easing.OutCubic
+                            }
+                            // Reset opacity when launcher closes
+                            Connections {
+                                target: launcher
+                                function onVisibleChanged() {
+                                    if (!launcher.visible) delegateRoot.opacity = 0
+                                }
+                            }
+
+                            // Left accent bar
+                            Rectangle {
+                                id: accentBar
+                                anchors.left: parent.left
+                                anchors.leftMargin: 2
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 2
+                                height: 18
+                                radius: 1
+                                color: "#E0E0E0"
+                                opacity: index === launcher.selectedIndex ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: 100 } }
+                            }
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 10
+                                spacing: 12
+
+                                // Icon container
+                                Rectangle {
+                                    Layout.preferredWidth: 32
+                                    Layout.preferredHeight: 32
+                                    radius: 6
+                                    color: Qt.rgba(1, 1, 1, 0.04)
+
+                                    Image {
+                                        id: ico
+                                        source: modelData.iconPath || ""
+                                        anchors.centerIn: parent
+                                        width: 22
+                                        height: 22
+                                        fillMode: Image.PreserveAspectFit
+                                        visible: status === Image.Ready
+                                        asynchronous: true
+                                        smooth: true
+                                        opacity: status === Image.Ready ? 1.0 : 0.0
+                                        Behavior on opacity { NumberAnimation { duration: 150 } }
+                                    }
+
+                                    Text {
+                                        text: "\u{f259}"
+                                        font.pixelSize: 15
+                                        font.family: "FiraCode Nerd Font"
+                                        color: launcher.cMuted
+                                        anchors.centerIn: parent
+                                        visible: !ico.visible
+                                    }
+                                }
+
+                                // Name + description column
+                                Column {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+
+                                    Text {
+                                        text: modelData.name
+                                        color: index === launcher.selectedIndex ? "#FFFFFF" : launcher.cText
+                                        font.pixelSize: 13
+                                        font.family: "FiraCode Nerd Font"
+                                        font.weight: Font.Medium
+                                        font.letterSpacing: 0.3
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                    }
+
+                                    Text {
+                                        text: modelData.comment || ""
+                                        color: launcher.cMuted
+                                        font.pixelSize: 10
+                                        font.family: "FiraCode Nerd Font"
+                                        opacity: 0.7
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                        visible: text !== ""
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: launcher.selectedIndex = index
+                                onClicked: launcher.launchApp(modelData)
+                            }
+                        }
+                    }
+
+                    // Fade edge — top
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 32
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: launcher.cBg }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                    }
+
+                    // Fade edge — bottom
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 32
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 1.0; color: launcher.cBg }
                         }
                     }
                 }
             }
         }
 
-        // ── Enter animations (render-thread Animators) ────────────────────
+        // ── Enter animations ────────────────────────────────────────────
         ParallelAnimation {
             id: openAnim
             OpacityAnimator  { target: backdrop; from: 0;    to: 0.6;  duration: 200; easing.type: Easing.OutCubic }
-            OpacityAnimator  { target: card;     from: 0;    to: 1.0;  duration: 160; easing.type: Easing.OutCubic }
-            ScaleAnimator    { target: card;     from: 0.96; to: 1.0;  duration: 220; easing.type: Easing.OutCubic }
+            OpacityAnimator  { target: card;     from: 0;    to: 1.0;  duration: 200; easing.type: Easing.OutCubic }
+            ScaleAnimator    { target: card;     from: 0.94; to: 1.0;  duration: 280; easing.type: Easing.OutBack; easing.overshoot: 0.4 }
         }
 
         onVisibleChanged: {
             if (visible) {
                 backdrop.opacity = 0
                 card.opacity     = 0
-                card.scale       = 0.96
+                card.scale       = 0.94
                 openAnim.start()
             }
         }
