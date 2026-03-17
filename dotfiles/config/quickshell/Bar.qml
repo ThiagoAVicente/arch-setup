@@ -6,6 +6,8 @@ import QtQuick.Layouts
 import "bar/widgets"
 
 Scope {
+    Calendar { id: cal }
+
     Variants {
         model: Quickshell.screens
 
@@ -29,11 +31,19 @@ Scope {
                 border.color: Qt.rgba(1, 1, 1, 0.08)
                 border.width: 1
 
-                // Left - Clock
+                // Left - Clock + calendar icon
                 Item {
                     anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 16 }
-                    width: 80
-                    ClockWidget { anchors.verticalCenter: parent.verticalCenter }
+                    width: 130
+
+                    ClockCalendarWidget {
+                        anchors.verticalCenter: parent.verticalCenter
+                        calendarOpen: cal.visible
+                        onCalHoverChanged: (hovered) => {
+                            cal.iconHovered = hovered
+                            if (hovered) cal.open()
+                        }
+                    }
                 }
 
                 // Center - Workspaces

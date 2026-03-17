@@ -6,3 +6,4 @@ OSD 1.0 OSD.qml
 Launcher 1.0 Launcher.qml
 WallpaperSelector 1.0 WallpaperSelector.qml
 PowerMenu 1.0 PowerMenu.qml
+Calendar 1.0 Calendar.qml
