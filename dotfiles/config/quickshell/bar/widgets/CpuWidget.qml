@@ -11,7 +11,7 @@ Text {
 
     Process {
         id: cpuProc
-        command: ["foot", "--app-id", "R.float", "--", "btm"]
+        command: ["foot", "--app-id", "R.float", "--", "btop"]
     }
 
     MouseArea {

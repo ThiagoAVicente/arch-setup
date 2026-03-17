@@ -36,6 +36,7 @@ tar
 curl
 flatpak
 ly
+btop
 networkmanager-openvpn
 proton-vpn-gtk-app
 acpi

@@ -51,11 +51,6 @@ Row {
                 Behavior on color { ColorAnimation { duration: 180 } }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: Hyprland.dispatch("workspace " + wsId)
-            }
         }
     }
 }
