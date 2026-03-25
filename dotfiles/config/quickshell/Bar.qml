@@ -27,9 +27,12 @@ Scope {
                     topMargin: 4
                 }
                 radius: 12
-                color: Qt.rgba(0.07, 0.07, 0.09, 0.88)
+                color: "#1E1E2C"
                 border.color: Qt.rgba(1, 1, 1, 0.08)
                 border.width: 1
+
+
+
 
                 // Left - Clock + calendar icon
                 Item {

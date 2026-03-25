@@ -23,6 +23,11 @@ jdk() {
 
 }
 
+copy() {
+
+  cat $1 | wl-copy
+}
+
 __install_jdk() {
   # Function to install a ajva version
   pacman -Ss "jdk$1-openjdk" >/dev/null
@@ -63,7 +68,6 @@ __verify_package() {
   return $res
 }
 
- 
 new-java() {
   if [[ $# -ne 2 ]]; then
     echo "Usage: new-java <group_id> <project_name>"

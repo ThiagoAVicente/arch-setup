@@ -1,0 +1,12 @@
+@theme "/home/vcnt/installation/dotfiles/config/rofi/style.rasi"
+
+configuration {
+    modi:                "drun";
+    show-icons:          true;
+    icon-theme:          "Papirus";
+    drun-display-format: "{name}";
+    display-drun:        "";
+    terminal:            "foot";
+    font:                "FiraCode Nerd Font 13";
+    kb-cancel:           "Escape";
+}

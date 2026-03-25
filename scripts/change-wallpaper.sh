@@ -6,13 +6,13 @@ echo "Selected wallpaper: $WALLPAPER"
 # Apply the wallpaper if selection is valid
 if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
   # Check if swww daemon is running, start it if not
-  if ! pgrep -x swww-daemon >/dev/null; then
-    swww-daemon &
+  if ! pgrep -x awww-daemon >/dev/null; then
+    awww-daemon &disown
     sleep 1
   fi
 
   # Set wallpaper with swww
-  swww img "$WALLPAPER" --transition-type grow --transition-duration 0.5
+  awww img "$WALLPAPER" --transition-type grow --transition-duration 0.5
   # Generate color scheme with pywal
   wal -i "$WALLPAPER"
 

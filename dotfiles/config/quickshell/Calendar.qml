@@ -50,6 +50,19 @@ Scope {
         onTriggered: cal.visible = false
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            calCard.height  = 0
+            calCard.opacity = 0
+            closeAnim.stop()
+            openAnim.start()
+        } else {
+            calCard.height = calCard.height   // break binding
+            openAnim.stop()
+            closeAnim.start()
+        }
+    }
+
     function prevMonth() {
         if (displayMonth === 0) { displayMonth = 11; displayYear-- }
         else displayMonth--
@@ -84,13 +97,12 @@ Scope {
     onDisplayYearChanged:  cells = buildCells()
     Component.onCompleted: cells = buildCells()
 
-    // ── Floating card window (no backdrop — hover-driven open/close) ────────
     PanelWindow {
         id: calWin
-        visible: cal.visible
+        visible: cal.visible || closeAnim.running
         anchors { top: true; left: true }
         implicitWidth: 248
-        implicitHeight: 290
+        implicitHeight: 300
         exclusiveZone: 0
         focusable: false
         color: "transparent"
@@ -99,16 +111,28 @@ Scope {
         Rectangle {
             id: calCard
             x: 16
-            y: 0            // PanelWindow origin is already at bar bottom (after bar's exclusiveZone)
+            y: 4
             width: 216
-            height: calCol.implicitHeight + 24
+            height: 0
+            clip: true
+            opacity: 0
             color: cal.cBg
             border.color: cal.cBorder
             border.width: 1
-            radius: 6
-            opacity: 0
-            scale: 0.88
-            transformOrigin: Item.Top
+            radius: 8
+
+            // Glass ridge
+            Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: 1
+                anchors.leftMargin: 1
+                anchors.rightMargin: 1
+                height: 1
+                radius: 7
+                color: Qt.rgba(1, 1, 1, 0.06)
+            }
 
             HoverHandler {
                 onHoveredChanged: cal.cardHovered = hovered
@@ -124,11 +148,12 @@ Scope {
                 // ── Month header ─────────────────────────────────────────
                 RowLayout {
                     Layout.fillWidth: true
+                    Layout.topMargin: 2
 
                     Text {
-                        text: "<"
+                        text: "\u{f053}"
                         color: cal.cMuted
-                        font.pixelSize: 12
+                        font.pixelSize: 10
                         font.family: "FiraCode Nerd Font"
                         MouseArea {
                             anchors.fill: parent
@@ -144,12 +169,14 @@ Scope {
                         color: cal.cText
                         font.pixelSize: 12
                         font.family: "FiraCode Nerd Font"
+                        font.weight: Font.Medium
+                        font.letterSpacing: 0.3
                     }
 
                     Text {
-                        text: ">"
+                        text: "\u{f054}"
                         color: cal.cMuted
-                        font.pixelSize: 12
+                        font.pixelSize: 10
                         font.family: "FiraCode Nerd Font"
                         MouseArea {
                             anchors.fill: parent
@@ -172,8 +199,16 @@ Scope {
                             color: cal.cMuted
                             font.pixelSize: 10
                             font.family: "FiraCode Nerd Font"
+                            font.letterSpacing: 0.5
                         }
                     }
+                }
+
+                // ── Separator ────────────────────────────────────────────
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: Qt.rgba(1, 1, 1, 0.05)
                 }
 
                 // ── Day grid ─────────────────────────────────────────────
@@ -197,9 +232,9 @@ Scope {
                                 cal.displayYear  === cal._today.getFullYear()
 
                             width: (216 - 24) / 7
-                            height: 24
-                            radius: 3
-                            color: isToday ? cal.cText : "transparent"
+                            height: 26
+                            radius: 4
+                            color: isToday ? Qt.rgba(1, 1, 1, 0.9) : "transparent"
 
                             Text {
                                 anchors.centerIn: parent
@@ -209,36 +244,55 @@ Scope {
                                 color: isToday
                                     ? cal.cBg
                                     : modelData.cur ? cal.cText : cal.cMuted
-                                opacity: modelData.cur ? 1.0 : 0.35
+                                opacity: modelData.cur ? 1.0 : 0.3
                             }
                         }
                     }
                 }
+
+                // Bottom spacer
+                Item { height: 2 }
             }
         }
 
-        ParallelAnimation {
+        // ── Open: height expands with spring overshoot ────────────────────
+        SequentialAnimation {
             id: openAnim
-            OpacityAnimator {
-                target: calCard; from: 0; to: 1.0
-                duration: 100; easing.type: Easing.OutCubic
+
+            ParallelAnimation {
+                NumberAnimation {
+                    target: calCard; property: "height"
+                    to: calCol.implicitHeight + 24
+                    duration: 500
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: [0.38, 1.21, 0.22, 1.0, 1.0, 1.0]
+                }
+                NumberAnimation {
+                    target: calCard; property: "opacity"
+                    to: 1.0; duration: 120; easing.type: Easing.OutCubic
+                }
             }
-            ScaleAnimator {
-                target: calCard; from: 0.88; to: 1.0
-                duration: 340; easing.type: Easing.OutBack; easing.overshoot: 0.7
-            }
-            NumberAnimation {
-                target: calCard; property: "y"; from: -8; to: 0
-                duration: 340; easing.type: Easing.OutBack; easing.overshoot: 0.7
+            ScriptAction {
+                script: calCard.height = Qt.binding(() => calCol.implicitHeight + 24)
             }
         }
 
-        onVisibleChanged: {
-            if (visible) {
-                calCard.opacity = 0
-                calCard.scale   = 0.88
-                calCard.y       = -8
-                openAnim.start()
+        // ── Close: fast start, ease into stop ────────────────────────────
+        SequentialAnimation {
+            id: closeAnim
+
+            ParallelAnimation {
+                NumberAnimation {
+                    target: calCard; property: "height"
+                    to: 0
+                    duration: 350
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: [0.05, 0, 0.133, 0.06, 0.167, 0.4, 0.208, 0.82, 0.25, 1.0, 1.0, 1.0]
+                }
+                NumberAnimation {
+                    target: calCard; property: "opacity"
+                    to: 0.0; duration: 200; easing.type: Easing.InCubic
+                }
             }
         }
     }

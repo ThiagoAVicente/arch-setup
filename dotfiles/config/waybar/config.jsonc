@@ -1,0 +1,61 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 40,
+    "margin-top": 4,
+    "margin-left": 8,
+    "margin-right": 8,
+
+    "modules-left": ["clock"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right": ["tray", "custom/cpu", "battery", "pulseaudio", "custom/notifications"],
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip": false
+    },
+
+    "hyprland/workspaces": {
+        "format": "",
+        "persistent-workspaces": { "*": 8 },
+        "disable-scroll": true,
+        "on-click": "",
+        "on-click-middle": "",
+        "on-click-right": ""
+    },
+
+    "tray": {
+        "spacing": 6,
+        "icon-size": 14
+    },
+
+    "custom/cpu": {
+        "format": "󰍛",
+        "on-click": "foot --app-id R.float -- btop",
+        "tooltip": false
+    },
+
+    "battery": {
+        "interval": 30,
+        "format": "{icon}  {capacity}%",
+        "format-charging": "󰂄  {capacity}%",
+        "format-icons": ["󰁺","󰁻","󰁼","󰁽","󰁾","󰁿","󰂀","󰂁","󰂂","󰁹"],
+        "states": { "critical": 20 },
+        "tooltip": false
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "󰝟  {volume}%",
+        "format-icons": { "default": ["󰕿","󰖀","󰕾"] },
+        "on-click": "pavucontrol",
+        "tooltip": false
+    },
+
+    "custom/notifications": {
+        "exec": "makoctl mode | grep -q do-not-disturb && echo '󰂛' || echo '󰂚'",
+        "interval": 2,
+        "on-click": "makoctl mode | grep -q do-not-disturb && makoctl mode -r do-not-disturb || makoctl mode -a do-not-disturb",
+        "tooltip": false
+    }
+}
