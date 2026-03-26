@@ -17,7 +17,8 @@ Scope {
     function toggle() {
         visible = !visible
         if (visible) {
-            if (wallpapers.length === 0) wallpaperListProcess.running = true
+            wallpapers = []
+            wallpaperListProcess.running = true
             // Start on the currently applied wallpaper
             const idx = wallpapers.findIndex(w => w.path === appliedPath)
             selectedIndex = idx >= 0 ? idx : 0

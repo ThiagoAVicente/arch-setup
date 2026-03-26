@@ -11,6 +11,20 @@ Scope {
     id: launcher
     property bool visible: false
     property int selectedIndex: 0
+    property bool launchOnLeft: true
+    readonly property int cardWidth: 380
+    readonly property int cardHeight: 520
+
+    Process {
+        id: cursorCheck
+        command: ["hyprctl", "cursorpos"]
+        stdout: SplitParser {
+            onRead: data => {
+                const x = parseInt(data.trim().split(",")[0])
+                launcher.launchOnLeft = x <= win.width / 2
+            }
+        }
+    }
 
     readonly property color cBg:      "#1E1E2C"
     readonly property color cHeader:  "#0D0D18"
@@ -21,6 +35,7 @@ Scope {
     readonly property color cMutedBr: "#505065"
 
     function toggle() {
+        if (!visible) cursorCheck.running = true
         visible = !visible
         if (visible) {
             searchField.text = ""
@@ -40,12 +55,11 @@ Scope {
             // open
             backdrop.opacity = 0
             card.opacity     = 0
-            card.height      = 0
+            card.width       = 0
             closeAnim.stop()
             openAnim.start()
         } else {
-            // close: animate out, then let window hide naturally
-            card.height  = card.height
+            card.width   = card.width
             card.opacity = card.opacity
             openAnim.stop()
             closeAnim.start()
@@ -186,17 +200,30 @@ Scope {
         // ── Card ─────────────────────────────────────────────────────────
         Rectangle {
             id: card
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 0
-            width: 560
-            height: 0
+            anchors.verticalCenter: parent.verticalCenter
+            width: 0
+            height: launcher.cardHeight
             color: launcher.cBg
             border.color: launcher.cBorder
             border.width: 1
             radius: 16
             opacity: 0
             clip: true
+
+            states: [
+                State {
+                    name: "left"
+                    when: launcher.launchOnLeft
+                    AnchorChanges { target: card; anchors.left: card.parent.left; anchors.right: undefined }
+                    PropertyChanges { target: card; anchors.leftMargin: 0; topLeftRadius: 0; bottomLeftRadius: 0 }
+                },
+                State {
+                    name: "right"
+                    when: !launcher.launchOnLeft
+                    AnchorChanges { target: card; anchors.right: card.parent.right; anchors.left: undefined }
+                    PropertyChanges { target: card; anchors.rightMargin: 0; topRightRadius: 0; bottomRightRadius: 0 }
+                }
+            ]
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
@@ -501,8 +528,8 @@ Scope {
             OpacityAnimator { target: backdrop; from: 0; to: 0.12; duration: 200; easing.type: Easing.OutCubic }
             OpacityAnimator { target: card; from: 0; to: 1.0; duration: 80; easing.type: Easing.OutCubic }
             NumberAnimation {
-                target: card; property: "height"
-                from: 0; to: 380; duration: 250
+                target: card; property: "width"
+                from: 0; to: launcher.cardWidth; duration: 250
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: [0.38, 1.21, 0.22, 1.0, 1.0, 1.0]
             }
@@ -514,8 +541,8 @@ Scope {
             OpacityAnimator { target: backdrop; to: 0; duration: 220; easing.type: Easing.OutCubic }
             OpacityAnimator { target: card; to: 0; duration: 200; easing.type: Easing.InCubic }
             NumberAnimation {
-                target: card; property: "height"
-                to: 0; duration: 100
+                target: card; property: "width"
+                to: 0; duration: 150
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: [0.05, 0, 0.133, 0.06, 0.167, 0.4, 0.208, 0.82, 0.25, 1.0, 1.0, 1.0]
             }
