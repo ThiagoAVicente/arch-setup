@@ -141,8 +141,6 @@ The setup script automatically handles:
 - **Display Manager**: ly (TTY-based)
 - **Shell**: Zsh with Starship prompt
 - **Terminal**: foot
-
->>>>>>> af498d84fadc01294ebc6c76ea99bddaa5cae1df
 - **Editor**: Neovim ([Lazyvim config](https://www.lazyvim.org/))
 
 ### Desktop Environment
