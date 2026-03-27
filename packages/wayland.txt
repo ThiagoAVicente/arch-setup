@@ -9,7 +9,6 @@ qt5-wayland
 hyprpwcenter
 hypridle
 hyprpicker
-imv
 gammastep
 hyprlock
 quickshell

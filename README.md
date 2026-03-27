@@ -140,7 +140,7 @@ The setup script automatically handles:
 - **Compositor**: Hyprland
 - **Display Manager**: ly (TTY-based)
 - **Shell**: Zsh with Starship prompt
-- **Terminal**: Foot
+- **Terminal**: foot
 - **Editor**: Neovim ([Lazyvim config](https://www.lazyvim.org/))
 
 ### Desktop Environment

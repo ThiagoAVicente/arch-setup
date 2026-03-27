@@ -269,13 +269,13 @@ Scope {
                                 launcher.launchApp(launcher.filteredApps[launcher.selectedIndex])
                         }
                         Keys.onDownPressed: {
-                            if (launcher.selectedIndex < launcher.filteredApps.length - 1)
-                                launcher.selectedIndex++
+                            if (launcher.selectedIndex > 0)
+                                launcher.selectedIndex--
                             appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
                         }
                         Keys.onUpPressed: {
-                            if (launcher.selectedIndex > 0)
-                                launcher.selectedIndex--
+                            if (launcher.selectedIndex < launcher.filteredApps.length - 1)
+                                launcher.selectedIndex++
                             appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
                         }
                         Keys.onTabPressed: {
