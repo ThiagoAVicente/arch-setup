@@ -6,7 +6,7 @@
 
 | Keybind | Action |
 |---------|--------|
-| `SUPER + Return` | Terminal (foot) |
+| `SUPER + Return` | Terminal (kitty) |
 | `SUPER + D` | App launcher (rofi) |
 | `SUPER + E` | File manager (thunar) |
 | `SUPER + Q` | Close window |

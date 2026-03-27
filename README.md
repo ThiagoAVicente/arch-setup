@@ -43,7 +43,7 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 │   │   ├── hypr/           # Hyprland configuration
 │   │   ├── waybar/         # Status bar configuration
 │   │   ├── rofi/           # Application launcher
-│   │   ├── foot/           # Terminal emulator
+│   │   ├── kitty/           # Terminal emulator
 │   │   ├── nvim/           # Neovim configuration
 │   │   ├── swaync/         # Notification daemon
 │   │   ├── cava/           # Audio visualizer
@@ -140,7 +140,7 @@ The setup script automatically handles:
 - **Compositor**: Hyprland
 - **Display Manager**: ly (TTY-based)
 - **Shell**: Zsh with Starship prompt
-- **Terminal**: Foot
+- **Terminal**: kitty
 - **Editor**: Neovim ([Lazyvim config](https://www.lazyvim.org/))
 
 ### Desktop Environment
