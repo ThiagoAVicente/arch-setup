@@ -142,8 +142,8 @@ Scope {
     function launchApp(app) {
         if (app.execCmd) {
             const clean = app.execCmd.replace(/%[a-zA-Z]/g, "").trim()
-            // Redirect stderr to prevent EPIPE dialog, but keep stdout
-            const cmd = ["sh", "-c", clean + " 2>&1 | grep -v EPIPE &"]
+            // Launch with stderr and stdout separate to avoid EPIPE on broken pipes
+            const cmd = ["sh", "-c", clean + " >/dev/null 2>&1 &"]
 
             Qt.createQmlObject(
                 'import Quickshell.Io; Process { ' +

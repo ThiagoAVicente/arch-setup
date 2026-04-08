@@ -13,9 +13,14 @@ Scope {
 
     // Which popout is currently open: "", "network", "bluetooth"
     property string openPopout: ""
+    property bool barVisible: true
 
     function togglePopout(name) {
         openPopout = (openPopout === name) ? "" : name
+    }
+
+    function toggleBar() {
+        barVisible = !barVisible
     }
 
     Calendar { id: cal }
@@ -28,6 +33,7 @@ Scope {
             id: barWindow
             required property var modelData
             screen: modelData
+            visible: barScope.barVisible
 
             anchors { top: true; left: true; right: true }
             implicitHeight: 44

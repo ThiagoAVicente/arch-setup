@@ -9,7 +9,7 @@ ShellRoot {
 
 
 
-    Bar {}
+    Bar { id: bar }
     NotificationManager {}
     OSD {}
     Launcher { id: launcher }
@@ -28,6 +28,7 @@ ShellRoot {
                 if (cmd === "launcher") launcher.toggle()
                 else if (cmd === "wallpaper") wallpaperSelector.toggle()
                 else if (cmd === "powermenu") powerMenu.toggle()
+                else if (cmd === "bar") bar.toggleBar()
             }
         }
     }
