@@ -1,51 +1,91 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 
 RowLayout {
-    spacing: 6
+    id: root
+    spacing: 4
 
     Repeater {
         model: SystemTray.items
+        delegate: TrayItemDelegate {}
+    }
 
-        Item {
-            id: trayItem
-            required property var modelData
-            Layout.preferredWidth: 18
-            Layout.preferredHeight: 18
-            visible: (modelData.icon ?? "").length > 0 && !(modelData.icon ?? "").includes("?")
+    component TrayItemDelegate: Item {
+        id: trayItem
+        property SystemTrayItem modelData
 
-            Image {
-                anchors.fill: parent
-                source: {
-                    let icon = modelData.icon ?? ""
-                    if (!icon || icon.includes("?")) return ""
-                    return icon
+        implicitWidth: 22
+        implicitHeight: 22
+
+        // Background on hover
+        Rectangle {
+            anchors.fill: parent
+            radius: 6
+            color: tMa.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+
+        // Icon
+        IconImage {
+            anchors.centerIn: parent
+            width: 16
+            height: 16
+            source: {
+                const icon = trayItem.modelData?.icon ?? ""
+                if (!icon) return ""
+                if (icon.includes("?path=")) {
+                    const [name, path] = icon.split("?path=")
+                    return Qt.resolvedUrl(path + "/" + name.slice(name.lastIndexOf("/") + 1))
                 }
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-                visible: status === Image.Ready
+                return icon
             }
+            asynchronous: true
+            smooth: true
+            visible: status === Image.Ready
+        }
 
-            QsMenuAnchor {
+        // ── Menu Anchor (Only loads when menu exists) ───────────────────
+        Loader {
+            active: trayItem.modelData?.menu !== undefined && trayItem.modelData?.menu !== null
+            sourceComponent: QsMenuAnchor {
                 id: menuAnchor
                 menu: trayItem.modelData.menu
                 anchor.item: trayItem
-                anchor.edges: Edges.Bottom
-                anchor.gravity: Edges.Bottom | Edges.Right
+                anchor.edges: Qt.BottomEdge
+            }
+        }
+
+        MouseArea {
+            id: tMa
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            cursorShape: Qt.PointingHandCursor
+
+            onClicked: event => {
+                if (event.button === Qt.RightButton) {
+                    // Try QsMenuAnchor first, fallback to direct open
+                    if (trayItem.modelData?.menu) {
+                        const anchor = trayItem.children.find(c => c.objectName === "menuAnchor" || c instanceof QsMenuAnchor)
+                        if (anchor && anchor.active) {
+                            anchor.item?.open?.()
+                        } else {
+                            trayItem.modelData.menu.open()
+                        }
+                    }
+                } else {
+                    trayItem.modelData?.activate?.()
+                }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                cursorShape: Qt.PointingHandCursor
-                onClicked: mouse => {
-                    if (mouse.button === Qt.RightButton || trayItem.modelData.menu) {
-                        menuAnchor.open()
-                    } else {
-                        trayItem.modelData.activate()
-                    }
+            onPressAndHold: {
+                if (trayItem.modelData?.menu) {
+                    trayItem.modelData.menu.open()
                 }
             }
         }

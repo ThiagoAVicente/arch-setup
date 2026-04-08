@@ -1,84 +1,158 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import "bar/widgets"
+import "bar/popouts"
 
 Scope {
+    id: barScope
+
+    // Which popout is currently open: "", "network", "bluetooth"
+    property string openPopout: ""
+
+    function togglePopout(name) {
+        openPopout = (openPopout === name) ? "" : name
+    }
+
     Calendar { id: cal }
 
+    // ── Main bar ───────────────────────────────────────────────────────
     Variants {
         model: Quickshell.screens
 
         PanelWindow {
-            required property QtObject modelData
+            id: barWindow
+            required property var modelData
             screen: modelData
 
             anchors { top: true; left: true; right: true }
-            implicitHeight: 40
+            implicitHeight: 44
             color: "transparent"
+
+            // Close popout when clicking outside
+            MouseArea {
+                anchors.fill: parent
+                z: -1
+                onClicked: barScope.openPopout = ""
+            }
 
             Rectangle {
                 anchors {
                     fill: parent
-                    leftMargin: 8
-                    rightMargin: 8
-                    topMargin: 4
+                    leftMargin: 8; rightMargin: 8; topMargin: 4
                 }
                 radius: 12
-                color: "#1E1E2C"
-                border.color: Qt.rgba(1, 1, 1, 0.08)
+                color: "#1e1e2e"
+                border.color: Qt.rgba(1, 1, 1, 0.07)
                 border.width: 1
 
-
-
-
-                // Left - Clock + calendar icon
+                // ── Left: Clock ───────────────────────────────────────
                 Item {
-                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 16 }
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 14 }
                     width: 130
 
                     ClockCalendarWidget {
                         anchors.verticalCenter: parent.verticalCenter
                         calendarOpen: cal.visible
-                        onCalHoverChanged: (hovered) => {
+                        onCalHoverChanged: hovered => {
                             cal.iconHovered = hovered
                             if (hovered) cal.open()
                         }
                     }
                 }
 
-                // Center - Workspaces
+                // ── Center: Workspaces ────────────────────────────────
                 Row {
                     anchors.centerIn: parent
                     spacing: 5
                     HyprlandWorkspaces {}
                 }
 
-                // Right - Status
-                Item {
-                    anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: 12 }
-                    width: 280
-
-                    Row {
-                        anchors { right: parent.right; verticalCenter: parent.verticalCenter }
-                        spacing: 4
-
-                        SystemTrayWidget {}
-
-                        Rectangle { width: 1; height: 16; color: Qt.rgba(1,1,1,0.1); anchors.verticalCenter: parent.verticalCenter }
-
-                        CpuWidget {}
-                        BatteryWidget {}
-                        VolumeWidget {}
-
-                        Rectangle { width: 1; height: 16; color: Qt.rgba(1,1,1,0.1); anchors.verticalCenter: parent.verticalCenter }
-
-                        NotificationsToggle {}
+                // ── Right: Status icons ───────────────────────────────
+                RowLayout {
+                    anchors {
+                        right: parent.right; top: parent.top; bottom: parent.bottom
+                        rightMargin: 12
                     }
+                    spacing: 4
+
+                    // System tray
+                   // SystemTrayWidget {}
+
+                    // Separator
+                    Rectangle {
+                        width: 1; height: 14
+                        color: Qt.rgba(1,1,1,0.1)
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    // CPU
+                    CpuWidget {}
+
+                    // Battery
+                    BatteryWidget {}
+
+                    // Volume
+                    VolumeWidget {}
+
+                    // Separator
+                    Rectangle {
+                        width: 1; height: 14
+                        color: Qt.rgba(1,1,1,0.1)
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    // Network
+                    NetworkWidget {
+                        popoutOpen: barScope.openPopout === "network"
+                        onTogglePopout: barScope.togglePopout("network")
+                    }
+
+                    // Bluetooth
+                    BluetoothWidget {
+                        popoutOpen: barScope.openPopout === "bluetooth"
+                        onTogglePopout: barScope.togglePopout("bluetooth")
+                    }
+
+                    // Separator
+                    Rectangle {
+                        width: 1; height: 14
+                        color: Qt.rgba(1,1,1,0.1)
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    // Notifications
+                    NotificationsToggle {}
                 }
             }
+        }
+    }
+
+    // ── Network popout window ──────────────────────────────────────────
+    Variants {
+        model: Quickshell.screens
+
+        NetworkPopout {
+            required property var modelData
+            screen: modelData
+            isOpen: barScope.openPopout === "network"
+            onCloseRequested: barScope.openPopout = ""
+        }
+    }
+
+    // ── Bluetooth popout window ────────────────────────────────────────
+    Variants {
+        model: Quickshell.screens
+
+        BluetoothPopout {
+            required property var modelData
+            screen: modelData
+            isOpen: barScope.openPopout === "bluetooth"
+            onCloseRequested: barScope.openPopout = ""
         }
     }
 }

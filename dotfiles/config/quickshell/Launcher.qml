@@ -140,18 +140,21 @@ Scope {
     }
 
     function launchApp(app) {
-        const cmd = app.execCmd
-            ? ["setsid", "-f", "sh", "-c", app.execCmd]
-            : ["setsid", "-f", "gio", "launch", app.dpath]
+        if (app.execCmd) {
+            const clean = app.execCmd.replace(/%[a-zA-Z]/g, "").trim()
+            // Redirect stderr to prevent EPIPE dialog, but keep stdout
+            const cmd = ["sh", "-c", clean + " 2>&1 | grep -v EPIPE &"]
 
-        Qt.createQmlObject(
-            'import Quickshell.Io; Process { command: ' + JSON.stringify(cmd) +
-            '; running: true; onExited: (c) => { destroy() } }',
-            launcher
-        )
+            Qt.createQmlObject(
+                'import Quickshell.Io; Process { ' +
+                'command: ' + JSON.stringify(cmd) + '; ' +
+                'running: true ' +
+                '}',
+                launcher
+            )
+        }
         visible = false
     }
-
 
     PanelWindow {
         id: win
