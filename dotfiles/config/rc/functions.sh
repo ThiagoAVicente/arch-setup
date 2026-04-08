@@ -84,3 +84,11 @@ new-java() {
     -DarchetypeVersion=1.4 \
     -DinteractiveMode=false
 }
+
+open(){
+
+    # iterate over arguments
+    for arg in "$@"; do
+        zathura "$arg" &disown
+    done
+}

@@ -11,20 +11,6 @@ Scope {
     id: launcher
     property bool visible: false
     property int selectedIndex: 0
-    property bool launchOnLeft: true
-    readonly property int cardWidth: 380
-    readonly property int cardHeight: 520
-
-    Process {
-        id: cursorCheck
-        command: ["hyprctl", "cursorpos"]
-        stdout: SplitParser {
-            onRead: data => {
-                const x = parseInt(data.trim().split(",")[0])
-                launcher.launchOnLeft = x <= win.width / 2
-            }
-        }
-    }
 
     readonly property color cBg:      "#1E1E2C"
     readonly property color cHeader:  "#0D0D18"
@@ -35,7 +21,6 @@ Scope {
     readonly property color cMutedBr: "#505065"
 
     function toggle() {
-        if (!visible) cursorCheck.running = true
         visible = !visible
         if (visible) {
             searchField.text = ""
@@ -51,23 +36,9 @@ Scope {
     Component.onCompleted: appListProcess.running = true
 
     onVisibleChanged: {
-        if (visible) {
-            // open
-            backdrop.opacity = 0
-            card.opacity     = 0
-            card.width       = 0
-            closeAnim.stop()
-            openAnim.start()
-        } else {
-            card.width   = card.width
-            card.opacity = card.opacity
-            openAnim.stop()
-            closeAnim.start()
-            // background rescan for next open
-            if (allApps.length > 0) {
-                _tempApps = []
-                appListProcess.running = true
-            }
+        if (!visible && allApps.length > 0) {
+            _tempApps = []
+            appListProcess.running = true
         }
     }
 
@@ -169,7 +140,10 @@ Scope {
     }
 
     function launchApp(app) {
-        const cmd = app.execCmd ? ["sh", "-c", app.execCmd] : ["gio", "launch", app.dpath]
+        const cmd = app.execCmd
+            ? ["setsid", "-f", "sh", "-c", app.execCmd]
+            : ["setsid", "-f", "gio", "launch", app.dpath]
+
         Qt.createQmlObject(
             'import Quickshell.Io; Process { command: ' + JSON.stringify(cmd) +
             '; running: true; onExited: (c) => { destroy() } }',
@@ -178,9 +152,10 @@ Scope {
         visible = false
     }
 
+
     PanelWindow {
         id: win
-        visible: launcher.visible || closeAnim.running
+        visible: launcher.visible
         anchors { top: true; left: true; right: true; bottom: true }
         exclusiveZone: -1
         focusable: true
@@ -200,30 +175,14 @@ Scope {
         // ── Card ─────────────────────────────────────────────────────────
         Rectangle {
             id: card
-            anchors.verticalCenter: parent.verticalCenter
-            width: 0
-            height: launcher.cardHeight
+            anchors.centerIn: parent
+            width: 560
+            height: 480
             color: launcher.cBg
             border.color: launcher.cBorder
             border.width: 1
             radius: 16
-            opacity: 0
             clip: true
-
-            states: [
-                State {
-                    name: "left"
-                    when: launcher.launchOnLeft
-                    AnchorChanges { target: card; anchors.left: card.parent.left; anchors.right: undefined }
-                    PropertyChanges { target: card; anchors.leftMargin: 0; topLeftRadius: 0; bottomLeftRadius: 0 }
-                },
-                State {
-                    name: "right"
-                    when: !launcher.launchOnLeft
-                    AnchorChanges { target: card; anchors.right: card.parent.right; anchors.left: undefined }
-                    PropertyChanges { target: card; anchors.rightMargin: 0; topRightRadius: 0; bottomRightRadius: 0 }
-                }
-            ]
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
@@ -495,58 +454,11 @@ Scope {
                     }
                 }
 
-                // Fade — top
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 24
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: launcher.cBg }
-                        GradientStop { position: 1.0; color: "transparent" }
-                    }
-                }
 
-                // Fade — bottom
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 24
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 1.0; color: launcher.cBg }
-                    }
-                }
             }
 
         }
 
-        // ── Open ─────────────────────────────────────────────────────────
-        ParallelAnimation {
-            id: openAnim
-            OpacityAnimator { target: backdrop; from: 0; to: 0.12; duration: 200; easing.type: Easing.OutCubic }
-            OpacityAnimator { target: card; from: 0; to: 1.0; duration: 80; easing.type: Easing.OutCubic }
-            NumberAnimation {
-                target: card; property: "width"
-                from: 0; to: launcher.cardWidth; duration: 250
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: [0.38, 1.21, 0.22, 1.0, 1.0, 1.0]
-            }
-        }
-
-        // ── Close ────────────────────────────────────────────────────────
-        ParallelAnimation {
-            id: closeAnim
-            OpacityAnimator { target: backdrop; to: 0; duration: 220; easing.type: Easing.OutCubic }
-            OpacityAnimator { target: card; to: 0; duration: 200; easing.type: Easing.InCubic }
-            NumberAnimation {
-                target: card; property: "width"
-                to: 0; duration: 150
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: [0.05, 0, 0.133, 0.06, 0.167, 0.4, 0.208, 0.82, 0.25, 1.0, 1.0, 1.0]
-            }
-        }
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape) launcher.visible = false
