@@ -100,8 +100,22 @@ Item {
         }
     }
 
+    // Event-driven: subscribe to NetworkManager events (replaces 15s poll)
+    Process {
+        running: true
+        command: ["nmcli", "monitor"]
+        stdout: SplitParser { onRead: netRefreshDebounce.restart() }
+    }
+
     Timer {
-        interval: 3000; running: true; repeat: true; triggeredOnStart: true
+        id: netRefreshDebounce
+        interval: 800
+        onTriggered: { statusProc.running = false; statusProc.running = true }
+    }
+
+    // Fallback slow poll (30s) in case monitor misses events
+    Timer {
+        interval: 30000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: { statusProc.running = false; statusProc.running = true }
     }
 }

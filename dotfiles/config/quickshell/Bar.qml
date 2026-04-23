@@ -59,9 +59,10 @@ Scope {
                 // ── Left: Clock ───────────────────────────────────────
                 Item {
                     anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 14 }
-                    width: 130
+                    width: clkCal.implicitWidth
 
                     ClockCalendarWidget {
+                        id: clkCal
                         anchors.verticalCenter: parent.verticalCenter
                         calendarOpen: cal.visible
                         onCalHoverChanged: hovered => {

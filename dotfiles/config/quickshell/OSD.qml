@@ -14,31 +14,36 @@ Scope {
     property bool lastMuted: false
     property string osdType: ""
 
-    // Poll for changes
-    Timer {
-        interval: 200
+    // Subscribe to PipeWire/PulseAudio sink events (event-driven, replaces 200ms poll)
+    Process {
         running: true
-        repeat: true
-        onTriggered: {
-            volumeMonitor.running = true
-            muteMonitor.running = true
-            brightnessMonitor.running = true
+        command: ["pactl", "subscribe"]
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.includes("sink")) {
+                    volumeMonitor.running = true
+                    muteMonitor.running = true
+                }
+            }
         }
     }
 
-    // Volume monitor
+    Component.onCompleted: {
+        volumeMonitor.running = true
+        muteMonitor.running = true
+    }
+
+    // Volume monitor (triggered by pactl events, not timer)
     Process {
         id: volumeMonitor
         command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{print int($2*100)}'"]
         stdout: SplitParser {
             onRead: data => {
                 let val = parseInt(data.trim())
-                if (!isNaN(val)) {
-                    if (val !== osdScope.lastVolume) {
-                        osdScope.volume = val
-                        osdScope.lastVolume = val
-                        osdScope.showOSD("volume")
-                    }
+                if (!isNaN(val) && val !== osdScope.lastVolume) {
+                    osdScope.volume = val
+                    osdScope.lastVolume = val
+                    osdScope.showOSD("volume")
                 }
             }
         }
@@ -59,22 +64,25 @@ Scope {
         }
     }
 
-    // Brightness monitor
+    // Brightness monitor (2s poll — brightness is user-initiated, no subscribe API)
     Process {
         id: brightnessMonitor
         command: ["sh", "-c", "brightnessctl -m 2>/dev/null | cut -d',' -f4 | tr -d '%'"]
         stdout: SplitParser {
             onRead: data => {
                 let val = parseInt(data.trim())
-                if (!isNaN(val)) {
-                    if (val !== osdScope.lastBrightness) {
-                        osdScope.brightness = val
-                        osdScope.lastBrightness = val
-                        osdScope.showOSD("brightness")
-                    }
+                if (!isNaN(val) && val !== osdScope.lastBrightness) {
+                    osdScope.brightness = val
+                    osdScope.lastBrightness = val
+                    osdScope.showOSD("brightness")
                 }
             }
         }
+    }
+
+    Timer {
+        interval: 2000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: brightnessMonitor.running = true
     }
 
     function showOSD(type) {

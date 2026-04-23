@@ -60,23 +60,37 @@ Item {
         }
         Item { Layout.preferredWidth: 9 }
 
-        // ── Calendar icon ────────────────────────────────────────────────
-        Text {
-            id: calIcon
+        // ── Calendar ─────────────────────────────────────────────────────
+        RowLayout {
+            id: calGroup
             Layout.alignment: Qt.AlignVCenter
-            text: "󰃭"
-            font.family: "FiraCode Nerd Font"
-            font.pixelSize: 15
+            spacing: 8
 
-            color: root.calendarOpen
-                ? Qt.rgba(1, 1, 1, 0.92)
-                : (calHover.hovered ? Qt.rgba(1, 1, 1, 0.72) : Qt.rgba(1, 1, 1, 0.38))
+            Text {
+                id: calIcon
+                text: "󰃭"
+                font.family: "FiraCode Nerd Font"
+                font.pixelSize: 15
 
-            Behavior on color { ColorAnimation { duration: 160 } }
+                color: root.calendarOpen
+                    ? Qt.rgba(1, 1, 1, 0.92)
+                    : (calHover.hovered ? Qt.rgba(1, 1, 1, 0.72) : Qt.rgba(1, 1, 1, 0.38))
 
-            scale: calHover.hovered ? 1.15 : 1.0
-            Behavior on scale {
-                NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+                Behavior on color { ColorAnimation { duration: 160 } }
+
+                scale: calHover.hovered ? 1.15 : 1.0
+                Behavior on scale {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+                }
+            }
+
+            Text {
+                id: dateText
+                text: Qt.formatDate(root._time, "dd/MM/yyyy")
+                font.family: "FiraCode Nerd Font"
+                font.pixelSize: 14
+                color: Qt.rgba(1, 1, 1, 0.92)
+                Behavior on color { ColorAnimation { duration: 160 } }
             }
 
             HoverHandler {

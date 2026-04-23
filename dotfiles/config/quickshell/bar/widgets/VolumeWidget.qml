@@ -49,7 +49,6 @@ Item {
     Process {
         id: volumeCheck
         command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{print int($2*100)}'"]
-        running: true
         stdout: SplitParser {
             onRead: data => {
                 const val = parseInt(data.trim())
@@ -61,14 +60,24 @@ Item {
     Process {
         id: muteCheck
         command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -q MUTED && echo 1 || echo 0"]
-        running: true
         stdout: SplitParser { onRead: data => root.muted = data.trim() === "1" }
     }
 
-    Timer {
-        interval: 1000; running: true; repeat: true
-        onTriggered: { volumeCheck.running = true; muteCheck.running = true }
+    // Event-driven: subscribe to PipeWire/PulseAudio sink events (replaces 1s poll)
+    Process {
+        running: true
+        command: ["pactl", "subscribe"]
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.includes("sink")) {
+                    volumeCheck.running = true
+                    muteCheck.running = true
+                }
+            }
+        }
     }
+
+    Component.onCompleted: { volumeCheck.running = true; muteCheck.running = true }
 
     Process { id: openPavucontrol; command: ["pavucontrol"] }
 

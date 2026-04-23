@@ -3,4 +3,5 @@ source $HOME/.config/rc/specific/zshInit.sh
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 alias notebook="uvr --with euporie euporie-notebook"
+alias or="claude --settings ~/.claude/settings.openrouter.json"
 alias gpu-fix='sudo nvidia-smi -pl 115'

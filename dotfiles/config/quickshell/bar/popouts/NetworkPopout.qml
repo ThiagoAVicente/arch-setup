@@ -17,6 +17,7 @@ PanelWindow {
     visible: isOpen
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    focusable: showPasswordDialog
 
     anchors { top: true; right: true }
     margins.top: 52
@@ -346,6 +347,11 @@ PanelWindow {
                         id: pwScope
                         Layout.fillWidth: true; implicitHeight: 36
                         activeFocusOnTab: true
+                        focus: pwDialog.visible
+
+                        onFocusChanged: {
+                            if (focus) forceActiveFocus()
+                        }
 
                         Keys.onPressed: event => {
                             if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {

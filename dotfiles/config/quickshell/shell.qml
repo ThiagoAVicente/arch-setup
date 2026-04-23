@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
+import "./Widget"
 
 ShellRoot {
     id: shell
@@ -15,6 +16,7 @@ ShellRoot {
     Launcher { id: launcher }
     WallpaperSelector { id: wallpaperSelector }
     PowerMenu { id: powerMenu }
+    //Clock {}
 
     // Simple: use socat to listen on socket
     Process {

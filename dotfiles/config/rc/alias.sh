@@ -4,6 +4,7 @@ alias revive="reboot"
 alias fall="shutdown now"
 alias jjar="java -jar"
 alias docc="docker compose"
+alias dex="docker exec"
 alias priv="firejail --private"
 alias uvr="uv run"
 
