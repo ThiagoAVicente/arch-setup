@@ -92,3 +92,5 @@ open(){
         zathura "$arg" &disown
     done
 }
+
+ qrcode() { qrencode -o - "$1" | wl-copy --type image/png; }            
