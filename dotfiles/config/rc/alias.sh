@@ -27,6 +27,6 @@ alias z="zeditor ."
 alias show="chafa"
 alias ssh="export TERM=xterm && ssh"
 alias ff="fastfetch"
-
+alias claude="claude \"/tui fullscreen\""
 alias clk="tty-clock -cn"
 alias stp="spotify_player"
