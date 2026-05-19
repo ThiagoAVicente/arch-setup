@@ -17,7 +17,7 @@ PanelWindow {
     visible: isOpen
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    focusable: showPasswordDialog
+    focusable: false
 
     anchors { top: true; right: true }
     margins.top: 52
@@ -33,10 +33,6 @@ PanelWindow {
     property var ethernetDevices: []
     property string view: "wireless"
     property string connectingToSsid: ""
-    property bool showPasswordDialog: false
-    property var pendingNet: null
-    property string passwordValue: ""
-    property string connectError: ""
 
     // ── Helpers ────────────────────────────────────────────────────────
     function parseNetworks(raw) {
@@ -94,37 +90,18 @@ PanelWindow {
         wifiStatusProc.running = true
     }
 
-    function doConnect() {
-        if (!pendingNet) return
-        connectingToSsid = pendingNet.ssid
-        connectError = ""
-        connectProc.ssid = pendingNet.ssid
-        connectProc.bssid = pendingNet.bssid || ""
-        connectProc.pwd = passwordValue
-        connectProc.errBuf = ""
-        connectProc.running = false
-        connectProc.running = true
-    }
-
     function handleNetworkClick(net) {
         if (net.active) {
             disconnectProc.running = false
             disconnectProc.running = true
             return
         }
-        if (net.isSecure) {
-            pendingNet = net
-            showPasswordDialog = true
-        } else {
-            connectingToSsid = net.ssid
-            connectError = ""
-            connectProc.ssid = net.ssid
-            connectProc.bssid = net.bssid || ""
-            connectProc.pwd = ""
-            connectProc.errBuf = ""
-            connectProc.running = false
-            connectProc.running = true
-        }
+        connectingToSsid = net.ssid
+        connectProc.ssid = net.ssid
+        connectProc.bssid = net.bssid || ""
+        connectProc.errBuf = ""
+        connectProc.running = false
+        connectProc.running = true
     }
 
     // ── Processes ──────────────────────────────────────────────────────
@@ -183,12 +160,10 @@ PanelWindow {
         id: connectProc
         property string ssid: ""
         property string bssid: ""
-        property string pwd: ""
         property string errBuf: ""
         command: {
             let args = ["nmcli", "--wait", "15", "device", "wifi", "connect", connectProc.ssid]
             if (connectProc.bssid) args = args.concat(["bssid", connectProc.bssid])
-            if (connectProc.pwd) args = args.concat(["password", connectProc.pwd])
             return args
         }
         stdout: SplitParser { onRead: data => connectProc.errBuf += data + "\n" }
@@ -196,16 +171,12 @@ PanelWindow {
         onRunningChanged: {
             if (!running) {
                 const output = errBuf.toLowerCase()
-                if (output.includes("error") || output.includes("failed") || output.includes("secrets")) {
-                    root.connectError = "Connection failed. Check password."
-                    root.connectingToSsid = ""
-                } else {
-                    root.connectError = ""
-                    root.connectingToSsid = ""
-                    root.showPasswordDialog = false
-                    root.passwordValue = ""
-                    root.pendingNet = null
+                if (output.includes("secrets") || output.includes("no network with ssid")) {
+                    Quickshell.execDetached(["notify-send", "-u", "critical", "WiFi", "No saved password for \"" + connectProc.ssid + "\""])
+                } else if (output.includes("error") || output.includes("failed")) {
+                    Quickshell.execDetached(["notify-send", "-u", "normal", "WiFi", "Failed to connect to \"" + connectProc.ssid + "\""])
                 }
+                root.connectingToSsid = ""
                 root.refreshAll()
             }
         }
@@ -252,10 +223,6 @@ PanelWindow {
     onIsOpenChanged: {
         if (isOpen) {
             view = "wireless"
-            connectError = ""
-            showPasswordDialog = false
-            passwordValue = ""
-            pendingNet = null
             connectingToSsid = ""
             refreshAll()
         }
@@ -307,124 +274,9 @@ PanelWindow {
                 }
             }
 
-            // ── Password dialog ───────────────────────────────────────
-            Rectangle {
-                id: pwDialog
-                visible: root.showPasswordDialog && root.view === "wireless"
-                Layout.fillWidth: true
-                implicitHeight: visible ? (pwCol.implicitHeight + 20) : 0
-                color: "#1e1e2e"
-                radius: 10
-                clip: true
-
-                Behavior on implicitHeight { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-
-                ColumnLayout {
-                    id: pwCol
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
-                    spacing: 8
-
-                    Text {
-                        text: "󰌋  Enter Password"
-                        color: "#cdd6f4"; font.family: "FiraCode Nerd Font"
-                        font.pixelSize: 13; font.weight: Font.Medium
-                    }
-
-                    Text {
-                        visible: root.pendingNet !== null
-                        text: "Network: " + (root.pendingNet?.ssid ?? "")
-                        color: "#a6adc8"; font.pixelSize: 11
-                    }
-
-                    Text {
-                        visible: root.connectError.length > 0
-                        text: root.connectError
-                        color: "#f38ba8"; font.pixelSize: 11
-                        wrapMode: Text.WordWrap; Layout.fillWidth: true
-                    }
-
-                    FocusScope {
-                        id: pwScope
-                        Layout.fillWidth: true; implicitHeight: 36
-                        activeFocusOnTab: true
-                        focus: pwDialog.visible
-
-                        onFocusChanged: {
-                            if (focus) forceActiveFocus()
-                        }
-
-                        Keys.onPressed: event => {
-                            if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                if (root.passwordValue.length > 0) root.doConnect()
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Backspace) {
-                                if (event.modifiers & Qt.ControlModifier)
-                                    root.passwordValue = ""
-                                else
-                                    root.passwordValue = root.passwordValue.slice(0, -1)
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Escape) {
-                                root.showPasswordDialog = false
-                                root.passwordValue = ""
-                                root.pendingNet = null
-                                root.connectError = ""
-                                event.accepted = true
-                            } else if (event.text.length > 0 && event.key !== Qt.Key_Tab) {
-                                root.passwordValue += event.text
-                                event.accepted = true
-                            }
-                        }
-
-                        Rectangle {
-                            anchors.fill: parent; radius: 8
-                            color: "#1e1e2e"
-                            border.width: pwScope.activeFocus ? 2 : 1
-                            border.color: pwScope.activeFocus ? "#cba6f7" : "#45475a"
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: root.passwordValue.length > 0
-                                    ? "•".repeat(root.passwordValue.length)
-                                    : "Password..."
-                                color: root.passwordValue.length > 0 ? "#cdd6f4" : "#6c7086"
-                                font.pixelSize: 12
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: pwScope.forceActiveFocus()
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: 8
-
-                        ActionButton {
-                            Layout.fillWidth: true; label: "Cancel"
-                            onTapped: {
-                                root.showPasswordDialog = false
-                                root.passwordValue = ""
-                                root.pendingNet = null
-                                root.connectError = ""
-                            }
-                        }
-
-                        ActionButton {
-                            Layout.fillWidth: true
-                            label: root.connectingToSsid.length > 0 ? "Connecting…" : "Connect"
-                            primary: true
-                            isEnabled: root.passwordValue.length > 0 && root.connectingToSsid.length === 0
-                            onTapped: root.doConnect()
-                        }
-                    }
-                }
-            }
-
             // ── Wireless header ───────────────────────────────────────
             RowLayout {
-                visible: root.view === "wireless" && !root.showPasswordDialog
+                visible: root.view === "wireless"
                 Layout.fillWidth: true
 
                 Text {
@@ -445,14 +297,14 @@ PanelWindow {
             }
 
             Text {
-                visible: root.view === "wireless" && !root.showPasswordDialog
+                visible: root.view === "wireless"
                 text: root.networks.length + " networks available"
                 color: "#6c7086"; font.pixelSize: 11
             }
 
             // Network list
             Repeater {
-                model: (root.view === "wireless" && !root.showPasswordDialog) ? root.networks : []
+                model: root.view === "wireless" ? root.networks : []
 
                 delegate: WifiNetworkRow {
                     required property var modelData
@@ -465,16 +317,12 @@ PanelWindow {
                         disconnectProc.running = false
                         disconnectProc.running = true
                     }
-                    onPasswordNeeded: net => {
-                        root.pendingNet = net
-                        root.showPasswordDialog = true
-                    }
                 }
             }
 
             // Rescan button
             Rectangle {
-                visible: root.view === "wireless" && !root.showPasswordDialog
+                visible: root.view === "wireless"
                 Layout.fillWidth: true; implicitHeight: 34
                 radius: 10; color: rescanMa.pressed ? "#585b70"
                     : rescanMa.containsMouse ? "#45475a" : "#1e1e2e"
@@ -644,7 +492,6 @@ PanelWindow {
         property bool isConnecting: false
         signal connectClicked(var net)
         signal disconnectClicked()
-        signal passwordNeeded(var net)
 
         implicitHeight: 38
 
@@ -734,8 +581,6 @@ PanelWindow {
                             if (!netRow.net) return
                             if (netRow.net.active)
                                 netRow.disconnectClicked()
-                            else if (netRow.net.isSecure)
-                                netRow.passwordNeeded(netRow.net)
                             else
                                 netRow.connectClicked(netRow.net)
                         }
@@ -751,8 +596,6 @@ PanelWindow {
                 if (!netRow.net) return
                 if (netRow.net.active)
                     netRow.disconnectClicked()
-                else if (netRow.net.isSecure)
-                    netRow.passwordNeeded(netRow.net)
                 else
                     netRow.connectClicked(netRow.net)
             }

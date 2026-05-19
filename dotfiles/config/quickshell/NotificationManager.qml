@@ -40,9 +40,9 @@ Scope {
             screen: modelData
 
             anchors { top: true; right: true }
-            implicitWidth: 380
+            implicitWidth: 400
             implicitHeight: popupCol.childrenRect.height + 20
-            margins { top: 40; right: 20 }
+            margins { top: 48; right: 16 }
 
             exclusiveZone: 0
             color: "transparent"

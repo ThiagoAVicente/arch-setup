@@ -3,4 +3,6 @@ env = QT_STYLE_OVERRIDE,Fusion
 env = QT6CT_STYLE_OVERRIDE,Fusion
 env = GTK_THEME,Adwaita:dark
 env = MOZ_ENABLE_WAYLAND,1
-env = SDL_VIDEODRIVER,wayland
+# SDL_VIDEODRIVER=wayland breaks Source 2 games (Deadlock) — set per-app instead
+env = LIBVA_DRIVER_NAME,nvidia
+env = NVD_BACKEND,direct
