@@ -12,13 +12,13 @@ Scope {
     property bool visible: false
     property int selectedIndex: 0
 
-    readonly property color cBg:      "#1E1E2C"
-    readonly property color cHeader:  "#0D0D18"
-    readonly property color cSurface: "#111118"
-    readonly property color cBorder:  Qt.rgba(1, 1, 1, 0.06)
-    readonly property color cText:    "#DDDDE8"
-    readonly property color cMuted:   "#383848"
-    readonly property color cMutedBr: "#505065"
+    readonly property color cBg:      "#1e1e2e"
+    readonly property color cMantle:  "#181825"
+    readonly property color cAccent:  "#7aa2f7"
+    readonly property color cText:    "#cdd6f4"
+    readonly property color cSubtext: "#a6adc8"
+    readonly property color cMuted:   "#585b70"
+    readonly property color cBorder:  Qt.rgba(1, 1, 1, 0.08)
 
     function toggle() {
         visible = !visible
@@ -45,7 +45,6 @@ Scope {
     Process {
         id: appListProcess
         command: ["sh", "-c", `
-            # Build XDG app dirs exactly as rofi does
             data_home="\${XDG_DATA_HOME:-$HOME/.local/share}"
             IFS=: read -ra sys_dirs <<< "\${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
             app_dirs=()
@@ -53,7 +52,6 @@ Scope {
                 [ -d "$d/applications" ] && app_dirs+=("$d/applications")
             done
 
-            # XDG icon dirs from same data dirs
             icon_dirs=()
             for d in "$data_home" "\${sys_dirs[@]}"; do
                 [ -d "$d/icons" ] && icon_dirs+=("$d/icons")
@@ -142,9 +140,7 @@ Scope {
     function launchApp(app) {
         if (app.execCmd) {
             const clean = app.execCmd.replace(/%[a-zA-Z]/g, "").trim()
-            // Launch with stderr and stdout separate to avoid EPIPE on broken pipes
             const cmd = ["sh", "-c", clean + " >/dev/null 2>&1 &"]
-
             Qt.createQmlObject(
                 'import Quickshell.Io; Process { ' +
                 'command: ' + JSON.stringify(cmd) + '; ' +
@@ -165,149 +161,225 @@ Scope {
         color: "transparent"
 
         Rectangle {
-            id: backdrop
             anchors.fill: parent
             color: "black"
-            opacity: 0
+            opacity: 0.55
             MouseArea {
                 anchors.fill: parent
                 onClicked: launcher.visible = false
             }
         }
 
-        // ── Card ─────────────────────────────────────────────────────────
+        // ── Card ───────────────────────────────────────────────────────────
         Rectangle {
             id: card
             anchors.centerIn: parent
-            width: 560
-            height: 480
+            width: 580
+            height: 520
             color: launcher.cBg
             border.color: launcher.cBorder
             border.width: 1
-            radius: 16
+            radius: 14
             clip: true
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
-            // ── Search area ──────────────────────────────────────────────
-            Item {
-                id: searchArea
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 56
+            // ── Header ─────────────────────────────────────────────────────
+            Rectangle {
+                id: header
+                anchors { top: parent.top; left: parent.left; right: parent.right }
+                height: 46
+                color: launcher.cMantle
+
+                // Square off bottom half so only top corners are rounded by card clip
+                Rectangle {
+                    anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                    height: parent.height / 2
+                    color: parent.color
+                }
 
                 RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 20
-                    anchors.rightMargin: 20
-                    spacing: 12
+                    anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
+                    spacing: 10
 
                     Text {
-                        text: "\u{f002}"
-                        color: searchField.text ? launcher.cMutedBr : launcher.cMuted
-                        font.pixelSize: 16
+                        text: "\u{f0349}"
+                        font.pixelSize: 14
                         font.family: "FiraCode Nerd Font"
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        color: launcher.cAccent
                     }
 
-                    TextInput {
-                        id: searchField
-                        Layout.fillWidth: true
-                        color: launcher.cText
-                        font.pixelSize: 17
+                    Text {
+                        text: "Applications"
+                        font.pixelSize: 13
                         font.family: "FiraCode Nerd Font"
-                        font.weight: Font.Light
-                        clip: true
-                        focus: true
-                        selectionColor: Qt.rgba(1, 1, 1, 0.15)
+                        font.weight: Font.Medium
+                        color: launcher.cText
+                        Layout.fillWidth: true
+                    }
 
-                        onTextChanged: launcher.filterApps(text)
-                        Component.onCompleted: forceActiveFocus()
-
-                        Keys.onEscapePressed: launcher.visible = false
-                        Keys.onReturnPressed: {
-                            if (launcher.filteredApps.length > 0)
-                                launcher.launchApp(launcher.filteredApps[launcher.selectedIndex])
-                        }
-                        Keys.onDownPressed: {
-                            if (launcher.selectedIndex > 0)
-                                launcher.selectedIndex--
-                            appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
-                        }
-                        Keys.onUpPressed: {
-                            if (launcher.selectedIndex < launcher.filteredApps.length - 1)
-                                launcher.selectedIndex++
-                            appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
-                        }
-                        Keys.onTabPressed: {
-                            launcher.selectedIndex =
-                                (launcher.selectedIndex + 1) % Math.max(1, launcher.filteredApps.length)
-                            appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
-                        }
+                    Rectangle {
+                        visible: launcher.filteredApps.length > 0
+                        height: 22
+                        width: countLabel.implicitWidth + 16
+                        radius: 11
+                        color: Qt.rgba(1, 1, 1, 0.05)
+                        border.color: launcher.cBorder
+                        border.width: 1
 
                         Text {
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            text: "Type to search..."
-                            color: launcher.cMuted
-                            font.pixelSize: 17
+                            id: countLabel
+                            anchors.centerIn: parent
+                            text: launcher.filteredApps.length + (searchField.text ? "" : "+")
+                            font.pixelSize: 11
                             font.family: "FiraCode Nerd Font"
-                            font.weight: Font.Light
-                            visible: !searchField.text
+                            color: launcher.cMuted
                         }
                     }
                 }
 
-                // Top border
                 Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: 20
-                    anchors.rightMargin: 20
+                    anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
                     color: launcher.cBorder
                 }
             }
 
-            // ── App list ─────────────────────────────────────────────────
+            // ── Search area ────────────────────────────────────────────────
+            Item {
+                id: searchArea
+                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                height: 60
+
+                Rectangle {
+                    anchors { top: parent.top; left: parent.left; right: parent.right }
+                    height: 1
+                    color: launcher.cBorder
+                }
+
+                Rectangle {
+                    anchors { fill: parent; margins: 10 }
+                    color: launcher.cMantle
+                    radius: 8
+                    border.color: searchField.activeFocus
+                        ? Qt.rgba(0.48, 0.64, 0.97, 0.45)
+                        : Qt.rgba(1, 1, 1, 0.07)
+                    border.width: 1
+
+                    RowLayout {
+                        anchors { fill: parent; leftMargin: 14; rightMargin: 14 }
+                        spacing: 10
+
+                        Text {
+                            text: "\u{f002}"
+                            color: searchField.text ? launcher.cAccent : launcher.cMuted
+                            font.pixelSize: 15
+                            font.family: "FiraCode Nerd Font"
+                        }
+
+                        TextInput {
+                            id: searchField
+                            Layout.fillWidth: true
+                            color: launcher.cText
+                            font.pixelSize: 15
+                            font.family: "FiraCode Nerd Font"
+                            font.weight: Font.Light
+                            clip: true
+                            focus: true
+                            selectionColor: Qt.rgba(0.48, 0.64, 0.97, 0.3)
+
+                            onTextChanged: launcher.filterApps(text)
+                            Component.onCompleted: forceActiveFocus()
+
+                            Keys.onEscapePressed: launcher.visible = false
+                            Keys.onReturnPressed: {
+                                if (launcher.filteredApps.length > 0)
+                                    launcher.launchApp(launcher.filteredApps[launcher.selectedIndex])
+                            }
+                            Keys.onDownPressed: {
+                                if (launcher.selectedIndex > 0)
+                                    launcher.selectedIndex--
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+                            Keys.onUpPressed: {
+                                if (launcher.selectedIndex < launcher.filteredApps.length - 1)
+                                    launcher.selectedIndex++
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+                            Keys.onTabPressed: {
+                                launcher.selectedIndex =
+                                    (launcher.selectedIndex + 1) % Math.max(1, launcher.filteredApps.length)
+                                appList.positionViewAtIndex(launcher.selectedIndex, ListView.Contain)
+                            }
+
+                            Text {
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                text: "Search applications..."
+                                color: launcher.cMuted
+                                font.pixelSize: 15
+                                font.family: "FiraCode Nerd Font"
+                                font.weight: Font.Light
+                                visible: !searchField.text
+                            }
+                        }
+
+                        Rectangle {
+                            visible: launcher.filteredApps.length > 0
+                            height: 20
+                            width: hintText.implicitWidth + 12
+                            radius: 4
+                            color: Qt.rgba(1, 1, 1, 0.05)
+                            border.color: launcher.cBorder
+                            border.width: 1
+
+                            Text {
+                                id: hintText
+                                anchors.centerIn: parent
+                                text: "↵"
+                                font.pixelSize: 11
+                                font.family: "FiraCode Nerd Font"
+                                color: launcher.cMuted
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── App list ───────────────────────────────────────────────────
             Item {
                 id: listArea
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: searchArea.top
+                anchors {
+                    top: header.bottom
+                    left: parent.left
+                    right: parent.right
+                    bottom: searchArea.top
+                }
 
-                // Empty state
                 Column {
                     anchors.centerIn: parent
-                    spacing: 10
+                    spacing: 12
                     visible: launcher.filteredApps.length === 0 && searchField.text
-                    opacity: 0.4
 
                     Text {
-                        text: "\u{f0349}"
-                        font.pixelSize: 32
+                        text: "\u{f059d}"
+                        font.pixelSize: 36
                         font.family: "FiraCode Nerd Font"
-                        color: launcher.cMutedBr
+                        color: launcher.cMuted
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     Text {
-                        text: "no matches"
+                        text: "No results for \"" + searchField.text + "\""
                         font.pixelSize: 12
                         font.family: "FiraCode Nerd Font"
-                        font.letterSpacing: 1.0
-                        color: launcher.cMutedBr
+                        color: launcher.cMuted
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
 
                 ListView {
                     id: appList
-                    anchors.fill: parent
-                    anchors.topMargin: 6
-                    anchors.bottomMargin: 6
+                    anchors { fill: parent; topMargin: 4; bottomMargin: 4 }
                     clip: true
                     spacing: 0
                     model: launcher.filteredApps
@@ -319,9 +391,8 @@ Scope {
                         policy: ScrollBar.AsNeeded
                         width: 2
                         anchors.right: parent.right
-                        anchors.rightMargin: 4
+                        anchors.rightMargin: 3
                         opacity: appList.moving ? 1.0 : 0.0
-                        Behavior on opacity { NumberAnimation { duration: 300 } }
                         contentItem: Rectangle { radius: 1; color: Qt.rgba(1, 1, 1, 0.18) }
                         background: Item {}
                     }
@@ -331,86 +402,68 @@ Scope {
                         required property var modelData
                         required property int index
                         width: ListView.view.width
-                        height: 54
-                        opacity: 0
+                        height: 52
 
-                        // Staggered entrance
-                        Timer {
-                            interval: Math.min(index, 10) * 18
-                            running: launcher.visible
-                            onTriggered: entranceAnim.start()
-                        }
-                        NumberAnimation {
-                            id: entranceAnim
-                            target: delegateRoot
-                            property: "opacity"
-                            from: 0; to: 1.0
-                            duration: 140
-                            easing.type: Easing.OutCubic
-                        }
-                        Connections {
-                            target: launcher
-                            function onVisibleChanged() {
-                                if (!launcher.visible) delegateRoot.opacity = 0
-                            }
-                        }
+                        readonly property bool isSelected: index === launcher.selectedIndex
 
-                        // Horizontal gradient selection highlight
+                        // Selection background
                         Rectangle {
-                            anchors.fill: parent
-                            gradient: Gradient {
-                                orientation: Gradient.Horizontal
-                                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.09) }
-                                GradientStop { position: 0.6; color: Qt.rgba(1, 1, 1, 0.03) }
-                                GradientStop { position: 1.0; color: "transparent" }
-                            }
-                            opacity: index === launcher.selectedIndex ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 100 } }
+                            anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
+                            radius: 8
+                            color: delegateRoot.isSelected
+                                ? Qt.rgba(0.48, 0.64, 0.97, 0.12)
+                                : "transparent"
+                            border.color: delegateRoot.isSelected
+                                ? Qt.rgba(0.48, 0.64, 0.97, 0.2)
+                                : "transparent"
+                            border.width: 1
                         }
 
                         // Left accent bar
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 2
-                            height: 20
-                            radius: 1
-                            color: Qt.rgba(1, 1, 1, 0.9)
-                            opacity: index === launcher.selectedIndex ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 100 } }
+                            anchors {
+                                left: parent.left
+                                leftMargin: 8
+                                verticalCenter: parent.verticalCenter
+                            }
+                            width: 3
+                            height: 24
+                            radius: 2
+                            color: launcher.cAccent
+                            visible: delegateRoot.isSelected
                         }
 
                         RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 14
-                            anchors.rightMargin: 16
-                            spacing: 14
+                            anchors { fill: parent; leftMargin: 20; rightMargin: 16 }
+                            spacing: 12
 
-                            // Circular icon container
+                            // Rounded-square icon
                             Rectangle {
-                                Layout.preferredWidth: 34
-                                Layout.preferredHeight: 34
-                                radius: 17
-                                color: Qt.rgba(1, 1, 1, 0.05)
-                                border.color: Qt.rgba(1, 1, 1, 0.06)
+                                Layout.preferredWidth: 36
+                                Layout.preferredHeight: 36
+                                radius: 9
+                                color: delegateRoot.isSelected
+                                    ? Qt.rgba(0.48, 0.64, 0.97, 0.15)
+                                    : Qt.rgba(1, 1, 1, 0.04)
+                                border.color: delegateRoot.isSelected
+                                    ? Qt.rgba(0.48, 0.64, 0.97, 0.25)
+                                    : Qt.rgba(1, 1, 1, 0.07)
                                 border.width: 1
 
                                 Image {
                                     id: ico
                                     source: modelData.iconPath || ""
                                     anchors.centerIn: parent
-                                    width: 22; height: 22
+                                    width: 24; height: 24
                                     fillMode: Image.PreserveAspectFit
                                     visible: status === Image.Ready
                                     asynchronous: true
                                     smooth: true
-                                    opacity: status === Image.Ready ? 1.0 : 0.0
-                                    Behavior on opacity { NumberAnimation { duration: 150 } }
                                 }
 
                                 Text {
                                     text: "\u{f259}"
-                                    font.pixelSize: 14
+                                    font.pixelSize: 15
                                     font.family: "FiraCode Nerd Font"
                                     color: launcher.cMuted
                                     anchors.centerIn: parent
@@ -421,24 +474,23 @@ Scope {
                             // Name + description
                             Column {
                                 Layout.fillWidth: true
-                                spacing: 2
+                                spacing: 3
 
                                 Text {
                                     text: modelData.name
-                                    color: index === launcher.selectedIndex ? "#FFFFFF" : launcher.cText
+                                    color: delegateRoot.isSelected ? "#ffffff" : launcher.cText
                                     font.pixelSize: 13
                                     font.family: "FiraCode Nerd Font"
-                                    font.weight: Font.Medium
+                                    font.weight: delegateRoot.isSelected ? Font.SemiBold : Font.Normal
                                     font.letterSpacing: 0.2
                                     width: parent.width
                                     elide: Text.ElideRight
-                                    Behavior on color { ColorAnimation { duration: 100 } }
                                 }
 
                                 Text {
                                     text: modelData.comment || ""
-                                    color: launcher.cMutedBr
-                                    font.pixelSize: 10
+                                    color: delegateRoot.isSelected ? launcher.cSubtext : launcher.cMuted
+                                    font.pixelSize: 11
                                     font.family: "FiraCode Nerd Font"
                                     width: parent.width
                                     elide: Text.ElideRight
@@ -456,12 +508,8 @@ Scope {
                         }
                     }
                 }
-
-
             }
-
         }
-
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape) launcher.visible = false
