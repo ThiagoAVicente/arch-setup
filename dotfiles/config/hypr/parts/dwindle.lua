@@ -1,0 +1,3 @@
+hl.config({
+    dwindle = {},
+})
