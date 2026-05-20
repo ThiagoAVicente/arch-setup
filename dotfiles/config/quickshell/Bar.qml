@@ -88,7 +88,7 @@ Scope {
                     spacing: 4
 
                     // System tray
-                   // SystemTrayWidget {}
+                    SystemTrayWidget {}
 
                     // Separator
                     Rectangle {

@@ -1,6 +1,3 @@
--- Intel iGPU primary (Nvidia blacklisted via kernel cmdline: module_blacklist=nvidia,...)
--- AQ_DRM_DEVICES replaces old WLR_DRM_DEVICES (aquamarine, colon-separated)
-hl.env("AQ_DRM_DEVICES", "/dev/dri/card2")
 hl.env("LIBVA_DRIVER_NAME", "iHD")
 
 -- Cursor
