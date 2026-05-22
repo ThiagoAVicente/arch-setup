@@ -93,4 +93,19 @@ open(){
     done
 }
 
- qrcode() { qrencode -o - "$1" | wl-copy --type image/png; }            
+qrcode() { qrencode -o - "$1" | wl-copy --type image/png; }
+
+econfig() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: econfig <config_folder>"
+    return 1
+  fi
+  local config_folder="$HOME/installation/dotfiles/config/$1"
+
+  if [[ ! -d "$config_folder" ]]; then
+    echo "Error: Config folder '$config_folder' does not exist."
+    return 1
+  fi
+
+  $EDITOR "$config_folder"
+}

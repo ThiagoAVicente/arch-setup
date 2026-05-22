@@ -29,25 +29,38 @@ RowLayout {
                 const raw = modelData?.icon ?? ""
                 if (!raw) return
 
-                // Pass pixmap/path sources directly
+                // Pass pixmap sources directly
                 if (!raw.startsWith("image://icon/")) {
                     resolvedIcon = raw
                     return
                 }
 
-                const name = raw.slice(13)
+                const stripped = raw.slice(13) // remove "image://icon/"
 
-                if (root.iconCache[name] !== undefined) {
-                    resolvedIcon = root.iconCache[name]
+                // ?path= means icon lives in a specific dir (e.g. Steam)
+                if (stripped.includes("?path=")) {
+                    const [namePart, dirPath] = stripped.split("?path=")
+                    const iconName = namePart.slice(namePart.lastIndexOf("/") + 1)
+                    resolvedIcon = "file://" + dirPath + "/" + iconName + ".png"
                     return
                 }
 
-                finder.iconName = name
+                if (root.iconCache[stripped] !== undefined) {
+                    resolvedIcon = root.iconCache[stripped]
+                    return
+                }
+
+                finder.iconName = stripped
                 finder.running = true
             }
 
             Component.onCompleted: resolve()
             onModelDataChanged: resolve()
+
+            Process {
+                id: clickRunner
+                running: false
+            }
 
             Process {
                 id: finder
@@ -94,15 +107,24 @@ RowLayout {
                 id: tMa
                 anchors.fill: parent
                 hoverEnabled: true
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: event => {
+                    const item = trayItem.modelData
+                    if (!item) return
                     if (event.button === Qt.RightButton) {
-                        if (trayItem.modelData?.menu)
-                            trayItem.modelData.menu.open()
+                        if (item.menu) item.menu.open()
+                    } else if (event.button === Qt.MiddleButton) {
+                        item.secondaryActivate()
                     } else {
-                        trayItem.modelData?.activate?.()
+                        // Steam doesn't implement Activate — use URI instead
+                        if (item.id === "steam") {
+                            clickRunner.command = ["steam", "steam://open/main"]
+                            clickRunner.running = true
+                        } else {
+                            item.activate()
+                        }
                     }
                 }
 

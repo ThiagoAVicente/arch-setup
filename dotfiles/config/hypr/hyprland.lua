@@ -17,8 +17,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-clip-persist --clipboard regular")
     hl.exec_cmd("eval $(/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh)")
     hl.exec_cmd("numlockx on")
-    hl.exec_cmd("nm-applet")
-    hl.exec_cmd("blueman-applet")
     hl.exec_cmd("/usr/lib/geoclue-2.0/demos/agent")
 end)
 
