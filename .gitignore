@@ -13,6 +13,7 @@ id_rsa
 id_ed25519
 *.pub
 *monitors.conf
+*monitors.lua
 # Backup files
 *.backup
 *.bak

@@ -16,6 +16,7 @@ ShellRoot {
     Launcher { id: launcher }
     WallpaperSelector { id: wallpaperSelector }
     PowerMenu { id: powerMenu }
+    Todo { id: todoList }
     //Clock {}
 
     // Simple: use socat to listen on socket
@@ -31,6 +32,7 @@ ShellRoot {
                 else if (cmd === "wallpaper") wallpaperSelector.toggle()
                 else if (cmd === "powermenu") powerMenu.toggle()
                 else if (cmd === "bar") bar.toggleBar()
+                else if (cmd === "todo") todoList.toggle()
             }
         }
     }

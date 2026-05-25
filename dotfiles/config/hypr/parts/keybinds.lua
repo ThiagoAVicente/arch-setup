@@ -11,6 +11,7 @@ hl.bind(mainMod .. " + E",      hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + T",      hl.dsp.window.float())
 hl.bind(mainMod .. " + D",      hl.dsp.exec_cmd(qs .. " launcher"))
 hl.bind(mainMod .. " + B",      hl.dsp.exec_cmd(qs .. " bar"))
+hl.bind(mainMod .. " + A",      hl.dsp.exec_cmd(qs .. " todo"))
 
 -- Performance overrides (reverts on hyprctl reload)
 hl.bind(mainMod .. " + ALT + O", hl.dsp.exec_cmd(
