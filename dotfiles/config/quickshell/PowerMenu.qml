@@ -2,18 +2,20 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
+import "." as Root
 
 Scope {
     id: powermenu
     property bool visible: false
     property int selectedIndex: 0
 
-    readonly property color cBg:      "#0D0D0D"
-    readonly property color cBorder:  "#1C1C1C"
-    readonly property color cText:    "#E0E0E0"
-    readonly property color cMuted:   "#484848"
-    readonly property color cSel:     "#FFFFFF"
-    readonly property color cSelText: "#0D0D0D"
+    readonly property color cBg:      Root.Theme.bg
+    readonly property color cBorder:  Root.Theme.border
+    readonly property color cText:    Root.Theme.text
+    readonly property color cMuted:   Root.Theme.muted
+    readonly property color cSel:     Root.Theme.bright
+    readonly property color cSelText: Root.Theme.bg
 
     property var options: [
         { icon: "⏻", name: "shutdown", cmd: ["systemctl", "poweroff"] },
@@ -45,7 +47,7 @@ Scope {
         id: panelWindow
         visible: powermenu.visible
         anchors { top: true; bottom: true; left: true; right: true }
-        exclusiveZone: 0
+        exclusiveZone: -1
         color: "transparent"
         focusable: true
 
@@ -81,19 +83,11 @@ Scope {
             }
         }
 
-        ParallelAnimation {
-            id: pmOpenAnim
-            OpacityAnimator { target: pmBackdrop; from: 0;    to: 0.65; duration: 200; easing.type: Easing.OutCubic }
-            OpacityAnimator { target: pmCard;     from: 0;    to: 1.0;  duration: 160; easing.type: Easing.OutCubic }
-            ScaleAnimator   { target: pmCard;     from: 0.94; to: 1.0;  duration: 220; easing.type: Easing.OutCubic }
-        }
-
         onVisibleChanged: {
             if (visible) {
-                pmBackdrop.opacity = 0
-                pmCard.opacity = 0
-                pmCard.scale = 0.94
-                pmOpenAnim.start()
+                pmBackdrop.opacity = 0.55
+                pmCard.opacity = 1.0
+                pmCard.scale = 1.0
                 focusRetry.attempts = 0
                 focusRetry.start()
             } else {
@@ -113,6 +107,25 @@ Scope {
             }
         }
 
+        // ── Glow halo ──────────────────────────────────────────────────────
+        Rectangle {
+            anchors.centerIn: parent
+            width: pmCard.width + 12
+            height: pmCard.height + 12
+            radius: pmCard.radius + 6
+            color: "transparent"
+            border.color: Qt.rgba(1, 1, 1, 0.85)
+            border.width: 3
+            visible: powermenu.visible
+            layer.enabled: powermenu.visible
+            layer.effect: MultiEffect {
+                blurEnabled: true
+                blur: 1.0
+                blurMax: 20
+                brightness: 0.15
+            }
+        }
+
         // ── Card ───────────────────────────────────────────────────────────
         Rectangle {
             id: pmCard
@@ -120,8 +133,7 @@ Scope {
             width: 220
             height: optionCol.implicitHeight + 32
             color: powermenu.cBg
-            border.color: powermenu.cBorder
-            border.width: 1
+            border.width: 0
             radius: 6
             opacity: 0
             scale: 0.94

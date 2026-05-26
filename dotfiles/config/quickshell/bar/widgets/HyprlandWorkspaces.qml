@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 Row {
     spacing: 5
@@ -43,10 +44,10 @@ Row {
                 radius: height / 2
 
                 color: isThisMonitorActive
-                    ? Qt.rgba(1, 1, 1, 0.9)
+                    ? Root.Theme.bright
                     : isOtherMonitorActive
-                        ? Qt.rgba(0.4, 0.7, 1, 0.85)
-                        : (hasWindows ? Qt.rgba(1, 1, 1, 0.45) : Qt.rgba(1, 1, 1, 0.15))
+                        ? Root.Theme.subtext
+                        : (hasWindows ? Root.Theme.muted : Root.Theme.borderStrong)
 
                 Behavior on color { ColorAnimation { duration: 180 } }
             }

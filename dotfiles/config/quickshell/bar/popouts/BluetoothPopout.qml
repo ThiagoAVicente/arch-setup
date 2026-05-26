@@ -5,6 +5,7 @@ import Quickshell.Bluetooth
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 PanelWindow {
     id: root
@@ -61,9 +62,9 @@ PanelWindow {
         height: mainCol.implicitHeight + 20
         radius: 14
 
-        color: "#313244"
+        color: Root.Theme.surface
         border.width: 1
-        border.color: "#45475a"
+        border.color: Root.Theme.surface2
 
         opacity: root.isOpen ? 1 : 0
         scale: root.isOpen ? 1 : 0.95
@@ -81,7 +82,7 @@ PanelWindow {
             Text {
                 Layout.topMargin: 4
                 text: "󰂯  Bluetooth"
-                color: "#cdd6f4"; font.family: "FiraCode Nerd Font"
+                color: Root.Theme.text; font.family: "FiraCode Nerd Font"
                 font.pixelSize: 13; font.weight: Font.Medium
             }
 
@@ -92,7 +93,7 @@ PanelWindow {
                 Text {
                     Layout.fillWidth: true
                     text: "Enabled"
-                    color: "#a6adc8"; font.pixelSize: 12
+                    color: Root.Theme.subtext; font.pixelSize: 12
                 }
 
                 BtToggle {
@@ -111,7 +112,7 @@ PanelWindow {
                 Text {
                     Layout.fillWidth: true
                     text: "Scan for devices"
-                    color: "#a6adc8"; font.pixelSize: 12
+                    color: Root.Theme.subtext; font.pixelSize: 12
                 }
 
                 BtToggle {
@@ -133,7 +134,7 @@ PanelWindow {
                     if (conn > 0) s += " · " + conn + " connected"
                     return s
                 }
-                color: "#6c7086"; font.pixelSize: 11; Layout.topMargin: 2
+                color: Root.Theme.muted; font.pixelSize: 11; Layout.topMargin: 2
             }
 
             // ── Device list ───────────────────────────────────────────
@@ -161,15 +162,15 @@ PanelWindow {
             Rectangle {
                 Layout.fillWidth: true; Layout.topMargin: 6
                 implicitHeight: 34; radius: 10
-                color: settingsMa.pressed ? "#585b70"
-                    : settingsMa.containsMouse ? "#45475a" : "#1e1e2e"
-                border.width: 1; border.color: "#45475a"
+                color: settingsMa.pressed ? Root.Theme.overlay
+                    : settingsMa.containsMouse ? Root.Theme.surface2 : Root.Theme.bg
+                border.width: 1; border.color: Root.Theme.surface2
                 Behavior on color { ColorAnimation { duration: 150 } }
 
                 Text {
                     anchors.centerIn: parent
                     text: "󰒓  Open Settings"
-                    color: "#cba6f7"; font.family: "FiraCode Nerd Font"; font.pixelSize: 12
+                    color: Root.Theme.accent; font.family: "FiraCode Nerd Font"; font.pixelSize: 12
                 }
 
                 MouseArea {
@@ -193,14 +194,14 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 11
-            color: btTog.isChecked ? "#89b4fa" : "#45475a"
+            color: btTog.isChecked ? Root.Theme.text : Root.Theme.surface2
             Behavior on color { ColorAnimation { duration: 200 } }
 
             Rectangle {
                 width: 16; height: 16; radius: 8
                 anchors.verticalCenter: parent.verticalCenter
                 x: btTog.isChecked ? parent.width - width - 3 : 3
-                color: "#cdd6f4"
+                color: Root.Theme.text
                 Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
             }
         }
@@ -229,11 +230,11 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 8
-            color: devMa.pressed ? "#585b70"
-                : devMa.containsMouse ? "#45475a"
+            color: devMa.pressed ? Root.Theme.overlay
+                : devMa.containsMouse ? Root.Theme.surface2
                 : devRow.isConnected ? Qt.rgba(0.537, 0.706, 0.980, 0.12) : "transparent"
             border.width: devRow.isConnected ? 1 : 0
-            border.color: "#89b4fa"
+            border.color: Root.Theme.text
             Behavior on color { ColorAnimation { duration: 150 } }
 
             RowLayout {
@@ -242,14 +243,14 @@ PanelWindow {
 
                 Text {
                     text: devRow.iconText
-                    color: devRow.isConnected ? "#89b4fa" : "#a6adc8"
+                    color: devRow.isConnected ? Root.Theme.text : Root.Theme.subtext
                     font.family: "FiraCode Nerd Font"; font.pixelSize: 15
                 }
 
                 Text {
                     Layout.fillWidth: true
                     text: devRow.device?.name ?? ""
-                    color: devRow.isConnected ? "#cdd6f4" : "#a6adc8"
+                    color: devRow.isConnected ? Root.Theme.text : Root.Theme.subtext
                     font.pixelSize: 12
                     font.weight: devRow.isConnected ? Font.Medium : Font.Normal
                     elide: Text.ElideRight
@@ -259,7 +260,7 @@ PanelWindow {
                 Text {
                     visible: devRow.battText.length > 0
                     text: devRow.battText
-                    color: devRow.battLow ? "#f38ba8" : "#6c7086"
+                    color: devRow.battLow ? Root.Theme.critical : Root.Theme.muted
                     font.family: "FiraCode Nerd Font"; font.pixelSize: 12
                 }
 
@@ -270,8 +271,8 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent; radius: 13
                         color: devRow.isConnected
-                            ? "#89b4fa"
-                            : (cBtnMa.pressed ? "#585b70" : cBtnMa.containsMouse ? "#45475a" : "transparent")
+                            ? Root.Theme.text
+                            : (cBtnMa.pressed ? Root.Theme.overlay : cBtnMa.containsMouse ? Root.Theme.surface2 : "transparent")
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
@@ -279,7 +280,7 @@ PanelWindow {
                     Rectangle {
                         visible: devRow.isConnecting
                         anchors.centerIn: parent; width: 16; height: 16; radius: 8
-                        color: "transparent"; border.width: 2; border.color: "#cba6f7"
+                        color: "transparent"; border.width: 2; border.color: Root.Theme.accent
                         RotationAnimation on rotation {
                             running: devRow.isConnecting; from: 0; to: 360
                             duration: 800; loops: Animation.Infinite
@@ -290,7 +291,7 @@ PanelWindow {
                         visible: !devRow.isConnecting
                         anchors.centerIn: parent
                         text: devRow.isConnected ? "󰌸" : "󰌷"
-                        color: devRow.isConnected ? "#1e1e2e" : "#cdd6f4"
+                        color: devRow.isConnected ? Root.Theme.bg : Root.Theme.text
                         font.family: "FiraCode Nerd Font"; font.pixelSize: 13
                     }
 
@@ -312,13 +313,13 @@ PanelWindow {
 
                         Rectangle {
                             anchors.fill: parent; radius: 13
-                            color: forgMa.pressed ? "#f38ba8" : (forgMa.containsMouse ? "#4a1c2a" : "transparent")
+                            color: forgMa.pressed ? Root.Theme.critical : (forgMa.containsMouse ? "#4a1c2a" : "transparent")
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
                         Text {
                             anchors.centerIn: parent; text: "󰆴"
-                            color: forgMa.containsMouse ? "#f38ba8" : "#6c7086"
+                            color: forgMa.containsMouse ? Root.Theme.critical : Root.Theme.muted
                             font.family: "FiraCode Nerd Font"; font.pixelSize: 13
                         }
 

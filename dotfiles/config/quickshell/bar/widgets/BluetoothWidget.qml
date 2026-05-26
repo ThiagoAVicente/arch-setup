@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Bluetooth
 import QtQuick
+import "../.." as Root
 
 Item {
     id: root
@@ -11,7 +12,6 @@ Item {
     implicitWidth: 30
     implicitHeight: 26
 
-    // ── Helper Functions (Avoids QML JS pitfalls) ─────────────────────────
     function getBluetoothIcon() {
         const adapter = Bluetooth.defaultAdapter
         if (!adapter || !adapter.enabled) return "󰂲"
@@ -22,34 +22,31 @@ Item {
     }
 
     function getBluetoothColor() {
-        if (root.popoutOpen) return "#1e1e2e"
+        if (root.popoutOpen) return Root.Theme.bg
         const adapter = Bluetooth.defaultAdapter
-        if (!adapter || !adapter.enabled) return "#6c7086"
+        if (!adapter || !adapter.enabled) return Root.Theme.muted
         for (const key in Bluetooth.devices) {
-            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return "#89b4fa"
+            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return Root.Theme.bright
         }
-        return "#cdd6f4"
+        return Root.Theme.text
     }
 
-    // ── Background Pill ──────────────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
         radius: 9
-        color: root.popoutOpen ? "#89b4fa"
-            : (hovMa.containsMouse ? Qt.rgba(1, 1, 1, 0.1) : "transparent")
+        color: root.popoutOpen ? Root.Theme.accent
+            : (hovMa.containsMouse ? Root.Theme.hoverStrong : "transparent")
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
-    // ── Icon Text ────────────────────────────────────────────────────────
     Text {
         anchors.centerIn: parent
         text: getBluetoothIcon()
         color: getBluetoothColor()
-        font.family: "FiraCode Nerd Font"
+        font.family: Root.Theme.fontFamily
         font.pixelSize: 14
         Behavior on color { ColorAnimation { duration: 150 } }
 
-        // Blink when discovering
         SequentialAnimation on opacity {
             running: Bluetooth.defaultAdapter && Bluetooth.defaultAdapter.discovering && !root.popoutOpen
             loops: Animation.Infinite
@@ -59,7 +56,6 @@ Item {
         }
     }
 
-    // ── Click Handler ────────────────────────────────────────────────────
     MouseArea {
         id: hovMa
         anchors.fill: parent

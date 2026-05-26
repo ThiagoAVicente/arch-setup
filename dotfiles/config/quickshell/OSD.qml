@@ -14,52 +14,45 @@ Scope {
     property bool lastMuted: false
     property string osdType: ""
 
-    // Subscribe to PipeWire/PulseAudio sink events (event-driven, replaces 200ms poll)
+    // Subscribe to PipeWire/PulseAudio sink events (event-driven)
     Process {
         running: true
         command: ["pactl", "subscribe"]
         stdout: SplitParser {
             onRead: data => {
-                if (data.includes("sink")) {
-                    volumeMonitor.running = true
-                    muteMonitor.running = true
-                }
+                if (data.includes("sink")) sinkMonitor.running = true
             }
         }
     }
 
-    Component.onCompleted: {
-        volumeMonitor.running = true
-        muteMonitor.running = true
-    }
+    Component.onCompleted: sinkMonitor.running = true
 
-    // Volume monitor (triggered by pactl events, not timer)
+    // Single Process reads vol + mute in one shot, replaces two parallel Processes
     Process {
-        id: volumeMonitor
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{print int($2*100)}'"]
+        id: sinkMonitor
+        command: ["sh", "-c",
+            "out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null);" +
+            "v=$(echo \"$out\" | awk '{print int($2*100)}');" +
+            "m=0; echo \"$out\" | grep -q MUTED && m=1;" +
+            "echo \"$v $m\""]
         stdout: SplitParser {
             onRead: data => {
-                let val = parseInt(data.trim())
-                if (!isNaN(val) && val !== osdScope.lastVolume) {
-                    osdScope.volume = val
-                    osdScope.lastVolume = val
-                    osdScope.showOSD("volume")
+                const parts = data.trim().split(" ")
+                if (parts.length !== 2) return
+                const v = parseInt(parts[0])
+                const m = parts[1] === "1"
+                let changed = false
+                if (!isNaN(v) && v !== osdScope.lastVolume) {
+                    osdScope.volume = v
+                    osdScope.lastVolume = v
+                    changed = true
                 }
-            }
-        }
-    }
-
-    Process {
-        id: muteMonitor
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -q MUTED && echo 1 || echo 0"]
-        stdout: SplitParser {
-            onRead: data => {
-                let m = data.trim() === "1"
                 if (m !== osdScope.lastMuted) {
                     osdScope.muted = m
                     osdScope.lastMuted = m
-                    osdScope.showOSD("volume")
+                    changed = true
                 }
+                if (changed) osdScope.showOSD("volume")
             }
         }
     }

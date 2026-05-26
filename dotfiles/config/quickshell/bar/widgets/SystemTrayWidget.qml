@@ -67,7 +67,7 @@ RowLayout {
                 property string iconName: ""
                 running: false
                 command: ["sh", "-c",
-                    "find /usr/share/icons /usr/local/share/icons -name '" + finder.iconName + ".*' 2>/dev/null | grep -E '\\.(svg|png)$' | grep -E '(22x22|24x24|16x16|scalable|panel|status|apps)' | head -1"
+                    "find /usr/share/icons /usr/local/share/icons -maxdepth 6 \\( -path '*/cursors' -o -path '*/emblems' -o -path '*/mimetypes' \\) -prune -o -name '" + finder.iconName + ".*' -print 2>/dev/null | grep -E '\\.(svg|png)$' | grep -E '(22x22|24x24|16x16|scalable|panel|status|apps)' | head -1"
                 ]
                 stdout: SplitParser {
                     onRead: data => {
@@ -92,6 +92,8 @@ RowLayout {
                 height: 16
                 source: trayItem.resolvedIcon
                 smooth: true
+                asynchronous: true
+                implicitSize: 32
             }
 
             Loader {

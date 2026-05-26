@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 Item {
     id: root
@@ -9,7 +10,6 @@ Item {
     property int percentage: 0
     property bool charging: false
 
-    // Don't show if no battery found
     visible: percentage > 0 || charging
 
     implicitWidth: row.implicitWidth + 12
@@ -17,7 +17,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: batMa.containsMouse ? Qt.rgba(1,1,1,0.08) : "transparent"
+        color: batMa.containsMouse ? Root.Theme.hover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -27,55 +27,47 @@ Item {
         spacing: 4
 
         Text {
-            text: {
-                if (root.charging) return "󰂄"
-                const p = root.percentage
-                if (p > 90) return "󰁹"
-                if (p > 80) return "󰂂"
-                if (p > 70) return "󰂁"
-                if (p > 60) return "󰂀"
-                if (p > 50) return "󰁿"
-                if (p > 40) return "󰁾"
-                if (p > 30) return "󰁽"
-                if (p > 20) return "󰁼"
-                if (p > 10) return "󰁻"
-                return "󰁺"
-            }
+            text: Root.IconMaps.batteryIcon(root.percentage, root.charging)
             color: {
-                if (root.charging) return "#a6e3a1"
-                if (root.percentage <= 10) return "#f38ba8"
-                if (root.percentage <= 20) return "#fab387"
-                return "#a6adc8"
+                if (root.charging) return Root.Theme.ok
+                if (root.percentage <= 10) return Root.Theme.critical
+                if (root.percentage <= 20) return Root.Theme.alert
+                return Root.Theme.subtext
             }
-            font.family: "FiraCode Nerd Font"; font.pixelSize: 14
+            font.family: Root.Theme.fontFamily
+            font.pixelSize: 14
             Behavior on color { ColorAnimation { duration: 300 } }
         }
 
         Text {
             text: root.percentage + "%"
-            color: root.percentage <= 20 && !root.charging ? "#f38ba8" : "#a6adc8"
+            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical : Root.Theme.subtext
             font.pixelSize: 11
             Behavior on color { ColorAnimation { duration: 300 } }
         }
     }
 
+    // Read capacity + status in one shot
     Process {
         id: batteryCheck
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 0"]
+        command: ["sh", "-c",
+            "p=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 0);" +
+            "s=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Discharging);" +
+            "echo \"$p $s\""]
         running: true
-        stdout: SplitParser { onRead: data => root.percentage = parseInt(data.trim()) || 0 }
-    }
-
-    Process {
-        id: chargeCheck
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Discharging"]
-        running: true
-        stdout: SplitParser { onRead: data => root.charging = data.trim() === "Charging" }
+        stdout: SplitParser {
+            onRead: data => {
+                const parts = data.trim().split(" ")
+                if (parts.length < 2) return
+                root.percentage = parseInt(parts[0]) || 0
+                root.charging = parts[1] === "Charging"
+            }
+        }
     }
 
     Timer {
         interval: 30000; running: true; repeat: true
-        onTriggered: { batteryCheck.running = true; chargeCheck.running = true }
+        onTriggered: batteryCheck.running = true
     }
 
     MouseArea {

@@ -6,14 +6,14 @@ Rectangle {
     width: 20
     height: 20
     radius: 4
-    color: Root.State.notificationsMuted ? Qt.rgba(1, 0.4, 0.4, 0.2) : "transparent"
+    color: Root.State.notificationsMuted ? Qt.rgba(0.85, 0.48, 0.55, 0.18) : "transparent"
 
     Text {
         anchors.centerIn: parent
         text: Root.State.notificationsMuted ? "󰂛" : "󰂚"
-        color: Root.State.notificationsMuted ? Qt.rgba(1, 0.4, 0.4, 1) : Qt.rgba(1, 1, 1, 0.7)
+        color: Root.State.notificationsMuted ? Root.Theme.critical : Root.Theme.subtext
         font.pixelSize: 14
-        font.family: "FiraCode Nerd Font"
+        font.family: Root.Theme.fontFamily
     }
 
     MouseArea {

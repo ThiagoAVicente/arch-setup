@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 PanelWindow {
     id: root
@@ -215,16 +216,11 @@ PanelWindow {
 
     Timer { id: monDebounce; interval: 400; onTriggered: root.refreshAll() }
 
-    Timer {
-        interval: 5000; running: root.isOpen; repeat: true
-        triggeredOnStart: true; onTriggered: root.refreshAll()
-    }
-
     onIsOpenChanged: {
         if (isOpen) {
             view = "wireless"
             connectingToSsid = ""
-            refreshAll()
+            Qt.callLater(root.refreshAll)
         }
     }
 
@@ -240,9 +236,9 @@ PanelWindow {
         height: mainCol.implicitHeight + 20
         radius: 14
 
-        color: "#313244"
+        color: Root.Theme.surface
         border.width: 1
-        border.color: "#45475a"
+        border.color: Root.Theme.surface2
 
         // Smooth appear animation
         opacity: root.isOpen ? 1 : 0
@@ -282,7 +278,7 @@ PanelWindow {
                 Text {
                     Layout.fillWidth: true
                     text: "󰤨  Wireless"
-                    color: "#cdd6f4"; font.family: "FiraCode Nerd Font"
+                    color: Root.Theme.text; font.family: "FiraCode Nerd Font"
                     font.pixelSize: 13; font.weight: Font.Medium
                 }
 
@@ -299,7 +295,7 @@ PanelWindow {
             Text {
                 visible: root.view === "wireless"
                 text: root.networks.length + " networks available"
-                color: "#6c7086"; font.pixelSize: 11
+                color: Root.Theme.muted; font.pixelSize: 11
             }
 
             // Network list
@@ -324,9 +320,9 @@ PanelWindow {
             Rectangle {
                 visible: root.view === "wireless"
                 Layout.fillWidth: true; implicitHeight: 34
-                radius: 10; color: rescanMa.pressed ? "#585b70"
-                    : rescanMa.containsMouse ? "#45475a" : "#1e1e2e"
-                border.width: 1; border.color: "#45475a"
+                radius: 10; color: rescanMa.pressed ? Root.Theme.overlay
+                    : rescanMa.containsMouse ? Root.Theme.surface2 : Root.Theme.bg
+                border.width: 1; border.color: Root.Theme.surface2
                 Behavior on color { ColorAnimation { duration: 150 } }
 
                 RowLayout {
@@ -334,7 +330,7 @@ PanelWindow {
 
                     Text {
                         text: root.scanning ? "Scanning…" : "󰑓  Rescan networks"
-                        color: root.scanning ? "#a6adc8" : "#cba6f7"
+                        color: root.scanning ? Root.Theme.subtext : Root.Theme.accent
                         font.family: "FiraCode Nerd Font"; font.pixelSize: 12
                     }
 
@@ -343,7 +339,7 @@ PanelWindow {
                         visible: root.scanning
                         width: 14; height: 14; radius: 7
                         color: "transparent"
-                        border.width: 2; border.color: "#cba6f7"
+                        border.width: 2; border.color: Root.Theme.accent
                         RotationAnimation on rotation {
                             running: root.scanning; from: 0; to: 360
                             duration: 900; loops: Animation.Infinite
@@ -363,14 +359,14 @@ PanelWindow {
             Text {
                 visible: root.view === "ethernet"
                 text: "󰈀  Ethernet"; Layout.topMargin: 4
-                color: "#cdd6f4"; font.family: "FiraCode Nerd Font"
+                color: Root.Theme.text; font.family: "FiraCode Nerd Font"
                 font.pixelSize: 13; font.weight: Font.Medium
             }
 
             Text {
                 visible: root.view === "ethernet"
                 text: root.ethernetDevices.length + " devices available"
-                color: "#6c7086"; font.pixelSize: 11
+                color: Root.Theme.muted; font.pixelSize: 11
             }
 
             // Ethernet device list
@@ -411,14 +407,14 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 8
-            color: tab.active ? "#cba6f7" : (tMa.containsMouse ? "#45475a" : "transparent")
+            color: tab.active ? Root.Theme.accent : (tMa.containsMouse ? Root.Theme.surface2 : "transparent")
             Behavior on color { ColorAnimation { duration: 150 } }
 
             Text {
                 id: tabTxt
                 anchors.centerIn: parent
                 text: tab.tabLabel
-                color: tab.active ? "#1e1e2e" : "#a6adc8"
+                color: tab.active ? Root.Theme.bg : Root.Theme.subtext
                 font.family: "FiraCode Nerd Font"; font.pixelSize: 12
             }
         }
@@ -436,7 +432,7 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 11
-            color: tog.isChecked ? "#cba6f7" : "#45475a"
+            color: tog.isChecked ? Root.Theme.accent : Root.Theme.surface2
             Behavior on color { ColorAnimation { duration: 200 } }
 
             Rectangle {
@@ -444,7 +440,7 @@ PanelWindow {
                 width: 16; height: 16; radius: 8
                 anchors.verticalCenter: parent.verticalCenter
                 x: tog.isChecked ? parent.width - width - 3 : 3
-                color: "#cdd6f4"
+                color: Root.Theme.text
                 Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
             }
         }
@@ -466,17 +462,17 @@ PanelWindow {
             anchors.fill: parent; radius: 8
             color: btn.isEnabled
                 ? (bMa.pressed
-                    ? (btn.primary ? "#a070d8" : "#585b70")
+                    ? (btn.primary ? Root.Theme.accent2 : Root.Theme.overlay)
                     : (bMa.containsMouse
-                        ? (btn.primary ? "#d4b0f8" : "#45475a")
-                        : (btn.primary ? "#cba6f7" : "#45475a")))
+                        ? (btn.primary ? Root.Theme.bright : Root.Theme.surface2)
+                        : (btn.primary ? Root.Theme.accent : Root.Theme.surface2)))
                 : "#2a2a3e"
             Behavior on color { ColorAnimation { duration: 150 } }
 
             Text {
                 anchors.centerIn: parent
                 text: btn.label
-                color: btn.primary ? "#1e1e2e" : (btn.isEnabled ? "#cdd6f4" : "#6c7086")
+                color: btn.primary ? Root.Theme.bg : (btn.isEnabled ? Root.Theme.text : Root.Theme.muted)
                 font.pixelSize: 12
             }
         }
@@ -502,12 +498,12 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 8
-            color: rowMa.pressed ? "#585b70"
-                : rowMa.containsMouse ? "#45475a"
+            color: rowMa.pressed ? Root.Theme.overlay
+                : rowMa.containsMouse ? Root.Theme.surface2
                 : netRow.net && netRow.net.active ? Qt.rgba(0.537, 0.706, 0.980, 0.12)
                 : "transparent"
             border.width: netRow.net && netRow.net.active ? 1 : 0
-            border.color: "#89b4fa"
+            border.color: Root.Theme.text
             Behavior on color { ColorAnimation { duration: 150 } }
 
             RowLayout {
@@ -524,20 +520,20 @@ PanelWindow {
                         if (s >= 20) return "󰤟"
                         return "󰤯"
                     }
-                    color: netRow.net && netRow.net.active ? "#89b4fa" : "#a6adc8"
+                    color: netRow.net && netRow.net.active ? Root.Theme.text : Root.Theme.subtext
                     font.family: "FiraCode Nerd Font"; font.pixelSize: 14
                 }
 
                 Text {
                     visible: netRow.net && netRow.net.isSecure
                     text: "󰌋"
-                    color: "#6c7086"; font.family: "FiraCode Nerd Font"; font.pixelSize: 11
+                    color: Root.Theme.muted; font.family: "FiraCode Nerd Font"; font.pixelSize: 11
                 }
 
                 Text {
                     Layout.fillWidth: true
                     text: netRow.net ? netRow.net.ssid : ""
-                    color: netRow.net && netRow.net.active ? "#cdd6f4" : "#a6adc8"
+                    color: netRow.net && netRow.net.active ? Root.Theme.text : Root.Theme.subtext
                     font.pixelSize: 12
                     font.weight: netRow.net && netRow.net.active ? Font.Medium : Font.Normal
                     elide: Text.ElideRight
@@ -550,8 +546,8 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent; radius: 13
                         color: netRow.net && netRow.net.active
-                            ? "#89b4fa"
-                            : (connBtnMa.pressed ? "#585b70" : connBtnMa.containsMouse ? "#45475a" : "transparent")
+                            ? Root.Theme.text
+                            : (connBtnMa.pressed ? Root.Theme.overlay : connBtnMa.containsMouse ? Root.Theme.surface2 : "transparent")
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
@@ -559,7 +555,7 @@ PanelWindow {
                     Rectangle {
                         visible: netRow.isConnecting
                         anchors.centerIn: parent; width: 16; height: 16; radius: 8
-                        color: "transparent"; border.width: 2; border.color: "#cba6f7"
+                        color: "transparent"; border.width: 2; border.color: Root.Theme.accent
                         RotationAnimation on rotation {
                             running: netRow.isConnecting; from: 0; to: 360
                             duration: 800; loops: Animation.Infinite
@@ -570,7 +566,7 @@ PanelWindow {
                         visible: !netRow.isConnecting
                         anchors.centerIn: parent
                         text: netRow.net && netRow.net.active ? "󰌸" : "󰌷"
-                        color: netRow.net && netRow.net.active ? "#1e1e2e" : "#cdd6f4"
+                        color: netRow.net && netRow.net.active ? Root.Theme.bg : Root.Theme.text
                         font.family: "FiraCode Nerd Font"; font.pixelSize: 13
                     }
 
@@ -612,11 +608,11 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 8
-            color: ethMa.pressed ? "#585b70"
-                : ethMa.containsMouse ? "#45475a"
+            color: ethMa.pressed ? Root.Theme.overlay
+                : ethMa.containsMouse ? Root.Theme.surface2
                 : ethRow.dev && ethRow.dev.connected ? Qt.rgba(0.537, 0.706, 0.980, 0.12) : "transparent"
             border.width: ethRow.dev && ethRow.dev.connected ? 1 : 0
-            border.color: "#89b4fa"
+            border.color: Root.Theme.text
 
             RowLayout {
                 anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
@@ -624,14 +620,14 @@ PanelWindow {
 
                 Text {
                     text: "󰈀"
-                    color: ethRow.dev && ethRow.dev.connected ? "#89b4fa" : "#a6adc8"
+                    color: ethRow.dev && ethRow.dev.connected ? Root.Theme.text : Root.Theme.subtext
                     font.family: "FiraCode Nerd Font"; font.pixelSize: 14
                 }
 
                 Text {
                     Layout.fillWidth: true
                     text: ethRow.dev ? (ethRow.dev.interface || "Unknown") : ""
-                    color: ethRow.dev && ethRow.dev.connected ? "#cdd6f4" : "#a6adc8"
+                    color: ethRow.dev && ethRow.dev.connected ? Root.Theme.text : Root.Theme.subtext
                     font.pixelSize: 12
                     font.weight: ethRow.dev && ethRow.dev.connected ? Font.Medium : Font.Normal
                 }
@@ -642,14 +638,14 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent; radius: 13
                         color: ethRow.dev && ethRow.dev.connected
-                            ? "#89b4fa"
-                            : (ethBtnMa.pressed ? "#585b70" : ethBtnMa.containsMouse ? "#45475a" : "transparent")
+                            ? Root.Theme.text
+                            : (ethBtnMa.pressed ? Root.Theme.overlay : ethBtnMa.containsMouse ? Root.Theme.surface2 : "transparent")
                     }
 
                     Text {
                         anchors.centerIn: parent
                         text: ethRow.dev && ethRow.dev.connected ? "󰌸" : "󰌷"
-                        color: ethRow.dev && ethRow.dev.connected ? "#1e1e2e" : "#cdd6f4"
+                        color: ethRow.dev && ethRow.dev.connected ? Root.Theme.bg : Root.Theme.text
                         font.family: "FiraCode Nerd Font"; font.pixelSize: 13
                     }
 

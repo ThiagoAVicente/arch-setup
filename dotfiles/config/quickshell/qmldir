@@ -1,5 +1,7 @@
 module Root
 singleton State 1.0 State.qml
+singleton Theme 1.0 Theme.qml
+singleton IconMaps 1.0 IconMaps.qml
 Bar 1.0 Bar.qml
 NotificationManager 1.0 NotificationManager.qml
 OSD 1.0 OSD.qml

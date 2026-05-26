@@ -60,7 +60,7 @@ Scope {
         id: panelWindow
         visible: wallpaperSelector.visible
         anchors { top: true; left: true; right: true; bottom: true }
-        exclusiveZone: 0
+        exclusiveZone: -1
         focusable: true
         color: "transparent"
 
@@ -184,8 +184,11 @@ Scope {
                             anchors.fill: parent
                             anchors.margins: isSel ? 2 : 1
                             source: "file://" + modelData.path
+                            sourceSize.width: 240
+                            sourceSize.height: 135
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
+                            cache: true
                             smooth: true
                             opacity: isSel ? 1.0 : 0.45
 
@@ -225,29 +228,6 @@ Scope {
                 }
             }
 
-            // Fade edges — top
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 60
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0.6) }
-                    GradientStop { position: 1.0; color: "transparent" }
-                }
-            }
-
-            // Fade edges — bottom
-            Rectangle {
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 60
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.6) }
-                }
-            }
         }
     }
 }

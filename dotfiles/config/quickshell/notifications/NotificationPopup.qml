@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
 import QtQuick.Layouts
+import ".." as Root
 
 Item {
     id: popup
@@ -31,7 +32,7 @@ Item {
         id: card
         anchors { left: parent.left; right: parent.right }
         implicitHeight: inner.implicitHeight + 24
-        color: "#1e1e2e"
+        color: Root.Theme.bg
         border.color: Qt.rgba(1, 1, 1, 0.08)
         border.width: 1
         radius: 12
@@ -49,13 +50,13 @@ Item {
             width: 3
             height: parent.radius
             anchors { left: parent.left; top: parent.top }
-            color: "#1e1e2e"
+            color: Root.Theme.bg
         }
         Rectangle {
             width: 3
             height: parent.radius
             anchors { left: parent.left; bottom: parent.bottom }
-            color: "#1e1e2e"
+            color: Root.Theme.bg
         }
 
         ColumnLayout {
@@ -175,7 +176,7 @@ Item {
                             id: actionLabel
                             anchors.centerIn: parent
                             text: parent.modelData?.text ?? ""
-                            color: actionMouse.containsMouse ? "#1e1e2e" : Qt.rgba(1, 1, 1, 0.75)
+                            color: actionMouse.containsMouse ? Root.Theme.bg : Qt.rgba(1, 1, 1, 0.75)
                             font.pixelSize: 11
                             font.family: "FiraCode Nerd Font"
 

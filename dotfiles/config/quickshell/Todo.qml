@@ -6,6 +6,8 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
+import "." as Root
 
 Scope {
     id: todo
@@ -18,15 +20,15 @@ Scope {
         return home + "/.cache/quickshell-todo.json"
     }
 
-    readonly property color cBg:      "#1e1e2e"
-    readonly property color cMantle:  "#181825"
-    readonly property color cAccent:  "#7aa2f7"
-    readonly property color cGreen:   "#a6e3a1"
-    readonly property color cRed:     "#f38ba8"
-    readonly property color cText:    "#cdd6f4"
-    readonly property color cSubtext: "#a6adc8"
-    readonly property color cMuted:   "#585b70"
-    readonly property color cBorder:  Qt.rgba(1, 1, 1, 0.08)
+    readonly property color cBg:      Root.Theme.bg
+    readonly property color cMantle:  Root.Theme.mantle
+    readonly property color cAccent:  Root.Theme.accent
+    readonly property color cGreen:   Root.Theme.ok
+    readonly property color cRed:     Root.Theme.critical
+    readonly property color cText:    Root.Theme.text
+    readonly property color cSubtext: Root.Theme.subtext
+    readonly property color cMuted:   Root.Theme.muted
+    readonly property color cBorder:  Root.Theme.border
 
     function toggle() {
         visible = !visible
@@ -184,14 +186,32 @@ Scope {
             }
         }
 
+        // Glow halo
+        Rectangle {
+            anchors.centerIn: parent
+            width: card.width + 12
+            height: card.height + 12
+            radius: card.radius + 6
+            color: "transparent"
+            border.color: Qt.rgba(1, 1, 1, 0.85)
+            border.width: 3
+            visible: todo.visible
+            layer.enabled: todo.visible
+            layer.effect: MultiEffect {
+                blurEnabled: true
+                blur: 1.0
+                blurMax: 20
+                brightness: 0.15
+            }
+        }
+
         Rectangle {
             id: card
             anchors.centerIn: parent
             width: 520
             height: 560
             color: todo.cBg
-            border.color: todo.cBorder
-            border.width: 1
+            border.width: 0
             radius: 14
             clip: true
 
@@ -202,6 +222,7 @@ Scope {
                 id: header
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: 46
+                radius: card.radius
                 color: todo.cMantle
 
                 Rectangle {
@@ -399,7 +420,8 @@ Scope {
                     spacing: 0
                     model: todo.displayItems
                     boundsBehavior: Flickable.StopAtBounds
-                    cacheBuffer: 400
+                    cacheBuffer: 0
+reuseItems: true
 
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AsNeeded

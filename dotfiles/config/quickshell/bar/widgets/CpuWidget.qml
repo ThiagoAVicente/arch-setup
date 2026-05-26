@@ -1,13 +1,14 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "../.." as Root
 
 Text {
     id: cpu
     text: "󰍛"
-    color: Qt.rgba(1, 1, 1, 0.7)
+    color: Root.Theme.subtext
     font.pixelSize: 14
-    font.family: "FiraCode Nerd Font"
+    font.family: Root.Theme.fontFamily
 
     Process {
         id: cpuProc

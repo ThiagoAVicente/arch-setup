@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 Item {
     id: root
 
     property bool calendarOpen: false
+    property bool showCalendar: true
     signal calHoverChanged(bool hovered)
 
     implicitWidth: row.implicitWidth
@@ -28,10 +30,10 @@ Item {
         Text {
             id: timeText
             Layout.alignment: Qt.AlignVCenter
-            font.family: "FiraCode Nerd Font"
+            font.family: Root.Theme.fontFamily
             font.pixelSize: 15
             font.weight: Font.Medium
-            color: Qt.rgba(1, 1, 1, 0.88)
+            color: Root.Theme.text
 
             property string _fmt: Qt.formatTime(root._time, "HH:mm")
             text: _fmt
@@ -52,29 +54,31 @@ Item {
         }
 
         // ── Separator ────────────────────────────────────────────────────
-        Item { Layout.preferredWidth: 9 }
+        Item { visible: root.showCalendar; Layout.preferredWidth: 9 }
         Rectangle {
+            visible: root.showCalendar
             Layout.alignment: Qt.AlignVCenter
             width: 1; height: 13
-            color: Qt.rgba(1, 1, 1, 0.13)
+            color: Root.Theme.borderStrong
         }
-        Item { Layout.preferredWidth: 9 }
+        Item { visible: root.showCalendar; Layout.preferredWidth: 9 }
 
         // ── Calendar ─────────────────────────────────────────────────────
         RowLayout {
             id: calGroup
+            visible: root.showCalendar
             Layout.alignment: Qt.AlignVCenter
             spacing: 8
 
             Text {
                 id: calIcon
                 text: "󰃭"
-                font.family: "FiraCode Nerd Font"
+                font.family: Root.Theme.fontFamily
                 font.pixelSize: 15
 
                 color: root.calendarOpen
-                    ? Qt.rgba(1, 1, 1, 0.92)
-                    : (calHover.hovered ? Qt.rgba(1, 1, 1, 0.72) : Qt.rgba(1, 1, 1, 0.38))
+                    ? Root.Theme.bright
+                    : (calHover.hovered ? Root.Theme.text : Root.Theme.muted)
 
                 Behavior on color { ColorAnimation { duration: 160 } }
 
@@ -87,9 +91,9 @@ Item {
             Text {
                 id: dateText
                 text: Qt.formatDate(root._time, "dd/MM/yyyy")
-                font.family: "FiraCode Nerd Font"
+                font.family: Root.Theme.fontFamily
                 font.pixelSize: 14
-                color: Qt.rgba(1, 1, 1, 0.92)
+                color: Root.Theme.text
                 Behavior on color { ColorAnimation { duration: 160 } }
             }
 

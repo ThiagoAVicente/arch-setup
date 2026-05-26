@@ -8,6 +8,27 @@ import "." as Root
 Scope {
     id: notifManager
 
+    // Single sweep timer fires every second, dismisses expired notifs.
+    // Replaces per-notification Qt.createQmlObject Timer leak.
+    property var _expiry: ({})
+
+    Timer {
+        id: expirySweep
+        interval: 1000
+        repeat: true
+        running: false
+        onTriggered: {
+            const now = Date.now()
+            let any = false
+            for (const n of server.trackedNotifications.values) {
+                any = true
+                const due = notifManager._expiry[n.id]
+                if (due !== undefined && now >= due) n.dismiss()
+            }
+            if (!any) running = false
+        }
+    }
+
     NotificationServer {
         id: server
 
@@ -17,17 +38,9 @@ Scope {
                 return
             }
             notification.tracked = true
-
-            // Auto-dismiss
-            let ms = notification.expireTimeout > 0 ? notification.expireTimeout : 5000
-            let t = Qt.createQmlObject(
-                'import QtQuick; Timer { interval: ' + ms + '; running: true; repeat: false }',
-                notifManager
-            )
-            t.triggered.connect(() => {
-                if (notification.tracked) notification.dismiss()
-                t.destroy()
-            })
+            const ms = notification.expireTimeout > 0 ? notification.expireTimeout : 5000
+            notifManager._expiry[notification.id] = Date.now() + ms
+            expirySweep.running = true
         }
     }
 

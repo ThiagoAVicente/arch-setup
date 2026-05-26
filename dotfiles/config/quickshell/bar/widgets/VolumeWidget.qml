@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 Item {
     id: root
@@ -14,7 +15,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: volMa.containsMouse ? Qt.rgba(1,1,1,0.08) : "transparent"
+        color: volMa.containsMouse ? Root.Theme.hover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -24,60 +25,50 @@ Item {
         spacing: 4
 
         Text {
-            text: {
-                if (root.muted) return "󰝟"
-                if (root.volume > 66) return "󰕾"
-                if (root.volume > 33) return "󰖀"
-                if (root.volume > 0)  return "󰕿"
-                return "󰕿"
-            }
-            color: root.muted ? "#45475a" : "#cba6f7"
-            font.family: "FiraCode Nerd Font"
+            text: Root.IconMaps.volumeIcon(root.volume, root.muted)
+            color: root.muted ? Root.Theme.muted : Root.Theme.text
+            font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             Behavior on color { ColorAnimation { duration: 150 } }
         }
 
         Text {
             text: root.muted ? "mute" : root.volume + "%"
-            color: root.muted ? "#45475a" : "#a6adc8"
+            color: root.muted ? Root.Theme.muted : Root.Theme.subtext
             font.pixelSize: 11
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
 
-    // Processes
+    // Single Process reads vol + mute in one shot
     Process {
-        id: volumeCheck
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{print int($2*100)}'"]
+        id: sinkCheck
+        command: ["sh", "-c",
+            "out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null);" +
+            "v=$(echo \"$out\" | awk '{print int($2*100)}');" +
+            "m=0; echo \"$out\" | grep -q MUTED && m=1;" +
+            "echo \"$v $m\""]
         stdout: SplitParser {
             onRead: data => {
-                const val = parseInt(data.trim())
-                if (!isNaN(val)) root.volume = val
+                const parts = data.trim().split(" ")
+                if (parts.length !== 2) return
+                const v = parseInt(parts[0])
+                if (!isNaN(v)) root.volume = v
+                root.muted = parts[1] === "1"
             }
         }
     }
 
-    Process {
-        id: muteCheck
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -q MUTED && echo 1 || echo 0"]
-        stdout: SplitParser { onRead: data => root.muted = data.trim() === "1" }
-    }
-
-    // Event-driven: subscribe to PipeWire/PulseAudio sink events (replaces 1s poll)
+    // Event-driven: pactl subscribe
     Process {
         running: true
         command: ["pactl", "subscribe"]
         stdout: SplitParser {
-            onRead: data => {
-                if (data.includes("sink")) {
-                    volumeCheck.running = true
-                    muteCheck.running = true
-                }
-            }
+            onRead: data => { if (data.includes("sink")) sinkCheck.running = true }
         }
     }
 
-    Component.onCompleted: { volumeCheck.running = true; muteCheck.running = true }
+    Component.onCompleted: sinkCheck.running = true
 
     Process { id: openPavucontrol; command: ["pavucontrol"] }
 

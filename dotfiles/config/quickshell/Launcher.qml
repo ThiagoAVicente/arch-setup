@@ -6,19 +6,21 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
+import "." as Root
 
 Scope {
     id: launcher
     property bool visible: false
     property int selectedIndex: 0
 
-    readonly property color cBg:      "#1e1e2e"
-    readonly property color cMantle:  "#181825"
-    readonly property color cAccent:  "#7aa2f7"
-    readonly property color cText:    "#cdd6f4"
-    readonly property color cSubtext: "#a6adc8"
-    readonly property color cMuted:   "#585b70"
-    readonly property color cBorder:  Qt.rgba(1, 1, 1, 0.08)
+    readonly property color cBg:      Root.Theme.bg
+    readonly property color cMantle:  Root.Theme.mantle
+    readonly property color cAccent:  Root.Theme.accent
+    readonly property color cText:    Root.Theme.text
+    readonly property color cSubtext: Root.Theme.subtext
+    readonly property color cMuted:   Root.Theme.muted
+    readonly property color cBorder:  Root.Theme.border
 
     function toggle() {
         visible = !visible
@@ -170,6 +172,25 @@ Scope {
             }
         }
 
+        // ── Glow halo ──────────────────────────────────────────────────────
+        Rectangle {
+            anchors.centerIn: parent
+            width: card.width + 12
+            height: card.height + 12
+            radius: card.radius + 6
+            color: "transparent"
+            border.color: Qt.rgba(1, 1, 1, 0.85)
+            border.width: 3
+            visible: launcher.visible
+            layer.enabled: launcher.visible
+            layer.effect: MultiEffect {
+                blurEnabled: true
+                blur: 1.0
+                blurMax: 20
+                brightness: 0.15
+            }
+        }
+
         // ── Card ───────────────────────────────────────────────────────────
         Rectangle {
             id: card
@@ -177,8 +198,7 @@ Scope {
             width: 580
             height: 520
             color: launcher.cBg
-            border.color: launcher.cBorder
-            border.width: 1
+            border.width: 0
             radius: 14
             clip: true
 
@@ -189,6 +209,7 @@ Scope {
                 id: header
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: 46
+                radius: card.radius
                 color: launcher.cMantle
 
                 // Square off bottom half so only top corners are rounded by card clip
@@ -385,7 +406,8 @@ Scope {
                     model: launcher.filteredApps
                     verticalLayoutDirection: ListView.BottomToTop
                     boundsBehavior: Flickable.StopAtBounds
-                    cacheBuffer: 400
+                    cacheBuffer: 0
+reuseItems: true
 
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AsNeeded
@@ -455,9 +477,12 @@ Scope {
                                     source: modelData.iconPath || ""
                                     anchors.centerIn: parent
                                     width: 24; height: 24
+                                    sourceSize.width: 48
+                                    sourceSize.height: 48
                                     fillMode: Image.PreserveAspectFit
                                     visible: status === Image.Ready
                                     asynchronous: true
+                                    cache: true
                                     smooth: true
                                 }
 

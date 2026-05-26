@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "../.." as Root
 
 Item {
     id: root
@@ -14,8 +15,8 @@ Item {
     // Background pill
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: root.popoutOpen ? "#cba6f7"
-            : hovMa.containsMouse ? Qt.rgba(1, 1, 1, 0.1) : "transparent"
+        color: root.popoutOpen ? Root.Theme.accent
+            : hovMa.containsMouse ? Root.Theme.hoverStrong : "transparent"
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
@@ -27,8 +28,8 @@ Item {
         Text {
             id: wifiIcon
             text: "󰤭"
-            color: root.popoutOpen ? "#1e1e2e" : "#cdd6f4"
-            font.family: "FiraCode Nerd Font"
+            color: root.popoutOpen ? Root.Theme.bg : Root.Theme.text
+            font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             anchors.verticalCenter: parent.verticalCenter
 
@@ -48,7 +49,7 @@ Item {
             id: ssidLabel
             visible: text.length > 0
             text: ""
-            color: root.popoutOpen ? "#1e1e2e" : "#a6adc8"
+            color: root.popoutOpen ? Root.Theme.bg : Root.Theme.subtext
             font.pixelSize: 11
             elide: Text.ElideRight
             maximumLineCount: 1
