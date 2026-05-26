@@ -41,10 +41,15 @@ Scope {
             readonly property bool compact: barScope.barMode === "compact"
 
             anchors { top: true; left: true; right: !compact }
-            implicitHeight: 56
-            implicitWidth: compact ? (compactRow.implicitWidth + 28) : 0
+            implicitHeight: compact ? (compactRow.implicitWidth + 32) : 56
+            implicitWidth: compact ? (compactRow.implicitWidth + 32) : 0
             color: "transparent"
             exclusiveZone: compact ? 0 : 44
+
+            // Top pill horizontal width (used by leg sizing)
+            readonly property int pillHeight: 44
+            readonly property int pillLeftPad: 8
+            readonly property int pillTopPad: 4
 
             // Close popout when clicking outside
             MouseArea {
@@ -53,16 +58,22 @@ Scope {
                 onClicked: barScope.openPopout = ""
             }
 
-            // Glow halo behind bar — stacked rings, no MultiEffect (lighter)
+            // Glow halo behind top pill — drawn with selective rounding when compact
             Item {
+                id: topHalo
                 anchors {
-                    fill: parent
-                    leftMargin: 8; rightMargin: 8; topMargin: 4; bottomMargin: 8
+                    left: parent.left; right: parent.right; top: parent.top
+                    leftMargin: barWindow.compact ? 0 : 8
+                    rightMargin: barWindow.compact ? 4 : 8
+                    topMargin: barWindow.compact ? 0 : 4
                 }
+                height: barWindow.pillHeight
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: -3
                     radius: Root.Theme.radiusMd + 3
+                    topLeftRadius: barWindow.compact ? 0 : (Root.Theme.radiusMd + 3)
+                    bottomLeftRadius: barWindow.compact ? 0 : (Root.Theme.radiusMd + 3)
                     color: "transparent"
                     border.color: Qt.rgba(1, 1, 1, 0.12)
                     border.width: 1
@@ -71,18 +82,111 @@ Scope {
                     anchors.fill: parent
                     anchors.margins: -1
                     radius: Root.Theme.radiusMd + 1
+                    topLeftRadius: barWindow.compact ? 0 : (Root.Theme.radiusMd + 1)
+                    bottomLeftRadius: barWindow.compact ? 0 : (Root.Theme.radiusMd + 1)
                     color: "transparent"
                     border.color: Qt.rgba(1, 1, 1, 0.45)
                     border.width: 1
                 }
             }
 
+            // Vertical leg (compact only) — flat top (joins top pill), rounded bottom
+            Loader {
+                active: barWindow.compact
+                anchors {
+                    left: parent.left; top: topHalo.bottom; bottom: parent.bottom
+                    leftMargin: 0; topMargin: -1; bottomMargin: 12
+                }
+                width: barWindow.pillHeight
+                sourceComponent: Item {
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: -3
+                        anchors.topMargin: 0
+                        anchors.leftMargin: 0
+                        radius: Root.Theme.radiusMd + 3
+                        topLeftRadius: 0
+                        topRightRadius: 0
+                        bottomLeftRadius: 0
+                        color: "transparent"
+                        border.color: Qt.rgba(1, 1, 1, 0.12)
+                        border.width: 1
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: -1
+                        anchors.topMargin: 0
+                        anchors.leftMargin: 0
+                        radius: Root.Theme.radiusMd + 1
+                        topLeftRadius: 0
+                        topRightRadius: 0
+                        bottomLeftRadius: 0
+                        color: "transparent"
+                        border.color: Qt.rgba(1, 1, 1, 0.45)
+                        border.width: 1
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Root.Theme.radiusMd
+                        topLeftRadius: 0
+                        topRightRadius: 0
+                        bottomLeftRadius: 0
+                        color: Root.Theme.bg
+                        border.width: 0
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.topMargin: 12
+                            anchors.bottomMargin: 12
+                            spacing: 12
+
+                            // Current workspace number
+                            Rectangle {
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.preferredWidth: 28
+                                Layout.preferredHeight: 22
+                                radius: 6
+                                color: Root.Theme.hoverStrong
+                                border.width: 0
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : "?"
+                                    font.family: Root.Theme.fontFamily
+                                    font.pixelSize: 12
+                                    font.weight: Font.Bold
+                                    color: Root.Theme.text
+                                }
+                            }
+
+                            BluetoothWidget {
+                                Layout.alignment: Qt.AlignHCenter
+                                popoutOpen: barScope.openPopout === "bluetooth"
+                                onTogglePopout: barScope.togglePopout("bluetooth")
+                            }
+
+                            NotificationsToggle {
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+                }
+            }
+
             Rectangle {
                 anchors {
-                    fill: parent
-                    leftMargin: 8; rightMargin: 8; topMargin: 4; bottomMargin: 8
+                    left: parent.left; right: parent.right; top: parent.top
+                    leftMargin: barWindow.compact ? 0 : 8
+                    rightMargin: barWindow.compact ? 4 : 8
+                    topMargin: barWindow.compact ? 0 : 4
                 }
+                height: barWindow.pillHeight
                 radius: Root.Theme.radiusMd
+                bottomLeftRadius: barWindow.compact ? 0 : Root.Theme.radiusMd
+                topLeftRadius: barWindow.compact ? 0 : Root.Theme.radiusMd
+                bottomRightRadius: Root.Theme.radiusMd
+                topRightRadius: Root.Theme.radiusMd
                 color: Root.Theme.bg
                 border.width: 0
 
@@ -201,6 +305,7 @@ Scope {
             sourceComponent: NetworkPopout {
                 screen: modelData
                 isOpen: barScope.openPopout === "network"
+                anchorLeft: barScope.barMode === "compact"
                 onCloseRequested: barScope.openPopout = ""
             }
         }
@@ -217,6 +322,7 @@ Scope {
             sourceComponent: BluetoothPopout {
                 screen: modelData
                 isOpen: barScope.openPopout === "bluetooth"
+                anchorLeft: barScope.barMode === "compact"
                 onCloseRequested: barScope.openPopout = ""
             }
         }

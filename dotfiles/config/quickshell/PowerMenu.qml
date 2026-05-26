@@ -36,12 +36,9 @@ Scope {
     }
 
     function runOption(index) {
-        runner.command = options[index].cmd
-        runner.running = true
+        Quickshell.execDetached(options[index].cmd)
         visible = false
     }
-
-    Process { id: runner }
 
     PanelWindow {
         id: panelWindow

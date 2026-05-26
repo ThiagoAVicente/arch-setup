@@ -11,6 +11,7 @@ PanelWindow {
     id: root
 
     required property bool isOpen
+    required property bool anchorLeft
 
     signal closeRequested()
 
@@ -18,9 +19,10 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
 
-    anchors { top: true; right: true }
+    anchors { top: true; left: anchorLeft; right: !anchorLeft }
     margins.top: 52
-    margins.right: 8
+    margins.left: anchorLeft ? 8 : 0
+    margins.right: anchorLeft ? 0 : 8
 
     implicitWidth: 296
     implicitHeight: card.height + 8
@@ -55,7 +57,8 @@ PanelWindow {
         id: card
 
         anchors.top: parent.top
-        anchors.right: parent.right
+        anchors.left: root.anchorLeft ? parent.left : undefined
+        anchors.right: root.anchorLeft ? undefined : parent.right
         anchors.topMargin: 4
 
         width: 288

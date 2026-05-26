@@ -11,6 +11,7 @@ PanelWindow {
     id: root
 
     required property bool isOpen
+    required property bool anchorLeft
     property bool closeOnClickOut: true
 
     signal closeRequested()
@@ -20,9 +21,10 @@ PanelWindow {
     color: "transparent"
     focusable: false
 
-    anchors { top: true; right: true }
+    anchors { top: true; left: anchorLeft; right: !anchorLeft }
     margins.top: 52
-    margins.right: 8
+    margins.left: anchorLeft ? 8 : 0
+    margins.right: anchorLeft ? 0 : 8
 
     implicitWidth: 304
     implicitHeight: card.height + 8
@@ -229,7 +231,8 @@ PanelWindow {
         id: card
 
         anchors.top: parent.top
-        anchors.right: parent.right
+        anchors.left: root.anchorLeft ? parent.left : undefined
+        anchors.right: root.anchorLeft ? undefined : parent.right
         anchors.topMargin: 4
 
         width: 296

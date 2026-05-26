@@ -31,126 +31,41 @@ Scope {
         }
     }
 
-    property var allApps: []
-    property var filteredApps: []
-    property var _tempApps: []
+    property string searchQuery: ""
 
-    Component.onCompleted: appListProcess.running = true
-
-    onVisibleChanged: {
-        if (!visible && allApps.length > 0) {
-            _tempApps = []
-            appListProcess.running = true
+    readonly property var allApps: {
+        const src = DesktopEntries.applications.values
+        const list = []
+        for (let i = 0; i < src.length; i++) {
+            const e = src[i]
+            if (e.noDisplay) continue
+            list.push({
+                name: e.name || "",
+                comment: e.comment || e.genericName || "",
+                iconPath: Quickshell.iconPath(e.icon, "application-x-executable"),
+                entry: e
+            })
         }
+        list.sort((a, b) => a.name.localeCompare(b.name))
+        return list
     }
 
-    Process {
-        id: appListProcess
-        command: ["sh", "-c", `
-            data_home="\${XDG_DATA_HOME:-$HOME/.local/share}"
-            IFS=: read -ra sys_dirs <<< "\${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-            app_dirs=()
-            for d in "$data_home" "\${sys_dirs[@]}"; do
-                [ -d "$d/applications" ] && app_dirs+=("$d/applications")
-            done
-
-            icon_dirs=()
-            for d in "$data_home" "\${sys_dirs[@]}"; do
-                [ -d "$d/icons" ] && icon_dirs+=("$d/icons")
-            done
-            icon_dirs+=(/usr/share/pixmaps)
-
-            lookup_icon() {
-                local n="$1"
-                [ -z "$n" ] && return
-                [ -f "$n" ] && echo "$n" && return
-                for ibase in "\${icon_dirs[@]}"; do
-                    for size in 256x256 128x128 64x64 48x48 32x32 scalable; do
-                        for theme in hicolor Papirus Papirus-Dark; do
-                            for sub in apps devices categories mimetypes actions; do
-                                for ext in png svg xpm; do
-                                    p="$ibase/$theme/$size/$sub/$n.$ext"
-                                    [ -f "$p" ] && echo "$p" && return
-                                done
-                            done
-                            for ext in png svg xpm; do
-                                p="$ibase/$theme/$size/$n.$ext"
-                                [ -f "$p" ] && echo "$p" && return
-                            done
-                        done
-                    done
-                    for ext in png svg xpm; do
-                        p="$ibase/$n.$ext"
-                        [ -f "$p" ] && echo "$p" && return
-                    done
-                done
-            }
-
-            find "\${app_dirs[@]}" -name '*.desktop' 2>/dev/null | sort -u | while IFS= read -r f; do
-                name=$(grep -m1 '^Name='      "$f" 2>/dev/null | cut -d= -f2-)
-                exec=$(grep -m1 '^Exec='      "$f" 2>/dev/null | cut -d= -f2-)
-                icon=$(grep -m1 '^Icon='      "$f" 2>/dev/null | cut -d= -f2-)
-                cmnt=$(grep -m1 '^Comment='   "$f" 2>/dev/null | cut -d= -f2-)
-                nod=$( grep -m1 '^NoDisplay=' "$f" 2>/dev/null | cut -d= -f2-)
-                type=$(grep -m1 '^Type='      "$f" 2>/dev/null | cut -d= -f2-)
-                [ -z "$name" ] && continue
-                [ "$nod" = "true" ] && continue
-                [ "$type" = "Directory" ] && continue
-                iconpath=$(lookup_icon "$icon")
-                echo "$name|||$iconpath|||$f|||$exec|||$cmnt"
-            done
-        `]
-        stdout: SplitParser {
-            onRead: data => {
-                const line = data.trim()
-                if (!line || !line.includes("|||")) return
-                const p = line.split("|||")
-                if (p.length < 4) return
-                const name    = p[0] || ""
-                const ipath   = p[1] || ""
-                const dpath   = p[2] || ""
-                const execRaw = p[3] || ""
-                const comment = p[4] || ""
-                if (!name) return
-                const execCmd = execRaw.replace(/%[a-zA-Z]/g, "").trim()
-                launcher._tempApps.push({
-                    name, comment, dpath, execCmd,
-                    iconPath: ipath ? "file://" + ipath : ""
-                })
-            }
-        }
-        onExited: (code) => {
-            launcher._tempApps.sort((a, b) => a.name.localeCompare(b.name))
-            launcher.allApps = launcher._tempApps
-            launcher.filteredApps = launcher.allApps.slice(0, 50)
-        }
+    readonly property var filteredApps: {
+        const q = searchQuery.toLowerCase()
+        if (!q) return allApps.slice(0, 50)
+        return allApps.filter(a =>
+            a.name.toLowerCase().includes(q) ||
+            a.comment.toLowerCase().includes(q)
+        ).slice(0, 50)
     }
 
     function filterApps(query) {
-        if (!query) {
-            filteredApps = allApps.slice(0, 50)
-        } else {
-            const q = query.toLowerCase()
-            filteredApps = allApps.filter(a =>
-                a.name.toLowerCase().includes(q) ||
-                a.comment.toLowerCase().includes(q)
-            ).slice(0, 50)
-        }
+        searchQuery = query
         selectedIndex = 0
     }
 
     function launchApp(app) {
-        if (app.execCmd) {
-            const clean = app.execCmd.replace(/%[a-zA-Z]/g, "").trim()
-            const cmd = ["sh", "-c", clean + " >/dev/null 2>&1 &"]
-            Qt.createQmlObject(
-                'import Quickshell.Io; Process { ' +
-                'command: ' + JSON.stringify(cmd) + '; ' +
-                'running: true ' +
-                '}',
-                launcher
-            )
-        }
+        if (app && app.entry) app.entry.execute()
         visible = false
     }
 

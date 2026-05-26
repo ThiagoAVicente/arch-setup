@@ -10,20 +10,12 @@ ShellRoot {
     NotificationManager {}
     OSD {}
 
-    // Modals lazy: Loader.active follows the modal's visible. Closing → unload → free memory.
-    property bool launcherVisible: false
+    // Launcher kept hot — opens instant. Other modals lazy-unload to free memory.
+    Launcher { id: launcher }
+
     property bool wallpaperVisible: false
     property bool powerMenuVisible: false
     property bool todoVisible: false
-
-    Loader {
-        id: launcherLoader
-        active: shell.launcherVisible
-        sourceComponent: Launcher {
-            onVisibleChanged: if (!visible) shell.launcherVisible = false
-        }
-        onLoaded: if (item) item.toggle()
-    }
     Loader {
         id: wallpaperLoader
         active: shell.wallpaperVisible
@@ -56,7 +48,7 @@ ShellRoot {
         stdout: SplitParser {
             onRead: data => {
                 const cmd = data.trim()
-                if (cmd === "launcher") shell.launcherVisible = !shell.launcherVisible
+                if (cmd === "launcher") launcher.toggle()
                 else if (cmd === "wallpaper") shell.wallpaperVisible = !shell.wallpaperVisible
                 else if (cmd === "powermenu") shell.powerMenuVisible = !shell.powerMenuVisible
                 else if (cmd === "bar") bar.toggleBar()
