@@ -41,13 +41,12 @@ Scope {
             readonly property bool compact: barScope.barMode === "compact"
 
             anchors { top: true; left: true; right: !compact }
-            implicitHeight: compact ? (compactRow.implicitWidth + 32) : 56
+            implicitHeight: compact ? (compactRow.implicitWidth + 32) : 36
             implicitWidth: compact ? (compactRow.implicitWidth + 32) : 0
             color: "transparent"
-            exclusiveZone: compact ? 0 : 44
+            exclusiveZone: compact ? 0 : 28
 
-            // Top pill horizontal width (used by leg sizing)
-            readonly property int pillHeight: 44
+            readonly property int pillHeight: 28
             readonly property int pillLeftPad: 8
             readonly property int pillTopPad: 4
 

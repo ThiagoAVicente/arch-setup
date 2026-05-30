@@ -6,7 +6,7 @@ import QtQuick.Controls
 Scope {
     id: wallpaperSelector
     property bool visible: false
-    property string wallpaperDir: "/home/vcnt/Pictures/Wallpapers"
+    property string wallpaperDir: (Quickshell.env("HOME") || "") + "/Pictures/Wallpapers"
     property var wallpapers: []
     property int selectedIndex: 0
     property string appliedPath: ""
@@ -44,14 +44,9 @@ Scope {
         }
     }
 
-    Process {
-        id: setWallpaperProcess
-        onExited: (code) => console.log("[wallpaper] set exited:", code)
-    }
-
     function setWallpaper(path) {
-        setWallpaperProcess.command = ["/home/vcnt/scripts/change-wallpaper.sh", path]
-        setWallpaperProcess.running = true
+        // execDetached survives Loader unload (Process child would die when WallpaperSelector destroyed)
+        Quickshell.execDetached(["sh", "-c", "\"$HOME/scripts/change-wallpaper.sh\" \"$1\"", "sh", path])
         wallpaperSelector.appliedPath = path
         visible = false
     }

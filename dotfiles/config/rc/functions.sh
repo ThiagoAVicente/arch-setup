@@ -85,16 +85,17 @@ new-java() {
     -DinteractiveMode=false
 }
 
-open(){
+open() {
 
-    # iterate over arguments
-    for arg in "$@"; do
-        zathura "$arg" &disown
-    done
+  # iterate over arguments
+  for arg in "$@"; do
+    zathura "$arg" &
+    disown
+  done
 }
-
-qrcode() { qrencode -o - "$1" | wl-copy --type image/png; }
-
+qrcode() {
+  qrencode -s 10 -m 2 -o - "$1" | wl-copy --type image/png
+}
 econfig() {
   if [[ $# -ne 1 ]]; then
     echo "Usage: econfig <config_folder>"
