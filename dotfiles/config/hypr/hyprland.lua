@@ -131,6 +131,7 @@ require("parts.animations")
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 hl.gesture({ fingers = 3, direction = "vertical", action = "resize" })
 hl.gesture({ fingers = 4, direction = "horizontal", action = "fullscreen" })
+hl.gesture({ fingers = 4, direction = "up", action = "special", workspace_name = "magic" })
 
 -----------------
 -- DEVICES     --
