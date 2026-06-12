@@ -115,14 +115,26 @@ RowLayout {
                 onClicked: event => {
                     const item = trayItem.modelData
                     if (!item) return
+                    const id = (item.id || "").toLowerCase()
+                    // Normalize tray id → process basename (e.g. "spotify_client" → "spotify")
+                    const proc = id.replace(/[_-]?(client|app|tray)$/, "")
                     if (event.button === Qt.RightButton) {
-                        if (item.menu) item.menu.open()
+                        // Right-click → kill
+                        if (proc) {
+                            clickRunner.command = ["sh", "-c",
+                                "pkill -x '" + proc + "' || pkill -if '" + proc + "'"]
+                            clickRunner.running = true
+                        }
                     } else if (event.button === Qt.MiddleButton) {
                         item.secondaryActivate()
                     } else {
-                        // Steam doesn't implement Activate — use URI instead
-                        if (item.id === "steam") {
+                        if (id === "steam") {
                             clickRunner.command = ["steam", "steam://open/main"]
+                            clickRunner.running = true
+                        } else if (id.includes("spotify")) {
+                            // Raise via MPRIS (works even when window is hidden in tray)
+                            clickRunner.command = ["sh", "-c",
+                                "playerctl -p spotify raise 2>/dev/null || (hyprctl clients -j | grep -qi '\"class\": \"[Ss]potify\"' && hyprctl dispatch focuswindow class:Spotify) || spotify"]
                             clickRunner.running = true
                         } else {
                             item.activate()

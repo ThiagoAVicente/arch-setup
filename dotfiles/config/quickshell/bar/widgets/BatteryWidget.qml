@@ -9,6 +9,24 @@ Item {
 
     property int percentage: 0
     property bool charging: false
+    property int lastPct: 100
+    readonly property var notifyThresholds: [30, 20, 10]
+
+    onPercentageChanged: {
+        if (charging) { lastPct = percentage; return }
+        for (const t of notifyThresholds) {
+            if (lastPct > t && percentage <= t) {
+                const urgency = t <= 10 ? "critical" : t <= 20 ? "normal" : "low"
+                Quickshell.execDetached([
+                    "notify-send", "-a", "battery", "-u", urgency,
+                    "-i", "battery-caution",
+                    "Battery " + t + "%",
+                    "Plug in soon."
+                ])
+            }
+        }
+        lastPct = percentage
+    }
 
     visible: percentage > 0 || charging
 
