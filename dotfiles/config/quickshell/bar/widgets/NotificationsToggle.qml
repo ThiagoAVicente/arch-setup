@@ -11,7 +11,7 @@ Rectangle {
     Text {
         anchors.centerIn: parent
         text: Root.State.notificationsMuted ? "󰂛" : "󰂚"
-        color: Root.State.notificationsMuted ? Root.Theme.critical : Root.Theme.subtext
+        color: Root.State.notificationsMuted ? Root.Theme.critical : Root.Theme.barSubtext
         font.pixelSize: 14
         font.family: Root.Theme.fontFamily
     }

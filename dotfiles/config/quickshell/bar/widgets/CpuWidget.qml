@@ -6,7 +6,7 @@ import "../.." as Root
 Text {
     id: cpu
     text: "󰍛"
-    color: Root.Theme.subtext
+    color: Root.Theme.barSubtext
     font.pixelSize: 14
     font.family: Root.Theme.fontFamily
 

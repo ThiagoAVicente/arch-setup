@@ -15,7 +15,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: volMa.containsMouse ? Root.Theme.hover : "transparent"
+        color: volMa.containsMouse ? Root.Theme.barHover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -26,7 +26,7 @@ Item {
 
         Text {
             text: Root.IconMaps.volumeIcon(root.volume, root.muted)
-            color: root.muted ? Root.Theme.muted : Root.Theme.text
+            color: root.muted ? Root.Theme.barMuted : Root.Theme.barText
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -34,7 +34,7 @@ Item {
 
         Text {
             text: root.muted ? "mute" : root.volume + "%"
-            color: root.muted ? Root.Theme.muted : Root.Theme.subtext
+            color: root.muted ? Root.Theme.barMuted : Root.Theme.barSubtext
             font.pixelSize: 11
             Behavior on color { ColorAnimation { duration: 150 } }
         }

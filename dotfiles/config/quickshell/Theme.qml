@@ -23,7 +23,7 @@ QtObject {
     readonly property color alert:    "#d9a07a"
     readonly property color critical: "#d97a8e"
 
-    // Borders — bright white for glow effect
+    // Borders — bright white for glow effect (dark modals)
     readonly property color border:        Qt.rgba(1, 1, 1, 0.22)
     readonly property color borderStrong:  Qt.rgba(1, 1, 1, 0.40)
     readonly property color hover:         Qt.rgba(1, 1, 1, 0.06)
@@ -32,6 +32,17 @@ QtObject {
     readonly property color selectedBorder:Qt.rgba(1, 1, 1, 0.50)
     readonly property color backdrop:      Qt.rgba(0, 0, 0, 0.55)
     readonly property color glassHi:       Qt.rgba(1, 1, 1, 0.12)
+
+    // ── Bar (grey pill, white borders) ───────────────────────────────────
+    readonly property color barBg:         "#2e2e2e"
+    readonly property color barText:       "#f0f0f0"
+    readonly property color barSubtext:    "#c0c0c0"
+    readonly property color barMuted:      "#8a8a8a"
+    readonly property color barAccent:     "#ffffff"
+    readonly property color barBorder:     Qt.rgba(1, 1, 1, 0.30)
+    readonly property color barBorderStrong:Qt.rgba(1, 1, 1, 0.55)
+    readonly property color barHover:      Qt.rgba(1, 1, 1, 0.06)
+    readonly property color barHoverStrong:Qt.rgba(1, 1, 1, 0.12)
 
     // Typography
     readonly property string fontFamily: "FiraCode Nerd Font"

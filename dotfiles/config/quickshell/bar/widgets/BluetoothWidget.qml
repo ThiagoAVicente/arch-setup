@@ -22,20 +22,20 @@ Item {
     }
 
     function getBluetoothColor() {
-        if (root.popoutOpen) return Root.Theme.bg
+        if (root.popoutOpen) return Root.Theme.barBg
         const adapter = Bluetooth.defaultAdapter
-        if (!adapter || !adapter.enabled) return Root.Theme.muted
+        if (!adapter || !adapter.enabled) return Root.Theme.barMuted
         for (const key in Bluetooth.devices) {
-            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return Root.Theme.bright
+            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return Root.Theme.barText
         }
-        return Root.Theme.text
+        return Root.Theme.barText
     }
 
     Rectangle {
         anchors.fill: parent
         radius: 9
-        color: root.popoutOpen ? Root.Theme.accent
-            : (hovMa.containsMouse ? Root.Theme.hoverStrong : "transparent")
+        color: root.popoutOpen ? Root.Theme.barAccent
+            : (hovMa.containsMouse ? Root.Theme.barHoverStrong : "transparent")
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 

@@ -33,7 +33,7 @@ Item {
             font.family: Root.Theme.fontFamily
             font.pixelSize: 15
             font.weight: Font.Medium
-            color: Root.Theme.text
+            color: Root.Theme.barText
 
             property string _fmt: Qt.formatTime(root._time, "HH:mm")
             text: _fmt
@@ -59,7 +59,7 @@ Item {
             visible: root.showCalendar
             Layout.alignment: Qt.AlignVCenter
             width: 1; height: 13
-            color: Root.Theme.borderStrong
+            color: Root.Theme.barBorderStrong
         }
         Item { visible: root.showCalendar; Layout.preferredWidth: 9 }
 
@@ -77,8 +77,8 @@ Item {
                 font.pixelSize: 15
 
                 color: root.calendarOpen
-                    ? Root.Theme.bright
-                    : (calHover.hovered ? Root.Theme.text : Root.Theme.muted)
+                    ? Root.Theme.barText
+                    : (calHover.hovered ? Root.Theme.barText : Root.Theme.barMuted)
 
                 Behavior on color { ColorAnimation { duration: 160 } }
 
@@ -93,7 +93,7 @@ Item {
                 text: Qt.formatDate(root._time, "dd/MM/yyyy")
                 font.family: Root.Theme.fontFamily
                 font.pixelSize: 14
-                color: Root.Theme.text
+                color: Root.Theme.barText
                 Behavior on color { ColorAnimation { duration: 160 } }
             }
 

@@ -35,7 +35,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: batMa.containsMouse ? Root.Theme.hover : "transparent"
+        color: batMa.containsMouse ? Root.Theme.barHover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -50,7 +50,7 @@ Item {
                 if (root.charging) return Root.Theme.ok
                 if (root.percentage <= 10) return Root.Theme.critical
                 if (root.percentage <= 20) return Root.Theme.alert
-                return Root.Theme.subtext
+                return Root.Theme.barSubtext
             }
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
@@ -59,7 +59,7 @@ Item {
 
         Text {
             text: root.percentage + "%"
-            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical : Root.Theme.subtext
+            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical : Root.Theme.barSubtext
             font.pixelSize: 11
             Behavior on color { ColorAnimation { duration: 300 } }
         }

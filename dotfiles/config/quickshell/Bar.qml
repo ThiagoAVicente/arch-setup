@@ -55,13 +55,13 @@ Scope {
                     anchors.fill: parent; anchors.margins: -3
                     radius: Root.Theme.radiusMd + 3
                     color: "transparent"
-                    border.color: Qt.rgba(1, 1, 1, 0.12); border.width: 1
+                    border.color: Qt.rgba(1, 1, 1, 0.18); border.width: 1
                 }
                 Rectangle {
                     anchors.fill: parent; anchors.margins: -1
                     radius: Root.Theme.radiusMd + 1
                     color: "transparent"
-                    border.color: Qt.rgba(1, 1, 1, 0.45); border.width: 1
+                    border.color: Qt.rgba(1, 1, 1, 0.55); border.width: 1
                 }
             }
 
@@ -72,7 +72,7 @@ Scope {
                 }
                 height: barScope.barThickness
                 radius: Root.Theme.radiusMd
-                color: Root.Theme.bg
+                color: Root.Theme.barBg
 
                 Item {
                     anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 14 }

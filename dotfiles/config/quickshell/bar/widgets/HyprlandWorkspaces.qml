@@ -44,10 +44,10 @@ Row {
                 radius: height / 2
 
                 color: isThisMonitorActive
-                    ? Root.Theme.bright
+                    ? Root.Theme.barText
                     : isOtherMonitorActive
-                        ? Root.Theme.subtext
-                        : (hasWindows ? Root.Theme.muted : Root.Theme.borderStrong)
+                        ? Root.Theme.barSubtext
+                        : (hasWindows ? Root.Theme.barMuted : Root.Theme.barBorderStrong)
 
                 Behavior on color { ColorAnimation { duration: 180 } }
             }

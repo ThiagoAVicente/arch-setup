@@ -15,8 +15,8 @@ Item {
     // Background pill
     Rectangle {
         anchors.fill: parent; radius: 9
-        color: root.popoutOpen ? Root.Theme.accent
-            : hovMa.containsMouse ? Root.Theme.hoverStrong : "transparent"
+        color: root.popoutOpen ? Root.Theme.barAccent
+            : hovMa.containsMouse ? Root.Theme.barHoverStrong : "transparent"
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
@@ -28,7 +28,7 @@ Item {
         Text {
             id: wifiIcon
             text: "󰤭"
-            color: root.popoutOpen ? Root.Theme.bg : Root.Theme.text
+            color: root.popoutOpen ? Root.Theme.barBg : Root.Theme.barText
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             anchors.verticalCenter: parent.verticalCenter
@@ -49,7 +49,7 @@ Item {
             id: ssidLabel
             visible: text.length > 0
             text: ""
-            color: root.popoutOpen ? Root.Theme.bg : Root.Theme.subtext
+            color: root.popoutOpen ? Root.Theme.barBg : Root.Theme.barSubtext
             font.pixelSize: 11
             elide: Text.ElideRight
             maximumLineCount: 1
