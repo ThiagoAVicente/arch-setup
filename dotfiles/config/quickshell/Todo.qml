@@ -6,7 +6,6 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QtQuick.Effects
 import "." as Root
 
 Scope {
@@ -175,34 +174,26 @@ Scope {
         exclusiveZone: -1
         focusable: true
         color: "transparent"
+        WlrLayershell.namespace: "qs-overlay"
 
-        Rectangle {
-            anchors.fill: parent
-            color: "black"
-            opacity: 0.55
-            MouseArea {
-                anchors.fill: parent
-                onClicked: todo.visible = false
+        onVisibleChanged: {
+            if (visible) {
+                card.opacity = 0
+                card.scale = 0.97
+                openAnim.restart()
             }
         }
 
-        // Glow halo
-        Rectangle {
-            anchors.centerIn: parent
-            width: card.width + 12
-            height: card.height + 12
-            radius: card.radius + 6
-            color: "transparent"
-            border.color: Qt.rgba(1, 1, 1, 0.85)
-            border.width: 3
-            visible: todo.visible
-            layer.enabled: todo.visible
-            layer.effect: MultiEffect {
-                blurEnabled: true
-                blur: 1.0
-                blurMax: 20
-                brightness: 0.15
-            }
+        ParallelAnimation {
+            id: openAnim
+            NumberAnimation { target: card; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { target: card; property: "scale"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+        }
+
+        // Click-away close (transparent — blur layerrule frosts the card only)
+        MouseArea {
+            anchors.fill: parent
+            onClicked: todo.visible = false
         }
 
         Rectangle {
@@ -210,26 +201,19 @@ Scope {
             anchors.centerIn: parent
             width: 520
             height: 560
-            color: todo.cBg
-            border.width: 0
+            color: Root.Theme.panelFrost
+            border.color: Root.Theme.hairline
+            border.width: 1
             radius: 14
             clip: true
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
             // ── Header ─────────────────────────────────────────────────────
-            Rectangle {
+            Item {
                 id: header
                 anchors { top: parent.top; left: parent.left; right: parent.right }
-                height: 46
-                radius: card.radius
-                color: todo.cMantle
-
-                Rectangle {
-                    anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                    height: parent.height / 2
-                    color: parent.color
-                }
+                height: 44
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
@@ -237,56 +221,69 @@ Scope {
 
                     Text {
                         text: "\u{f00c}"
-                        font.pixelSize: 14
-                        font.family: "FiraCode Nerd Font"
-                        color: todo.cAccent
-                    }
-                    Text {
-                        text: "Todo"
                         font.pixelSize: 13
                         font.family: "FiraCode Nerd Font"
-                        font.weight: Font.Medium
-                        color: todo.cText
+                        color: todo.cSubtext
+                    }
+                    Text {
+                        text: "TODO"
+                        font.pixelSize: 10
+                        font.family: "FiraCode Nerd Font"
+                        font.letterSpacing: 2
+                        color: todo.cMuted
                         Layout.fillWidth: true
                     }
-                    Rectangle {
+
+                    // Progress ring — fills as tasks complete
+                    Canvas {
+                        id: progressRing
                         visible: todo.items.length > 0
-                        height: 22
-                        width: countLabel.implicitWidth + 16
-                        radius: 11
-                        color: Qt.rgba(1, 1, 1, 0.05)
-                        border.color: todo.cBorder
-                        border.width: 1
-                        Text {
-                            id: countLabel
-                            anchors.centerIn: parent
-                            text: {
-                                const done = todo.items.filter(it => it.done).length
-                                return done + "/" + todo.items.length
+                        width: 16; height: 16
+                        property real fraction: todo.items.length > 0
+                            ? todo.items.filter(it => it.done).length / todo.items.length
+                            : 0
+                        onFractionChanged: requestPaint()
+                        onPaint: {
+                            const ctx = getContext("2d")
+                            ctx.reset()
+                            ctx.lineWidth = 2
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.12)
+                            ctx.beginPath()
+                            ctx.arc(8, 8, 6.5, 0, Math.PI * 2)
+                            ctx.stroke()
+                            if (fraction > 0) {
+                                ctx.strokeStyle = "#e9e9ec"
+                                ctx.beginPath()
+                                ctx.arc(8, 8, 6.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * fraction)
+                                ctx.stroke()
                             }
-                            font.pixelSize: 11
-                            font.family: "FiraCode Nerd Font"
-                            color: todo.cMuted
                         }
                     }
-                    Rectangle {
-                        visible: todo.items.some(it => it.done)
-                        height: 22
-                        width: clearLabel.implicitWidth + 16
-                        radius: 11
-                        color: Qt.rgba(0.95, 0.55, 0.66, 0.10)
-                        border.color: Qt.rgba(0.95, 0.55, 0.66, 0.30)
-                        border.width: 1
-                        Text {
-                            id: clearLabel
-                            anchors.centerIn: parent
-                            text: "clear done"
-                            font.pixelSize: 11
-                            font.family: "FiraCode Nerd Font"
-                            color: todo.cRed
+
+                    Text {
+                        visible: todo.items.length > 0
+                        text: {
+                            const done = todo.items.filter(it => it.done).length
+                            return done + "/" + todo.items.length
                         }
+                        font.pixelSize: 11
+                        font.family: "FiraCode Nerd Font"
+                        color: todo.cMuted
+                    }
+
+                    Text {
+                        visible: todo.items.some(it => it.done)
+                        text: "clear done"
+                        font.pixelSize: 11
+                        font.family: "FiraCode Nerd Font"
+                        color: todo.cRed
+                        opacity: clearMa.containsMouse ? 1 : 0.75
+                        Behavior on opacity { NumberAnimation { duration: 120 } }
                         MouseArea {
+                            id: clearMa
                             anchors.fill: parent
+                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: todo.clearDone()
                         }
@@ -296,7 +293,7 @@ Scope {
                 Rectangle {
                     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
-                    color: todo.cBorder
+                    color: Qt.rgba(1, 1, 1, 0.06)
                 }
             }
 
@@ -309,27 +306,23 @@ Scope {
                 Rectangle {
                     anchors { top: parent.top; left: parent.left; right: parent.right }
                     height: 1
-                    color: todo.cBorder
+                    color: inputField.activeFocus ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
-                Rectangle {
-                    anchors { fill: parent; margins: 10 }
-                    color: todo.cMantle
-                    radius: 8
-                    border.color: inputField.activeFocus
-                        ? Qt.rgba(0.48, 0.64, 0.97, 0.45)
-                        : Qt.rgba(1, 1, 1, 0.07)
-                    border.width: 1
+                Item {
+                    anchors.fill: parent
 
                     RowLayout {
-                        anchors { fill: parent; leftMargin: 14; rightMargin: 14 }
-                        spacing: 10
+                        anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
+                        spacing: 12
 
                         Text {
                             text: "\u{f067}"
                             color: inputField.text ? todo.cAccent : todo.cMuted
                             font.pixelSize: 14
                             font.family: "FiraCode Nerd Font"
+                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
                         TextInput {
@@ -341,7 +334,7 @@ Scope {
                             font.weight: Font.Light
                             clip: true
                             focus: true
-                            selectionColor: Qt.rgba(0.48, 0.64, 0.97, 0.3)
+                            selectionColor: Qt.rgba(1, 1, 1, 0.25)
 
                             Keys.onEscapePressed: todo.visible = false
                             Keys.onReturnPressed: {
@@ -361,22 +354,12 @@ Scope {
                             }
                         }
 
-                        Rectangle {
+                        Text {
                             visible: inputField.text.length > 0
-                            height: 20
-                            width: hintText.implicitWidth + 12
-                            radius: 4
-                            color: Qt.rgba(1, 1, 1, 0.05)
-                            border.color: todo.cBorder
-                            border.width: 1
-                            Text {
-                                id: hintText
-                                anchors.centerIn: parent
-                                text: "↵"
-                                font.pixelSize: 11
-                                font.family: "FiraCode Nerd Font"
-                                color: todo.cMuted
-                            }
+                            text: "↵"
+                            font.pixelSize: 12
+                            font.family: "FiraCode Nerd Font"
+                            color: todo.cMuted
                         }
                     }
                 }
@@ -444,38 +427,43 @@ reuseItems: true
 
                         Rectangle {
                             anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
-                            radius: 8
-                            color: row.hovered ? Qt.rgba(1, 1, 1, 0.04) : "transparent"
-                            border.color: row.hovered ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
-                            border.width: 1
+                            radius: 10
+                            color: row.hovered ? Qt.rgba(1, 1, 1, 0.045) : "transparent"
+                            Behavior on color { ColorAnimation { duration: 120 } }
                         }
 
                         RowLayout {
                             anchors { fill: parent; leftMargin: 18; rightMargin: 14 }
                             spacing: 12
 
+                            // Circular checkbox — outline open, fills white when done
                             Rectangle {
-                                Layout.preferredWidth: 22
-                                Layout.preferredHeight: 22
-                                radius: 6
-                                color: row.modelData.done
-                                    ? Qt.rgba(0.65, 0.89, 0.63, 0.18)
-                                    : Qt.rgba(1, 1, 1, 0.04)
-                                border.color: row.modelData.done
-                                    ? Qt.rgba(0.65, 0.89, 0.63, 0.55)
-                                    : Qt.rgba(1, 1, 1, 0.18)
+                                id: checkCircle
+                                Layout.preferredWidth: 17
+                                Layout.preferredHeight: 17
+                                radius: width / 2
+                                color: row.modelData.done ? "#e9e9ec" : "transparent"
+                                border.color: row.modelData.done ? "#e9e9ec"
+                                    : cbMa.containsMouse ? Qt.rgba(1, 1, 1, 0.6) : Qt.rgba(1, 1, 1, 0.28)
                                 border.width: 1
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                                 Text {
+                                    id: checkMark
                                     anchors.centerIn: parent
                                     text: "\u{f00c}"
-                                    font.pixelSize: 11
+                                    font.pixelSize: 9
                                     font.family: "FiraCode Nerd Font"
-                                    color: todo.cGreen
+                                    color: "#0e0e10"
                                     visible: row.modelData.done
+                                    scale: row.modelData.done ? 1 : 0.4
+                                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
                                 }
                                 MouseArea {
+                                    id: cbMa
                                     anchors.fill: parent
+                                    hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: todo.toggleItem(row.modelData._i)
                                 }
@@ -501,15 +489,11 @@ reuseItems: true
                                 readonly property var info: todo.dueInfo(row.modelData.due)
                                 visible: !!row.modelData.due
                                 Layout.preferredHeight: 20
-                                Layout.preferredWidth: dueLabel.implicitWidth + 14
+                                Layout.preferredWidth: dueLabel.implicitWidth + 16
                                 radius: 10
                                 color: row.modelData.done
                                     ? Qt.rgba(1, 1, 1, 0.04)
-                                    : Qt.rgba(info.color.r, info.color.g, info.color.b, 0.14)
-                                border.color: row.modelData.done
-                                    ? Qt.rgba(1, 1, 1, 0.06)
-                                    : Qt.rgba(info.color.r, info.color.g, info.color.b, 0.40)
-                                border.width: 1
+                                    : Qt.rgba(info.color.r, info.color.g, info.color.b, 0.10)
 
                                 Text {
                                     id: dueLabel
@@ -524,9 +508,9 @@ reuseItems: true
                             Rectangle {
                                 Layout.preferredWidth: 24
                                 Layout.preferredHeight: 24
-                                radius: 6
+                                radius: 12
                                 color: delMouse.containsMouse
-                                    ? Qt.rgba(0.95, 0.55, 0.66, 0.18)
+                                    ? Qt.rgba(0.85, 0.48, 0.55, 0.14)
                                     : "transparent"
 
                                 Text {

@@ -10,7 +10,7 @@ Item {
     signal togglePopout()
 
     implicitWidth: 30
-    implicitHeight: 26
+    implicitHeight: 24
 
     function getBluetoothIcon() {
         const adapter = Bluetooth.defaultAdapter
@@ -22,20 +22,18 @@ Item {
     }
 
     function getBluetoothColor() {
-        if (root.popoutOpen) return Root.Theme.barBg
+        if (root.popoutOpen) return Root.Theme.panelSolid
         const adapter = Bluetooth.defaultAdapter
         if (!adapter || !adapter.enabled) return Root.Theme.barMuted
-        for (const key in Bluetooth.devices) {
-            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return Root.Theme.barText
-        }
-        return Root.Theme.barText
+        if (hovMa.containsMouse) return Root.Theme.barAccent
+        return Root.Theme.barSubtext
     }
 
     Rectangle {
         anchors.fill: parent
-        radius: 9
+        radius: height / 2
         color: root.popoutOpen ? Root.Theme.barAccent
-            : (hovMa.containsMouse ? Root.Theme.barHoverStrong : "transparent")
+            : (hovMa.containsMouse ? Root.Theme.barHover : "transparent")
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 

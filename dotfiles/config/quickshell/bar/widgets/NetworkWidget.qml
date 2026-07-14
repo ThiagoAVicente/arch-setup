@@ -9,14 +9,14 @@ Item {
     property bool popoutOpen: false
     signal togglePopout()
 
-    implicitWidth: row.implicitWidth + 14
-    implicitHeight: 26
+    implicitWidth: row.implicitWidth + 18
+    implicitHeight: 24
 
     // Background pill
     Rectangle {
-        anchors.fill: parent; radius: 9
+        anchors.fill: parent; radius: height / 2
         color: root.popoutOpen ? Root.Theme.barAccent
-            : hovMa.containsMouse ? Root.Theme.barHoverStrong : "transparent"
+            : hovMa.containsMouse ? Root.Theme.barHover : "transparent"
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
@@ -28,7 +28,8 @@ Item {
         Text {
             id: wifiIcon
             text: "󰤭"
-            color: root.popoutOpen ? Root.Theme.barBg : Root.Theme.barText
+            color: root.popoutOpen ? Root.Theme.panelSolid
+                : hovMa.containsMouse ? Root.Theme.barAccent : Root.Theme.barSubtext
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             anchors.verticalCenter: parent.verticalCenter
@@ -49,8 +50,10 @@ Item {
             id: ssidLabel
             visible: text.length > 0
             text: ""
-            color: root.popoutOpen ? Root.Theme.barBg : Root.Theme.barSubtext
-            font.pixelSize: 11
+            color: root.popoutOpen ? Root.Theme.panelSolid
+                : hovMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
+            font.family: Root.Theme.fontMono
+            font.pixelSize: 12
             elide: Text.ElideRight
             maximumLineCount: 1
             anchors.verticalCenter: parent.verticalCenter

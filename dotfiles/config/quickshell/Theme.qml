@@ -23,6 +23,16 @@ QtObject {
     readonly property color alert:    "#d9a07a"
     readonly property color critical: "#d97a8e"
 
+    // ── Shared surface language ──────────────────────────────────────────
+    // One surface, one hairline everywhere (bar, popouts, modals, OSD)
+    readonly property color panel:         Qt.rgba(0.063, 0.063, 0.071, 0.92)
+    readonly property color panelSolid:    "#0f0f11"
+    // Frosted variant — pair with hyprland layerrule blur on qs-overlay
+    readonly property color panelFrost:    Qt.rgba(0.055, 0.055, 0.067, 0.72)
+    readonly property color hairline:      Qt.rgba(1, 1, 1, 0.09)
+    readonly property color panelHi:       Qt.rgba(1, 1, 1, 0.06)
+    readonly property color focusRing:     Qt.rgba(1, 1, 1, 0.25)
+
     // Borders — bright white for glow effect (dark modals)
     readonly property color border:        Qt.rgba(1, 1, 1, 0.22)
     readonly property color borderStrong:  Qt.rgba(1, 1, 1, 0.40)
@@ -33,16 +43,16 @@ QtObject {
     readonly property color backdrop:      Qt.rgba(0, 0, 0, 0.55)
     readonly property color glassHi:       Qt.rgba(1, 1, 1, 0.12)
 
-    // ── Bar (grey pill, white borders) ───────────────────────────────────
-    readonly property color barBg:         "#2e2e2e"
-    readonly property color barText:       "#f0f0f0"
-    readonly property color barSubtext:    "#c0c0c0"
-    readonly property color barMuted:      "#8a8a8a"
+    // ── Bar (dark pill, single hairline) ─────────────────────────────────
+    readonly property color barBg:         panel
+    readonly property color barText:       "#f2f2f4"
+    readonly property color barSubtext:    "#c9c9cf"
+    readonly property color barMuted:      "#8f8f96"
     readonly property color barAccent:     "#ffffff"
-    readonly property color barBorder:     Qt.rgba(1, 1, 1, 0.30)
-    readonly property color barBorderStrong:Qt.rgba(1, 1, 1, 0.55)
+    readonly property color barBorder:     hairline
+    readonly property color barBorderStrong:Qt.rgba(1, 1, 1, 0.22)
     readonly property color barHover:      Qt.rgba(1, 1, 1, 0.06)
-    readonly property color barHoverStrong:Qt.rgba(1, 1, 1, 0.12)
+    readonly property color barHoverStrong:Qt.rgba(1, 1, 1, 0.10)
 
     // Typography
     readonly property string fontFamily: "FiraCode Nerd Font"

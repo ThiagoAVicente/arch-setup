@@ -1,21 +1,13 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
-import QtQuick.Layouts
-import QtQuick.Effects
 import "." as Root
 
 Scope {
     id: powermenu
     property bool visible: false
     property int selectedIndex: 0
-
-    readonly property color cBg:      Root.Theme.bg
-    readonly property color cBorder:  Root.Theme.border
-    readonly property color cText:    Root.Theme.text
-    readonly property color cMuted:   Root.Theme.muted
-    readonly property color cSel:     Root.Theme.bright
-    readonly property color cSelText: Root.Theme.bg
 
     property var options: [
         { icon: "⏻", name: "shutdown", cmd: ["systemctl", "poweroff"] },
@@ -47,6 +39,7 @@ Scope {
         exclusiveZone: -1
         color: "transparent"
         focusable: true
+        WlrLayershell.namespace: "qs-overlay"
 
         TextInput {
             id: focusInput
@@ -82,9 +75,9 @@ Scope {
 
         onVisibleChanged: {
             if (visible) {
-                pmBackdrop.opacity = 0.55
-                pmCard.opacity = 1.0
-                pmCard.scale = 1.0
+                tileRow.opacity = 0
+                tileRow.yOffset = 8
+                pmOpenAnim.restart()
                 focusRetry.attempts = 0
                 focusRetry.start()
             } else {
@@ -92,109 +85,65 @@ Scope {
             }
         }
 
-        Rectangle {
-            id: pmBackdrop
+        ParallelAnimation {
+            id: pmOpenAnim
+            NumberAnimation { target: tileRow; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { target: tileRow; property: "yOffset"; to: 0; duration: 180; easing.type: Easing.OutCubic }
+        }
+
+        // Click-away close (invisible)
+        MouseArea {
             anchors.fill: parent
-            color: "black"
-            opacity: 0
-            MouseArea {
-                anchors.fill: parent
-                onClicked: powermenu.visible = false
-                propagateComposedEvents: false
-            }
+            onClicked: powermenu.visible = false
         }
 
-        // ── Glow halo ──────────────────────────────────────────────────────
-        Rectangle {
+        // ── Glyph tiles — icons only, frosted, no card ─────────────────────
+        Row {
+            id: tileRow
+            property real yOffset: 0
             anchors.centerIn: parent
-            width: pmCard.width + 12
-            height: pmCard.height + 12
-            radius: pmCard.radius + 6
-            color: "transparent"
-            border.color: Qt.rgba(1, 1, 1, 0.85)
-            border.width: 3
-            visible: powermenu.visible
-            layer.enabled: powermenu.visible
-            layer.effect: MultiEffect {
-                blurEnabled: true
-                blur: 1.0
-                blurMax: 20
-                brightness: 0.15
-            }
-        }
-
-        // ── Card ───────────────────────────────────────────────────────────
-        Rectangle {
-            id: pmCard
-            anchors.centerIn: parent
-            width: 220
-            height: optionCol.implicitHeight + 32
-            color: powermenu.cBg
-            border.width: 0
-            radius: 6
+            anchors.verticalCenterOffset: yOffset
+            spacing: 14
             opacity: 0
-            scale: 0.94
 
-            MouseArea { anchors.fill: parent; onClicked: {} }
+            Repeater {
+                model: powermenu.options
 
-            ColumnLayout {
-                id: optionCol
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: 16
-                }
-                spacing: 2
+                Rectangle {
+                    id: tile
+                    required property int index
+                    required property var modelData
 
-                Repeater {
-                    model: powermenu.options
+                    readonly property bool isSel: index === powermenu.selectedIndex
 
-                    Rectangle {
-                        required property int index
-                        required property var modelData
-                        Layout.fillWidth: true
-                        height: 44
-                        radius: 4
-                        color: index === powermenu.selectedIndex
-                            ? powermenu.cSel
-                            : "transparent"
+                    width: 64
+                    height: 64
+                    radius: 18
+                    color: isSel ? "#eeeef0" : Root.Theme.panelFrost
+                    border.color: isSel ? "transparent" : Root.Theme.hairline
+                    border.width: 1
 
-                        Behavior on color { ColorAnimation { duration: 80 } }
+                    transform: Translate {
+                        y: tile.isSel ? -3 : 0
+                        Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    }
+                    Behavior on color { ColorAnimation { duration: 150 } }
 
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 14
-                            anchors.rightMargin: 14
-                            spacing: 14
+                    Text {
+                        anchors.centerIn: parent
+                        text: tile.modelData.icon
+                        color: tile.isSel ? "#0e0e10" : "#c9c9cf"
+                        font.pixelSize: 22
+                        font.family: Root.Theme.fontFamily
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
 
-                            Text {
-                                text: modelData.icon
-                                color: index === powermenu.selectedIndex
-                                    ? powermenu.cSelText
-                                    : powermenu.cMuted
-                                font.pixelSize: 16
-                                font.family: "FiraCode Nerd Font"
-                            }
-
-                            Text {
-                                text: modelData.name
-                                color: index === powermenu.selectedIndex
-                                    ? powermenu.cSelText
-                                    : powermenu.cText
-                                font.pixelSize: 13
-                                font.family: "FiraCode Nerd Font"
-                                Layout.fillWidth: true
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onEntered: powermenu.selectedIndex = index
-                            onClicked: powermenu.runOption(index)
-                        }
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: powermenu.selectedIndex = tile.index
+                        onClicked: powermenu.runOption(tile.index)
                     }
                 }
             }

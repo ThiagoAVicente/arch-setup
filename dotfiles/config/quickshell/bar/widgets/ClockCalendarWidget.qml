@@ -30,13 +30,15 @@ Item {
         Text {
             id: timeText
             Layout.alignment: Qt.AlignVCenter
+            Layout.leftMargin: 4
             font.family: Root.Theme.fontFamily
             font.pixelSize: 15
-            font.weight: Font.Medium
+            font.weight: Font.DemiBold
             color: Root.Theme.barText
+            textFormat: Text.StyledText
 
             property string _fmt: Qt.formatTime(root._time, "HH:mm")
-            text: _fmt
+            text: _fmt.slice(0, 2) + "<font color=\"#8f8f96\">:</font>" + _fmt.slice(3)
 
             on_FmtChanged: minuteFlip.restart()
 
@@ -48,53 +50,32 @@ Item {
                 }
                 ParallelAnimation {
                     NumberAnimation { target: timeText; property: "opacity"; to: 1.0;  duration: 200; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: timeText; property: "scale";   to: 1.0;  duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+                    NumberAnimation { target: timeText; property: "scale";   to: 1.0;  duration: 250; easing.type: Easing.OutCubic }
                 }
             }
         }
 
-        // ── Separator ────────────────────────────────────────────────────
-        Item { visible: root.showCalendar; Layout.preferredWidth: 9 }
+        // ── Date chip — hover target for the calendar ────────────────────
         Rectangle {
             visible: root.showCalendar
             Layout.alignment: Qt.AlignVCenter
-            width: 1; height: 13
-            color: Root.Theme.barBorderStrong
-        }
-        Item { visible: root.showCalendar; Layout.preferredWidth: 9 }
-
-        // ── Calendar ─────────────────────────────────────────────────────
-        RowLayout {
-            id: calGroup
-            visible: root.showCalendar
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 8
-
-            Text {
-                id: calIcon
-                text: "󰃭"
-                font.family: Root.Theme.fontFamily
-                font.pixelSize: 15
-
-                color: root.calendarOpen
-                    ? Root.Theme.barText
-                    : (calHover.hovered ? Root.Theme.barText : Root.Theme.barMuted)
-
-                Behavior on color { ColorAnimation { duration: 160 } }
-
-                scale: calHover.hovered ? 1.15 : 1.0
-                Behavior on scale {
-                    NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
-                }
-            }
+            Layout.leftMargin: 8
+            width: dateText.implicitWidth + 20
+            height: 24
+            radius: height / 2
+            color: root.calendarOpen || calHover.hovered
+                ? Root.Theme.barHover : "transparent"
+            Behavior on color { ColorAnimation { duration: 130 } }
 
             Text {
                 id: dateText
-                text: Qt.formatDate(root._time, "dd/MM/yyyy")
+                anchors.centerIn: parent
+                text: Qt.formatDate(root._time, "dd/MM")
                 font.family: Root.Theme.fontFamily
-                font.pixelSize: 14
-                color: Root.Theme.barText
-                Behavior on color { ColorAnimation { duration: 160 } }
+                font.pixelSize: 13
+                color: root.calendarOpen || calHover.hovered
+                    ? Root.Theme.barText : Root.Theme.barSubtext
+                Behavior on color { ColorAnimation { duration: 130 } }
             }
 
             HoverHandler {

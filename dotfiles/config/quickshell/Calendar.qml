@@ -1,6 +1,8 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import "." as Root
 
 Scope {
     id: cal
@@ -9,16 +11,11 @@ Scope {
     property bool iconHovered: false
     property bool cardHovered: false
 
-    readonly property color cBg:     "#0D0D0D"
-    readonly property color cBorder: "#1C1C1C"
-    readonly property color cText:   "#E0E0E0"
-    readonly property color cMuted:  "#484848"
-
     readonly property var monthNames: [
         "January","February","March","April","May","June",
         "July","August","September","October","November","December"
     ]
-    readonly property var dayNames: ["Mo","Tu","We","Th","Fr","Sa","Su"]
+    readonly property var dayNames: ["M","T","W","T","F","S","S"]
 
     property var _today: new Date()
     property int displayMonth: _today.getMonth()
@@ -52,12 +49,11 @@ Scope {
 
     onVisibleChanged: {
         if (visible) {
-            calCard.height  = 0
-            calCard.opacity = 0
             closeAnim.stop()
+            calCard.opacity = 0
+            calCard.yOffset = -6
             openAnim.start()
         } else {
-            calCard.height = calCard.height   // break binding
             openAnim.stop()
             closeAnim.start()
         }
@@ -66,10 +62,18 @@ Scope {
     function prevMonth() {
         if (displayMonth === 0) { displayMonth = 11; displayYear-- }
         else displayMonth--
+        monthSlide(-1)
     }
     function nextMonth() {
         if (displayMonth === 11) { displayMonth = 0; displayYear++ }
         else displayMonth++
+        monthSlide(1)
+    }
+
+    function monthSlide(dir) {
+        dayGrid.opacity = 0.25
+        dayGrid.xOffset = dir * 10
+        monthAnim.restart()
     }
 
     function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
@@ -97,41 +101,43 @@ Scope {
     onDisplayYearChanged:  cells = buildCells()
     Component.onCompleted: cells = buildCells()
 
+    FontLoader {
+        id: serifFont
+        source: "Widget/InstrumentSerif-Regular.ttf"
+    }
+
     PanelWindow {
         id: calWin
         visible: cal.visible || closeAnim.running
         anchors { top: true; left: true }
-        implicitWidth: 248
-        implicitHeight: 300
+        implicitWidth: 290
+        implicitHeight: 330
         exclusiveZone: 0
         focusable: false
         color: "transparent"
+        WlrLayershell.namespace: "qs-overlay"
 
         // ── Card ─────────────────────────────────────────────────────────
         Rectangle {
             id: calCard
-            x: 16
-            y: 4
-            width: 216
-            height: 0
-            clip: true
+            // Window top sits at the bar's exclusive zone edge; pill bottom is
+            // 4px below that (its topMargin), +2px breathing room
+            property real yOffset: 0
+            x: 12
+            y: 6 + yOffset
+            width: 252
+            height: calCol.implicitHeight + 26
             opacity: 0
-            color: cal.cBg
-            border.color: cal.cBorder
+            color: Root.Theme.panelFrost
+            border.color: Root.Theme.hairline
             border.width: 1
-            radius: 8
+            radius: 14
 
-            // Glass ridge
+            // Inset top highlight
             Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.topMargin: 1
-                anchors.leftMargin: 1
-                anchors.rightMargin: 1
+                anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
                 height: 1
-                radius: 7
-                color: Qt.rgba(1, 1, 1, 0.06)
+                color: Root.Theme.panelHi
             }
 
             HoverHandler {
@@ -142,44 +148,69 @@ Scope {
 
             ColumnLayout {
                 id: calCol
-                anchors { top: parent.top; left: parent.left; right: parent.right; margins: 12 }
-                spacing: 8
+                anchors { top: parent.top; left: parent.left; right: parent.right; margins: 14 }
+                spacing: 6
 
-                // ── Month header ─────────────────────────────────────────
+                // ── Month header — serif moment ──────────────────────────
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.topMargin: 2
+                    Layout.leftMargin: 4
+                    Layout.rightMargin: 2
+                    spacing: 0
 
                     Text {
-                        text: "\u{f053}"
-                        color: cal.cMuted
-                        font.pixelSize: 10
-                        font.family: "FiraCode Nerd Font"
+                        text: cal.monthNames[cal.displayMonth]
+                        color: Root.Theme.barText
+                        font.pixelSize: 21
+                        font.family: serifFont.status === FontLoader.Ready ? serifFont.name : Root.Theme.fontFamily
+                    }
+                    Text {
+                        text: " " + cal.displayYear
+                        color: Qt.rgba(1, 1, 1, 0.32)
+                        font.pixelSize: 13
+                        font.family: Root.Theme.fontMono
+                        Layout.alignment: Qt.AlignBaseline
+                        Layout.leftMargin: 6
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Rectangle {
+                        width: 22; height: 22; radius: 7
+                        color: prevMa.containsMouse ? Qt.rgba(1, 1, 1, 0.07) : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "\u{f053}"
+                            color: prevMa.containsMouse ? Root.Theme.barText : Qt.rgba(1, 1, 1, 0.35)
+                            font.pixelSize: 11
+                            font.family: Root.Theme.fontFamily
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                        }
                         MouseArea {
+                            id: prevMa
                             anchors.fill: parent
+                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: cal.prevMonth()
                         }
                     }
-
-                    Text {
-                        Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignHCenter
-                        text: cal.monthNames[cal.displayMonth] + "  " + cal.displayYear
-                        color: cal.cText
-                        font.pixelSize: 12
-                        font.family: "FiraCode Nerd Font"
-                        font.weight: Font.Medium
-                        font.letterSpacing: 0.3
-                    }
-
-                    Text {
-                        text: "\u{f054}"
-                        color: cal.cMuted
-                        font.pixelSize: 10
-                        font.family: "FiraCode Nerd Font"
+                    Rectangle {
+                        width: 22; height: 22; radius: 7
+                        color: nextMa.containsMouse ? Qt.rgba(1, 1, 1, 0.07) : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "\u{f054}"
+                            color: nextMa.containsMouse ? Root.Theme.barText : Qt.rgba(1, 1, 1, 0.35)
+                            font.pixelSize: 11
+                            font.family: Root.Theme.fontFamily
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                        }
                         MouseArea {
+                            id: nextMa
                             anchors.fill: parent
+                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: cal.nextMonth()
                         }
@@ -189,39 +220,42 @@ Scope {
                 // ── Day name headers ─────────────────────────────────────
                 Row {
                     Layout.fillWidth: true
+                    Layout.topMargin: 4
                     Repeater {
                         model: cal.dayNames
                         Text {
                             required property var modelData
-                            width: (216 - 24) / 7
+                            width: (252 - 28) / 7
                             horizontalAlignment: Text.AlignHCenter
                             text: modelData
-                            color: cal.cMuted
-                            font.pixelSize: 10
-                            font.family: "FiraCode Nerd Font"
-                            font.letterSpacing: 0.5
+                            color: Qt.rgba(1, 1, 1, 0.3)
+                            font.pixelSize: 11
+                            font.family: Root.Theme.fontMono
+                            font.letterSpacing: 1
                         }
                     }
                 }
 
-                // ── Separator ────────────────────────────────────────────
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: Qt.rgba(1, 1, 1, 0.05)
-                }
-
                 // ── Day grid ─────────────────────────────────────────────
                 Grid {
+                    id: dayGrid
+                    property real xOffset: 0
                     columns: 7
                     Layout.fillWidth: true
-                    rowSpacing: 2
+                    Layout.leftMargin: xOffset
+                    rowSpacing: 0
                     columnSpacing: 0
+
+                    ParallelAnimation {
+                        id: monthAnim
+                        NumberAnimation { target: dayGrid; property: "opacity"; to: 1; duration: 160; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: dayGrid; property: "xOffset"; to: 0; duration: 160; easing.type: Easing.OutCubic }
+                    }
 
                     Repeater {
                         model: cal.cells
 
-                        Rectangle {
+                        Item {
                             required property var modelData
                             required property int index
 
@@ -230,70 +264,56 @@ Scope {
                                 modelData.day  === cal._today.getDate() &&
                                 cal.displayMonth === cal._today.getMonth() &&
                                 cal.displayYear  === cal._today.getFullYear()
+                            readonly property bool isWeekend: (index % 7) >= 5
 
-                            width: (216 - 24) / 7
-                            height: 26
-                            radius: 4
-                            color: isToday ? Qt.rgba(1, 1, 1, 0.9) : "transparent"
+                            width: (252 - 28) / 7
+                            height: 30
+
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 2
+                                radius: 8
+                                color: isToday ? Qt.rgba(0.94, 0.94, 0.95, 1)
+                                    : dayMa.containsMouse && modelData.cur ? Qt.rgba(1, 1, 1, 0.05)
+                                    : "transparent"
+                                Behavior on color { ColorAnimation { duration: 100 } }
+                            }
 
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData.day
-                                font.pixelSize: 11
-                                font.family: "FiraCode Nerd Font"
-                                color: isToday
-                                    ? cal.cBg
-                                    : modelData.cur ? cal.cText : cal.cMuted
-                                opacity: modelData.cur ? 1.0 : 0.3
+                                font.pixelSize: 12
+                                font.family: Root.Theme.fontMono
+                                font.weight: isToday ? Font.DemiBold : Font.Normal
+                                color: isToday ? "#0e0e10"
+                                    : !modelData.cur ? Qt.rgba(1, 1, 1, 0.14)
+                                    : isWeekend ? Root.Theme.barMuted
+                                    : "#cfcfd4"
+                            }
+
+                            MouseArea {
+                                id: dayMa
+                                anchors.fill: parent
+                                hoverEnabled: true
                             }
                         }
                     }
                 }
-
-                // Bottom spacer
-                Item { height: 2 }
             }
         }
 
-        // ── Open: height expands with spring overshoot ────────────────────
-        SequentialAnimation {
+        // ── Open: fade + drop ─────────────────────────────────────────────
+        ParallelAnimation {
             id: openAnim
-
-            ParallelAnimation {
-                NumberAnimation {
-                    target: calCard; property: "height"
-                    to: calCol.implicitHeight + 24
-                    duration: 500
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: [0.38, 1.21, 0.22, 1.0, 1.0, 1.0]
-                }
-                NumberAnimation {
-                    target: calCard; property: "opacity"
-                    to: 1.0; duration: 120; easing.type: Easing.OutCubic
-                }
-            }
-            ScriptAction {
-                script: calCard.height = Qt.binding(() => calCol.implicitHeight + 24)
-            }
+            NumberAnimation { target: calCard; property: "opacity"; to: 1; duration: 200; easing.type: Easing.OutCubic }
+            NumberAnimation { target: calCard; property: "yOffset"; to: 0; duration: 200; easing.type: Easing.OutCubic }
         }
 
-        // ── Close: fast start, ease into stop ────────────────────────────
-        SequentialAnimation {
+        // ── Close: quick fade ─────────────────────────────────────────────
+        ParallelAnimation {
             id: closeAnim
-
-            ParallelAnimation {
-                NumberAnimation {
-                    target: calCard; property: "height"
-                    to: 0
-                    duration: 350
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: [0.05, 0, 0.133, 0.06, 0.167, 0.4, 0.208, 0.82, 0.25, 1.0, 1.0, 1.0]
-                }
-                NumberAnimation {
-                    target: calCard; property: "opacity"
-                    to: 0.0; duration: 200; easing.type: Easing.InCubic
-                }
-            }
+            NumberAnimation { target: calCard; property: "opacity"; to: 0; duration: 150; easing.type: Easing.InCubic }
+            NumberAnimation { target: calCard; property: "yOffset"; to: -4; duration: 150; easing.type: Easing.InCubic }
         }
     }
 }

@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import QtQuick
 import "notifications"
@@ -59,6 +60,7 @@ Scope {
 
             exclusiveZone: 0
             color: "transparent"
+            WlrLayershell.namespace: "qs-overlay"
 
             // Only show on the monitor with the focused workspace
             visible: {

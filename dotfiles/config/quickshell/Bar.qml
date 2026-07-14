@@ -15,7 +15,7 @@ Scope {
     property string openPopout: ""
     property bool barHidden: false
 
-    readonly property int barThickness: 28
+    readonly property int barThickness: 34
 
     function togglePopout(name) {
         openPopout = (openPopout === name) ? "" : name
@@ -43,39 +43,46 @@ Scope {
             color: "transparent"
             exclusiveZone: barScope.barThickness
 
-            MouseArea { anchors.fill: parent; z: -1; onClicked: barScope.openPopout = "" }
-
-            Item {
-                anchors {
-                    left: parent.left; right: parent.right; top: parent.top
-                    leftMargin: 8; rightMargin: 8; topMargin: 4
-                }
-                height: barScope.barThickness
-                Rectangle {
-                    anchors.fill: parent; anchors.margins: -3
-                    radius: Root.Theme.radiusMd + 3
-                    color: "transparent"
-                    border.color: Qt.rgba(1, 1, 1, 0.18); border.width: 1
-                }
-                Rectangle {
-                    anchors.fill: parent; anchors.margins: -1
-                    radius: Root.Theme.radiusMd + 1
-                    color: "transparent"
-                    border.color: Qt.rgba(1, 1, 1, 0.55); border.width: 1
+            onVisibleChanged: {
+                if (visible) {
+                    barPill.opacity = 0
+                    barPill.anchors.topMargin = -barPill.height
+                    showAnim.restart()
                 }
             }
 
+            MouseArea { anchors.fill: parent; z: -1; onClicked: barScope.openPopout = "" }
+
             Rectangle {
+                id: barPill
                 anchors {
                     left: parent.left; right: parent.right; top: parent.top
-                    leftMargin: 8; rightMargin: 8; topMargin: 4
+                    leftMargin: 12; rightMargin: 12; topMargin: 4
                 }
                 height: barScope.barThickness
-                radius: Root.Theme.radiusMd
+                radius: height / 2
                 color: Root.Theme.barBg
+                border.color: Root.Theme.hairline
+                border.width: 1
+
+                // Slide + fade in when the bar is shown
+                opacity: 1
+                Component.onCompleted: { opacity = 0; anchors.topMargin = -height; showAnim.start() }
+                ParallelAnimation {
+                    id: showAnim
+                    NumberAnimation { target: barPill; property: "opacity"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: barPill; property: "anchors.topMargin"; to: 4; duration: 260; easing.type: Easing.OutCubic }
+                }
+
+                // Inset top highlight — glass depth without a second border
+                Rectangle {
+                    anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
+                    height: 1
+                    color: Root.Theme.panelHi
+                }
 
                 Item {
-                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 14 }
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 8 }
                     width: hClk.implicitWidth
                     ClockCalendarWidget {
                         id: hClk
@@ -98,15 +105,15 @@ Scope {
                 RowLayout {
                     anchors {
                         right: parent.right; top: parent.top; bottom: parent.bottom
-                        rightMargin: 12
+                        rightMargin: 8
                     }
-                    spacing: 4
+                    spacing: 2
                     SystemTrayWidget {}
-                    Rectangle { width: 1; height: 14; color: Root.Theme.borderStrong; Layout.alignment: Qt.AlignVCenter }
+                    Item { Layout.preferredWidth: 10 }
                     CpuWidget {}
                     BatteryWidget {}
                     VolumeWidget {}
-                    Rectangle { width: 1; height: 14; color: Root.Theme.borderStrong; Layout.alignment: Qt.AlignVCenter }
+                    Item { Layout.preferredWidth: 10 }
                     NetworkWidget {
                         popoutOpen: barScope.openPopout === "network"
                         onTogglePopout: barScope.togglePopout("network")
@@ -115,7 +122,7 @@ Scope {
                         popoutOpen: barScope.openPopout === "bluetooth"
                         onTogglePopout: barScope.togglePopout("bluetooth")
                     }
-                    Rectangle { width: 1; height: 14; color: Root.Theme.borderStrong; Layout.alignment: Qt.AlignVCenter }
+                    Item { Layout.preferredWidth: 10 }
                     NotificationsToggle {}
                 }
             }

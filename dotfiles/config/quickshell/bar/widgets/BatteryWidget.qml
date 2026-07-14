@@ -30,19 +30,19 @@ Item {
 
     visible: percentage > 0 || charging
 
-    implicitWidth: row.implicitWidth + 12
-    implicitHeight: 26
+    implicitWidth: row.implicitWidth + 18
+    implicitHeight: 24
 
     Rectangle {
-        anchors.fill: parent; radius: 9
+        anchors.fill: parent; radius: height / 2
         color: batMa.containsMouse ? Root.Theme.barHover : "transparent"
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: 130 } }
     }
 
     RowLayout {
         id: row
         anchors.centerIn: parent
-        spacing: 4
+        spacing: 5
 
         Text {
             text: Root.IconMaps.batteryIcon(root.percentage, root.charging)
@@ -50,7 +50,7 @@ Item {
                 if (root.charging) return Root.Theme.ok
                 if (root.percentage <= 10) return Root.Theme.critical
                 if (root.percentage <= 20) return Root.Theme.alert
-                return Root.Theme.barSubtext
+                return batMa.containsMouse ? Root.Theme.barAccent : Root.Theme.barSubtext
             }
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
@@ -58,9 +58,11 @@ Item {
         }
 
         Text {
-            text: root.percentage + "%"
-            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical : Root.Theme.barSubtext
-            font.pixelSize: 11
+            text: root.percentage
+            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical
+                : batMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
+            font.family: Root.Theme.fontMono
+            font.pixelSize: 12
             Behavior on color { ColorAnimation { duration: 300 } }
         }
     }

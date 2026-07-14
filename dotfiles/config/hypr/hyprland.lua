@@ -25,8 +25,8 @@ end)
 
 hl.config({
 	general = {
-		gaps_in = 10,
-		gaps_out = 20,
+		gaps_in = 5,
+		gaps_out = 10,
 
 		border_size = 1,
 
@@ -68,8 +68,8 @@ hl.config({
 		},
 
 		blur = {
-			enabled = false,
-			size = 3,
+			enabled = true,
+			size = 4,
 			passes = 2,
 			new_optimizations = true,
 			ignore_opacity = true,

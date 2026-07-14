@@ -6,7 +6,6 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QtQuick.Effects
 import "." as Root
 
 Scope {
@@ -76,34 +75,26 @@ Scope {
         exclusiveZone: -1
         focusable: true
         color: "transparent"
+        WlrLayershell.namespace: "qs-overlay"
 
-        Rectangle {
-            anchors.fill: parent
-            color: "black"
-            opacity: 0.55
-            MouseArea {
-                anchors.fill: parent
-                onClicked: launcher.visible = false
+        onVisibleChanged: {
+            if (visible) {
+                card.opacity = 0
+                card.scale = 0.97
+                openAnim.restart()
             }
         }
 
-        // ── Glow halo ──────────────────────────────────────────────────────
-        Rectangle {
-            anchors.centerIn: parent
-            width: card.width + 12
-            height: card.height + 12
-            radius: card.radius + 6
-            color: "transparent"
-            border.color: Qt.rgba(1, 1, 1, 0.85)
-            border.width: 3
-            visible: launcher.visible
-            layer.enabled: launcher.visible
-            layer.effect: MultiEffect {
-                blurEnabled: true
-                blur: 1.0
-                blurMax: 20
-                brightness: 0.15
-            }
+        ParallelAnimation {
+            id: openAnim
+            NumberAnimation { target: card; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { target: card; property: "scale"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+        }
+
+        // Click-away close (transparent — blur layerrule frosts the card only)
+        MouseArea {
+            anchors.fill: parent
+            onClicked: launcher.visible = false
         }
 
         // ── Card ───────────────────────────────────────────────────────────
@@ -112,27 +103,19 @@ Scope {
             anchors.centerIn: parent
             width: 580
             height: 520
-            color: launcher.cBg
-            border.width: 0
+            color: Root.Theme.panelFrost
+            border.color: Root.Theme.hairline
+            border.width: 1
             radius: 14
             clip: true
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
             // ── Header ─────────────────────────────────────────────────────
-            Rectangle {
+            Item {
                 id: header
                 anchors { top: parent.top; left: parent.left; right: parent.right }
-                height: 46
-                radius: card.radius
-                color: launcher.cMantle
-
-                // Square off bottom half so only top corners are rounded by card clip
-                Rectangle {
-                    anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                    height: parent.height / 2
-                    color: parent.color
-                }
+                height: 44
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
@@ -140,44 +123,33 @@ Scope {
 
                     Text {
                         text: "\u{f0349}"
-                        font.pixelSize: 14
+                        font.pixelSize: 13
                         font.family: "FiraCode Nerd Font"
-                        color: launcher.cAccent
+                        color: launcher.cSubtext
                     }
 
                     Text {
-                        text: "Applications"
-                        font.pixelSize: 13
+                        text: "APPLICATIONS"
+                        font.pixelSize: 10
                         font.family: "FiraCode Nerd Font"
-                        font.weight: Font.Medium
-                        color: launcher.cText
+                        font.letterSpacing: 2
+                        color: launcher.cMuted
                         Layout.fillWidth: true
                     }
 
-                    Rectangle {
+                    Text {
                         visible: launcher.filteredApps.length > 0
-                        height: 22
-                        width: countLabel.implicitWidth + 16
-                        radius: 11
-                        color: Qt.rgba(1, 1, 1, 0.05)
-                        border.color: launcher.cBorder
-                        border.width: 1
-
-                        Text {
-                            id: countLabel
-                            anchors.centerIn: parent
-                            text: launcher.filteredApps.length + (searchField.text ? "" : "+")
-                            font.pixelSize: 11
-                            font.family: "FiraCode Nerd Font"
-                            color: launcher.cMuted
-                        }
+                        text: launcher.filteredApps.length + (searchField.text ? "" : "+")
+                        font.pixelSize: 11
+                        font.family: "FiraCode Nerd Font"
+                        color: launcher.cMuted
                     }
                 }
 
                 Rectangle {
                     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
-                    color: launcher.cBorder
+                    color: Qt.rgba(1, 1, 1, 0.06)
                 }
             }
 
@@ -190,27 +162,23 @@ Scope {
                 Rectangle {
                     anchors { top: parent.top; left: parent.left; right: parent.right }
                     height: 1
-                    color: launcher.cBorder
+                    color: searchField.activeFocus ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
-                Rectangle {
-                    anchors { fill: parent; margins: 10 }
-                    color: launcher.cMantle
-                    radius: 8
-                    border.color: searchField.activeFocus
-                        ? Qt.rgba(0.48, 0.64, 0.97, 0.45)
-                        : Qt.rgba(1, 1, 1, 0.07)
-                    border.width: 1
+                Item {
+                    anchors.fill: parent
 
                     RowLayout {
-                        anchors { fill: parent; leftMargin: 14; rightMargin: 14 }
-                        spacing: 10
+                        anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
+                        spacing: 12
 
                         Text {
                             text: "\u{f002}"
                             color: searchField.text ? launcher.cAccent : launcher.cMuted
                             font.pixelSize: 15
                             font.family: "FiraCode Nerd Font"
+                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
                         TextInput {
@@ -222,7 +190,7 @@ Scope {
                             font.weight: Font.Light
                             clip: true
                             focus: true
-                            selectionColor: Qt.rgba(0.48, 0.64, 0.97, 0.3)
+                            selectionColor: Qt.rgba(1, 1, 1, 0.25)
 
                             onTextChanged: launcher.filterApps(text)
                             Component.onCompleted: forceActiveFocus()
@@ -260,23 +228,12 @@ Scope {
                             }
                         }
 
-                        Rectangle {
+                        Text {
                             visible: launcher.filteredApps.length > 0
-                            height: 20
-                            width: hintText.implicitWidth + 12
-                            radius: 4
-                            color: Qt.rgba(1, 1, 1, 0.05)
-                            border.color: launcher.cBorder
-                            border.width: 1
-
-                            Text {
-                                id: hintText
-                                anchors.centerIn: parent
-                                text: "↵"
-                                font.pixelSize: 11
-                                font.family: "FiraCode Nerd Font"
-                                color: launcher.cMuted
-                            }
+                            text: "↵"
+                            font.pixelSize: 12
+                            font.family: "FiraCode Nerd Font"
+                            color: launcher.cMuted
                         }
                     }
                 }
@@ -346,14 +303,10 @@ reuseItems: true
                         // Selection background
                         Rectangle {
                             anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
-                            radius: 8
+                            radius: 10
                             color: delegateRoot.isSelected
-                                ? Qt.rgba(0.48, 0.64, 0.97, 0.12)
+                                ? Qt.rgba(1, 1, 1, 0.07)
                                 : "transparent"
-                            border.color: delegateRoot.isSelected
-                                ? Qt.rgba(0.48, 0.64, 0.97, 0.2)
-                                : "transparent"
-                            border.width: 1
                         }
 
                         // Left accent bar
@@ -363,10 +316,10 @@ reuseItems: true
                                 leftMargin: 8
                                 verticalCenter: parent.verticalCenter
                             }
-                            width: 3
-                            height: 24
+                            width: 2
+                            height: 20
                             radius: 2
-                            color: launcher.cAccent
+                            color: Root.Theme.bright
                             visible: delegateRoot.isSelected
                         }
 
@@ -380,12 +333,8 @@ reuseItems: true
                                 Layout.preferredHeight: 36
                                 radius: 9
                                 color: delegateRoot.isSelected
-                                    ? Qt.rgba(0.48, 0.64, 0.97, 0.15)
+                                    ? Qt.rgba(1, 1, 1, 0.08)
                                     : Qt.rgba(1, 1, 1, 0.04)
-                                border.color: delegateRoot.isSelected
-                                    ? Qt.rgba(0.48, 0.64, 0.97, 0.25)
-                                    : Qt.rgba(1, 1, 1, 0.07)
-                                border.width: 1
 
                                 Image {
                                     id: ico
@@ -421,7 +370,7 @@ reuseItems: true
                                     color: delegateRoot.isSelected ? "#ffffff" : launcher.cText
                                     font.pixelSize: 13
                                     font.family: "FiraCode Nerd Font"
-                                    font.weight: delegateRoot.isSelected ? Font.SemiBold : Font.Normal
+                                    font.weight: delegateRoot.isSelected === true ? Font.DemiBold : Font.Normal
                                     font.letterSpacing: 0.2
                                     width: parent.width
                                     elide: Text.ElideRight

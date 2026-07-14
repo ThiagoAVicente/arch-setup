@@ -8,12 +8,11 @@ Item {
     id: popup
     property var notification
 
-    property color accentColor: {
-        let u = popup.notification?.urgency ?? NotificationUrgency.Normal
-        if (u === NotificationUrgency.Critical) return Qt.rgba(1, 0.36, 0.36, 1)
-        if (u === NotificationUrgency.Low)      return Qt.rgba(0.55, 0.55, 0.65, 1)
-        return Qt.rgba(0.49, 0.66, 1, 1)
-    }
+    readonly property bool isCritical:
+        (popup.notification?.urgency ?? NotificationUrgency.Normal) === NotificationUrgency.Critical
+
+    // Mono by default; urgency shows only when it matters
+    property color accentColor: isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
 
     visible: notification !== null && notification !== undefined
     height: visible ? card.implicitHeight : 0
@@ -31,37 +30,22 @@ Item {
     Rectangle {
         id: card
         anchors { left: parent.left; right: parent.right }
-        implicitHeight: inner.implicitHeight + 24
-        color: Root.Theme.bg
-        border.color: Qt.rgba(1, 1, 1, 0.08)
+        implicitHeight: inner.implicitHeight + 26
+        color: Root.Theme.panelFrost
+        border.color: popup.isCritical ? Qt.rgba(0.85, 0.48, 0.55, 0.4) : Root.Theme.hairline
         border.width: 1
-        radius: 12
+        radius: 14
 
-        // Left accent strip
+        // Inset top highlight
         Rectangle {
-            width: 3
-            anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 0 }
-            radius: 12
-            color: popup.accentColor
-        }
-
-        // Clip the left strip corners
-        Rectangle {
-            width: 3
-            height: parent.radius
-            anchors { left: parent.left; top: parent.top }
-            color: Root.Theme.bg
-        }
-        Rectangle {
-            width: 3
-            height: parent.radius
-            anchors { left: parent.left; bottom: parent.bottom }
-            color: Root.Theme.bg
+            anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
+            height: 1
+            color: Root.Theme.panelHi
         }
 
         ColumnLayout {
             id: inner
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12; leftMargin: 16 }
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 13; leftMargin: 15 }
             spacing: 8
 
             // Header: icon + text + close
@@ -69,17 +53,23 @@ Item {
                 Layout.fillWidth: true
                 spacing: 10
 
-                // App icon
-                Image {
-                    source: popup.notification?.icon?.toString() ?? ""
+                // App icon in a tile — same treatment as launcher rows
+                Rectangle {
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
                     Layout.alignment: Qt.AlignVCenter
-                    fillMode: Image.PreserveAspectFit
-                    visible: source !== ""
+                    radius: 9
+                    color: Qt.rgba(1, 1, 1, 0.05)
+                    visible: appIcon.source.toString() !== ""
 
-                    layer.enabled: true
-                    layer.effect: null
+                    Image {
+                        id: appIcon
+                        anchors.centerIn: parent
+                        width: 24
+                        height: 24
+                        source: popup.notification?.icon?.toString() ?? ""
+                        fillMode: Image.PreserveAspectFit
+                    }
                 }
 
                 // App name + summary
@@ -88,10 +78,10 @@ Item {
                     spacing: 2
 
                     Text {
-                        text: popup.notification?.appName ?? ""
-                        color: popup.accentColor
-                        font.pixelSize: 10
-                        font.weight: Font.Medium
+                        text: (popup.notification?.appName ?? "").toUpperCase()
+                        color: popup.isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
+                        font.pixelSize: 9
+                        font.letterSpacing: 1.4
                         font.family: "FiraCode Nerd Font"
                         elide: Text.ElideRight
                         Layout.fillWidth: true
@@ -159,28 +149,29 @@ Item {
                 Repeater {
                     model: popup.notification?.actions ?? []
 
+                    // Ghost buttons — hairline outline, invert to white on hover
                     Rectangle {
                         id: actionBtn
                         required property var modelData
 
                         Layout.preferredHeight: 26
-                        Layout.preferredWidth: Math.max(actionLabel.implicitWidth + 20, 60)
-                        color: actionMouse.containsMouse ? popup.accentColor : Qt.rgba(1, 1, 1, 0.08)
-                        radius: 6
+                        Layout.preferredWidth: Math.max(actionLabel.implicitWidth + 26, 60)
+                        color: actionMouse.containsMouse ? "#eeeef0" : "transparent"
+                        radius: 8
                         border.color: actionMouse.containsMouse ? "transparent" : Qt.rgba(1, 1, 1, 0.12)
                         border.width: 1
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on color { ColorAnimation { duration: 130 } }
 
                         Text {
                             id: actionLabel
                             anchors.centerIn: parent
                             text: parent.modelData?.text ?? ""
-                            color: actionMouse.containsMouse ? Root.Theme.bg : Qt.rgba(1, 1, 1, 0.75)
+                            color: actionMouse.containsMouse ? "#0e0e10" : Qt.rgba(1, 1, 1, 0.78)
                             font.pixelSize: 11
                             font.family: "FiraCode Nerd Font"
 
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Behavior on color { ColorAnimation { duration: 130 } }
                         }
 
                         MouseArea {
@@ -195,20 +186,19 @@ Item {
             }
         }
 
-        // Timeout progress bar
+        // Timeout progress hairline
         Rectangle {
             id: progressTrack
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 1; rightMargin: 1; bottomMargin: 1 }
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 14; rightMargin: 14; bottomMargin: 1 }
             height: 2
-            color: Qt.rgba(1, 1, 1, 0.07)
+            color: Qt.rgba(1, 1, 1, 0.06)
             radius: 1
 
             Rectangle {
                 id: progressFill
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
                 width: parent.width
-                color: popup.accentColor
-                opacity: 0.6
+                color: popup.isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
                 radius: 1
 
                 NumberAnimation on width {

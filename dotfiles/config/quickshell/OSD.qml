@@ -57,7 +57,6 @@ Scope {
         }
     }
 
-    // Brightness monitor (2s poll — brightness is user-initiated, no subscribe API)
     Process {
         id: brightnessMonitor
         command: ["sh", "-c", "brightnessctl -m 2>/dev/null | cut -d',' -f4 | tr -d '%'"]
@@ -73,14 +72,31 @@ Scope {
         }
     }
 
+    // Event-driven: udev fires a change event on the backlight device instantly
+    Process {
+        running: true
+        command: ["stdbuf", "-oL", "udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.includes("change")) brightnessMonitor.running = true
+            }
+        }
+    }
+
+    // Fallback slow poll in case udev misses something
     Timer {
-        interval: 2000; running: true; repeat: true; triggeredOnStart: true
+        interval: 10000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: brightnessMonitor.running = true
     }
 
     function showOSD(type) {
         osdType = type
-        osdWindow.visible = true
+        if (!osdWindow.visible) {
+            osdWindow.visible = true
+            capsule.opacity = 0
+            capsule.yOffset = 8
+            osdInAnim.restart()
+        }
         hideTimer.restart()
     }
 
@@ -88,6 +104,7 @@ Scope {
         id: osdWindow
         visible: false
         exclusiveZone: 0
+        WlrLayershell.namespace: "qs-overlay"
 
         anchors {
             bottom: true
@@ -97,8 +114,8 @@ Scope {
             bottom: 100
         }
 
-        implicitWidth: 220
-        implicitHeight: 80
+        implicitWidth: 280
+        implicitHeight: 60
         color: "transparent"
 
         Timer {
@@ -107,21 +124,40 @@ Scope {
             onTriggered: osdWindow.visible = false
         }
 
+        ParallelAnimation {
+            id: osdInAnim
+            NumberAnimation { target: capsule; property: "opacity"; to: 1; duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { target: capsule; property: "yOffset"; to: 0; duration: 160; easing.type: Easing.OutCubic }
+        }
+
+        // ── Slim capsule: icon · track · value ─────────────────────────────
         Rectangle {
+            id: capsule
+            property real yOffset: 0
             anchors.centerIn: parent
-            width: 200
-            height: 70
-            color: Qt.rgba(0.1, 0.1, 0.1, 0.85)
-            radius: 16
-            border.color: Qt.rgba(1, 1, 1, 0.12)
+            anchors.verticalCenterOffset: yOffset
+            width: 250
+            height: 42
+            color: Qt.rgba(0.055, 0.055, 0.067, 0.72)
+            radius: height / 2
+            border.color: Qt.rgba(1, 1, 1, 0.09)
             border.width: 1
 
-            Column {
+            // Inset top highlight
+            Rectangle {
+                anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
+                height: 1
+                color: Qt.rgba(1, 1, 1, 0.06)
+            }
+
+            Row {
                 anchors.centerIn: parent
-                spacing: 10
+                spacing: 13
 
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 20
+                    horizontalAlignment: Text.AlignHCenter
                     text: {
                         if (osdScope.osdType === "volume") {
                             if (osdScope.muted) return "󰝟"
@@ -134,28 +170,40 @@ Scope {
                             return "󰃞"
                         }
                     }
-                    color: Qt.rgba(1, 1, 1, 0.9)
-                    font.pixelSize: 26
+                    color: osdScope.muted && osdScope.osdType === "volume"
+                        ? "#d97a8e" : "#e9e9ec"
+                    font.pixelSize: 16
                     font.family: "FiraCode Nerd Font"
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
                 Rectangle {
-                    width: 160
-                    height: 6
-                    color: Qt.rgba(1, 1, 1, 0.15)
-                    radius: 3
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 150
+                    height: 4
+                    color: Qt.rgba(1, 1, 1, 0.12)
+                    radius: 2
 
                     Rectangle {
-                        width: parent.width * (osdScope.osdType === "volume" ? osdScope.volume : osdScope.brightness) / 100
+                        width: parent.width * Math.min(100, (osdScope.osdType === "volume" ? osdScope.volume : osdScope.brightness)) / 100
                         height: parent.height
-                        color: osdScope.muted ? Qt.rgba(1, 0.4, 0.4, 0.8) : Qt.rgba(0.4, 0.6, 1, 0.8)
-                        radius: 3
-
-                        Behavior on width {
-                            NumberAnimation { duration: 100 }
-                        }
+                        color: osdScope.muted && osdScope.osdType === "volume"
+                            ? Qt.rgba(0.85, 0.48, 0.55, 0.75) : "#f0f0f2"
+                        radius: 2
+                        Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
                     }
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 24
+                    horizontalAlignment: Text.AlignRight
+                    text: osdScope.muted && osdScope.osdType === "volume"
+                        ? "m" : (osdScope.osdType === "volume" ? osdScope.volume : osdScope.brightness)
+                    color: osdScope.muted && osdScope.osdType === "volume" ? "#d97a8e" : "#8f8f96"
+                    font.pixelSize: 12
+                    font.family: "FiraCode Nerd Font Mono"
                 }
             }
         }

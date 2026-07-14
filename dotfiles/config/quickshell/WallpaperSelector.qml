@@ -1,7 +1,10 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 
 Scope {
     id: wallpaperSelector
@@ -58,6 +61,7 @@ Scope {
         exclusiveZone: -1
         focusable: true
         color: "transparent"
+        WlrLayershell.namespace: "qs-overlay"
 
         TextInput {
             id: focusInput
@@ -98,14 +102,12 @@ Scope {
 
         ParallelAnimation {
             id: wsOpenAnim
-            OpacityAnimator  { target: wsBackdrop; from: 0;   to: 0.6; duration: 200; easing.type: Easing.OutCubic }
             OpacityAnimator  { target: wsStrip;    from: 0;   to: 1.0; duration: 200; easing.type: Easing.OutCubic }
             NumberAnimation  { target: wsStrip; property: "anchors.leftMargin"; from: 0; to: 24; duration: 220; easing.type: Easing.OutCubic }
         }
 
         onVisibleChanged: {
             if (visible) {
-                wsBackdrop.opacity = 0
                 wsStrip.opacity = 0
                 wsStrip.anchors.leftMargin = 0
                 wsOpenAnim.start()
@@ -116,16 +118,10 @@ Scope {
             }
         }
 
-        Rectangle {
-            id: wsBackdrop
+        // Click-away close (transparent)
+        MouseArea {
             anchors.fill: parent
-            color: "black"
-            opacity: 0
-            MouseArea {
-                anchors.fill: parent
-                onClicked: wallpaperSelector.visible = false
-                propagateComposedEvents: false
-            }
+            onClicked: wallpaperSelector.visible = false
         }
 
         // ── Drum-roller strip — no background, thumbnails float ────────────
@@ -158,6 +154,7 @@ Scope {
                 highlightMoveDuration: -1  // velocity-controlled
 
                 delegate: Item {
+                    id: wpItem
                     required property var modelData
                     required property int index
                     width: wallpaperSelector.thumbW
@@ -165,60 +162,87 @@ Scope {
 
                     readonly property bool isSel: index === wallpaperSelector.selectedIndex
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 4
-                        color: "transparent"
-                        border.color: isSel ? "#E0E0E0" : "#2A2A2A"
-                        border.width: isSel ? 2 : 1
-                        clip: true
+                    scale: isSel ? 1.0 : 0.94
+                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    z: isSel ? 1 : 0
 
-                        Behavior on border.color { ColorAnimation { duration: 100 } }
+                    // Ambient backlight — the selected thumb glows with its own colors
+                    MultiEffect {
+                        anchors.fill: thumbClip
+                        anchors.margins: -6
+                        source: thumbClip
+                        visible: wpItem.isSel
+                        blurEnabled: true
+                        blur: 1.0
+                        blurMax: 32
+                        opacity: wpItem.isSel ? 0.5 : 0
+                        scale: 1.15
+                        z: -1
+                        Behavior on opacity { NumberAnimation { duration: 180 } }
+                    }
+
+                    ClippingRectangle {
+                        id: thumbClip
+                        anchors.fill: parent
+                        radius: 10
+                        color: "#1a1a1c"
+                        border.color: wpItem.isSel ? Qt.rgba(1, 1, 1, 0.35) : Qt.rgba(1, 1, 1, 0.07)
+                        border.width: 1
+
+                        Behavior on border.color { ColorAnimation { duration: 150 } }
 
                         Image {
                             anchors.fill: parent
-                            anchors.margins: isSel ? 2 : 1
-                            source: "file://" + modelData.path
+                            source: "file://" + wpItem.modelData.path
                             sourceSize.width: 240
                             sourceSize.height: 135
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: true
                             smooth: true
-                            opacity: isSel ? 1.0 : 0.45
+                            opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
 
-                            Behavior on opacity { NumberAnimation { duration: 100 } }
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
                         }
 
-                        // "applied" badge
+                        // "applied" badge — state chip with green dot
                         Rectangle {
                             anchors.bottom: parent.bottom
                             anchors.left: parent.left
-                            anchors.margins: 5
-                            visible: modelData.path === wallpaperSelector.appliedPath
-                            width: lbl.implicitWidth + 10
+                            anchors.margins: 7
+                            visible: wpItem.modelData.path === wallpaperSelector.appliedPath
+                            width: badgeRow.implicitWidth + 16
                             height: 17
-                            radius: 2
-                            color: "#0D0D0D"
+                            radius: height / 2
+                            color: Qt.rgba(0.04, 0.04, 0.05, 0.72)
 
-                            Text {
-                                id: lbl
+                            Row {
+                                id: badgeRow
                                 anchors.centerIn: parent
-                                text: "applied"
-                                color: "#E0E0E0"
-                                font.pixelSize: 9
-                                font.family: "FiraCode Nerd Font"
-                                font.letterSpacing: 1
+                                spacing: 5
+                                Rectangle {
+                                    width: 5; height: 5; radius: 2.5
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: "#7fb98a"
+                                }
+                                Text {
+                                    text: "applied"
+                                    color: "#e9e9ec"
+                                    font.pixelSize: 9
+                                    font.family: "FiraCode Nerd Font"
+                                    font.letterSpacing: 1
+                                }
                             }
                         }
                     }
 
                     MouseArea {
+                        id: wpMa
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onEntered: wallpaperSelector.selectedIndex = index
-                        onClicked: wallpaperSelector.setWallpaper(modelData.path)
+                        onClicked: wallpaperSelector.setWallpaper(wpItem.modelData.path)
                     }
                 }
             }

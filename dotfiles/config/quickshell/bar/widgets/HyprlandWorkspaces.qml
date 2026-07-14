@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import "../.." as Root
 
 Row {
-    spacing: 5
+    spacing: 7
 
     // Collect which workspace is focused on each monitor
     property var monitorWorkspaces: {
@@ -34,10 +34,22 @@ Row {
             property bool isOtherMonitorActive: !isThisMonitorActive && monitorWorkspaces[wsId] !== undefined
             property bool hasWindows: workspace !== null && workspace !== undefined && workspace.windows !== null && workspace.windows !== undefined && workspace.windows.length > 0
 
-            width: isThisMonitorActive ? 28 : (isOtherMonitorActive ? 14 : (hasWindows ? 10 : 6))
-            height: 6
+            width: isThisMonitorActive ? 24 : (isOtherMonitorActive ? 12 : 5)
+            height: 5
+            anchors.verticalCenter: parent.verticalCenter
 
-            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
+
+            // Soft halo under the active dot — the one lit element on the bar
+            Rectangle {
+                anchors.centerIn: parent
+                width: parent.width + 10
+                height: parent.height + 10
+                radius: height / 2
+                color: Qt.rgba(1, 1, 1, 0.08)
+                opacity: isThisMonitorActive ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 200 } }
+            }
 
             Rectangle {
                 anchors.fill: parent
@@ -46,10 +58,10 @@ Row {
                 color: isThisMonitorActive
                     ? Root.Theme.barText
                     : isOtherMonitorActive
-                        ? Root.Theme.barSubtext
-                        : (hasWindows ? Root.Theme.barMuted : Root.Theme.barBorderStrong)
+                        ? Qt.rgba(1, 1, 1, 0.6)
+                        : (hasWindows ? Qt.rgba(1, 1, 1, 0.5) : Qt.rgba(1, 1, 1, 0.22))
 
-                Behavior on color { ColorAnimation { duration: 180 } }
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
 
         }
