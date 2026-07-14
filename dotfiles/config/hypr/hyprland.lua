@@ -50,7 +50,7 @@ hl.config({
 
 	render = {
 		new_render_scheduling = true,
-		-- direct_scanout        = true,
+		--		direct_scanout = 1,
 	},
 
 	decoration = {
@@ -111,6 +111,7 @@ hl.config({
 	cursor = {
 		inactive_timeout = 3,
 		enable_hyprcursor = true,
+		no_hardware_cursors = true,
 	},
 
 	scrolling = {
