@@ -1,14 +1,11 @@
 bridge-utils
 claude-code
-hyprexpose-git                                         ⌂ 17:13
 curd
+envycontrol
+grimblast-git
+hyprexpose-git
 jump
 protonup-qt-bin
 slack-desktop-wayland
-grimblast-git
 spotify
-envycontrol
 tty-clock
-spotify-player
-hyprexpose
-hyprwave

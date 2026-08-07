@@ -93,17 +93,9 @@ print_step "Updating system"
 sudo pacman -Syu --noconfirm
 
 # Install official packages
-if [ -d "packages" ]; then
-  PACKAGE_FILES=""
-  [ -f "packages/core.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/core.txt"
-  [ -f "packages/dev.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/dev.txt"
-  [ -f "packages/media.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/media.txt"
-  [ -f "packages/wayland.txt" ] && PACKAGE_FILES="$PACKAGE_FILES packages/wayland.txt"
-
-  if [ -n "$PACKAGE_FILES" ]; then
-    print_step "Installing official packages"
-    sudo pacman -S --needed --noconfirm $(cat $PACKAGE_FILES)
-  fi
+if [ -f "packages/pacman.txt" ]; then
+  print_step "Installing official packages"
+  sudo pacman -S --needed --noconfirm $(cat packages/pacman.txt)
 fi
 
 # Install yay (AUR helper)

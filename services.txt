@@ -7,3 +7,5 @@ systemd-timesyncd
 libvirtd
 ly@tty1
 avahi-daemon
+nvidia-persistenced
+nvidia-powerd

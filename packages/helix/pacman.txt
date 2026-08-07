@@ -1,4 +1,0 @@
-marksman
-bash-language-server
-taplo
-rust-analyzer
