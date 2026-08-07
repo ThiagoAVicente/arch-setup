@@ -16,10 +16,6 @@ hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(qs .. " todo"))
 
 -- Performance overrides (reverts on hyprctl reload)
 hl.bind(
-	mainMod .. " + ALT + O",
-	hl.dsp.exec_cmd("hyprctl keyword decoration:inactive_opacity 0.75 && hyprctl keyword decoration:blur:enabled true")
-)
-hl.bind(
 	mainMod .. " + ALT + S",
 	hl.dsp.exec_cmd("hyprctl keyword decoration:screen_shader '~/.config/hypr/shaders/contrast.glsl'")
 )

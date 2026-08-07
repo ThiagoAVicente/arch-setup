@@ -18,10 +18,6 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
     <td><img src="images/i1.png" alt="Screenshot 1"></td>
     <td><img src="images/i2.png" alt="Screenshot 2"></td>
   </tr>
-  <tr>
-    <td><img src="images/i3.png" alt="Screenshot 3"></td>
-    <td><img src="images/i4.png" alt="Screenshot 4"></td>
-  </tr>
 </table>
 
 ## Repository Structure
