@@ -58,12 +58,6 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 │   └── zshrc               # Zsh shell configuration
 │
 ├── scripts/                # Helper scripts
-│   ├── change-wallpaper.sh # Wallpaper changer with pywal integration
-│   ├── powermenu.sh        # Power management menu
-│   ├── record-toggle.sh    # Screen recording toggle
-│   ├── gammastep-toggle.sh # Blue light filter toggle
-│   ├── cava-float.sh       # Floating audio visualizer
-│   └── toggle_debug.sh     # Debug mode toggle
 │
 ├── bin/                    # Custom executables
 │   ├── curd-secure         # Sandboxed curd (bubblewrap)
@@ -120,6 +114,13 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
+### Step 3: Update configs
+
+```bash
+cd ~/installation
+git pull
+```
+
 The setup script automatically handles:
 - Pacman configuration (multilib, parallel downloads, color)
 - All package installation (official + AUR)
@@ -141,16 +142,15 @@ The setup script automatically handles:
 - **Display Manager**: ly (TTY-based)
 - **Shell**: Zsh with Starship prompt
 - **Terminal**: foot
-- **Editor**: Neovim ([Lazyvim config](https://www.lazyvim.org/))
+- **Editor**: Zed, Neovim ([Lazyvim config](https://www.lazyvim.org/))
 
 ### Desktop Environment
-- **Launcher**: Rofi
-- **Status Bar**: Waybar
-- **Notifications**: SwayNC
-- **File Manager**: Thunar
+- **Launcher**: Quickshell
+- **Status Bar**: Quickshell
+- **Notifications**: Quickshell
+- **File Manager**: PCMan
 - **Audio Visualizer**: CAVA
 - **Color Scheme**: Pywal 
-- **Blue Light Filter**: Gammastep
 - **Screenshot**: Grimblast
 
 ### Applications
@@ -165,7 +165,7 @@ The setup script automatically handles:
 - **Containers**: Docker(-compose)
 - **Virtualization**: libvirt/QEMU
 - **Version Control**: Git
-- **Code Editors**: Neovim, helix
+- **Code Editors**: Neovim, helix, zed
 - **Languages**: Python, Node.js, Go, Rust toolchains
 
 ### System Services
@@ -194,17 +194,6 @@ All dotfiles are symlinked from `~/installation/dotfiles/`, so you can:
 ### Keybindings (Hyprland)
 
 See [KEYBINDINGS](docs/keybindings.md) for full list. Key bindings:
-
-- `SUPER + Q` - Close window
-- `SUPER + Return` - Terminal
-- `SUPER + D` - Rofi launcher
-- `SUPER + T` - Toggle floating
-- `SUPER + F` - Toggle fullscreen
-- `SUPER + [1-6,9,10]` - Switch workspace
-- `SUPER + Shift + [1-6,9,10]` - Move window to workspace
-- `SUPER + Esc` - Power menu
-- `SUPER + Shift + S` - Screenshot region
-- `SUPER + Shift + V` - Start/Stop region recording
 
 ## Requirements
 
