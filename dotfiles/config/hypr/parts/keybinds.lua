@@ -128,6 +128,45 @@ hl.bind(
 hl.bind(mainMod .. " + SHIFT + minus", hl.dsp.exec_cmd("hyprctl -q keyword cursor:zoom_factor 1"))
 hl.bind(mainMod .. " + SHIFT + equal", hl.dsp.exec_cmd("hyprctl -q keyword cursor:zoom_factor 1"))
 
+-- Mouse-keys submap (wlrctl drives zwlr_virtual_pointer)
+local wlrctl = os.getenv("HOME") .. "/.local/bin/wlrctl pointer "
+local function ptr(args)
+	return hl.dsp.exec_cmd(wlrctl .. args)
+end
+
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"mouse\")'"))
+hl.define_submap("mouse", function()
+	local step, fast, slow = 30, 150, 8
+	local dirs = {
+		h = { -1, 0 },
+		j = { 0, 1 },
+		k = { 0, -1 },
+		l = { 1, 0 },
+		left = { -1, 0 },
+		down = { 0, 1 },
+		up = { 0, -1 },
+		right = { 1, 0 },
+	}
+	for key, d in pairs(dirs) do
+		local function mv(n)
+			return ptr(("move %d %d"):format(d[1] * n, d[2] * n))
+		end
+		hl.bind(key, mv(step), { repeating = true })
+		hl.bind("SHIFT + " .. key, mv(fast), { repeating = true })
+		hl.bind("CTRL + " .. key, mv(slow), { repeating = true })
+	end
+
+	-- Clicks
+	hl.bind("u", ptr("click left"))
+	hl.bind("i", ptr("click middle"))
+	hl.bind("o", ptr("click right"))
+	hl.bind("space", ptr("click left"))
+
+	-- Exit
+	hl.bind("Escape", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"reset\")'"))
+	hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"reset\")'"))
+end)
+
 -- Gaming submap (passes all keys to apps, keeps media keys)
 -- Native hl.dsp.submap from a bind callback fails to enter the submap on keypress.
 -- Workaround: bypass by spawning hyprctl, which DOES enter when invoked externally.
