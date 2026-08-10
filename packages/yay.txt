@@ -9,3 +9,4 @@ protonup-qt-bin
 slack-desktop-wayland
 spotify
 tty-clock
+wlrctl
