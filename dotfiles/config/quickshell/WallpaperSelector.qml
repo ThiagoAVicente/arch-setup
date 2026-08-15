@@ -11,8 +11,8 @@ Scope {
     property bool visible: false
     property string wallpaperDir: (Quickshell.env("HOME") || "") + "/Pictures/Wallpapers"
     property var wallpapers: []
-    property int selectedIndex: 0
-    property string appliedPath: ""
+    // Survives Loader unload, so reopening starts on the applied wallpaper
+    property string appliedPath: State.appliedWallpaper
 
     readonly property int thumbH: 88   // thumbnail height
     readonly property int thumbW: 156  // thumbnail width
@@ -20,12 +20,7 @@ Scope {
     function toggle() {
         visible = !visible
         if (visible) {
-            wallpapers = []
             wallpaperListProcess.running = true
-            // Start on the currently applied wallpaper
-            const idx = wallpapers.findIndex(w => w.path === appliedPath)
-            selectedIndex = idx >= 0 ? idx : 0
-            jumpTimer.start()
             focusRetry.attempts = 0
             focusRetry.start()
         } else {
@@ -39,18 +34,31 @@ Scope {
             "find " + wallpaperSelector.wallpaperDir +
             " -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp' \\)" +
             " 2>/dev/null | sort"]
-        stdout: SplitParser {
-            onRead: data => {
-                const p = data.trim()
-                if (p) wallpaperSelector.wallpapers = [...wallpaperSelector.wallpapers, { path: p }]
+        // Collect everything, assign the model ONCE. Appending per line resets the
+        // ListView (and its currentIndex) on every single file found.
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const list = (text || "").split("\n")
+                    .map(l => l.trim())
+                    .filter(l => l.length > 0)
+                    .map(p => ({ path: p }))
+                wallpaperSelector.wallpapers = list
+                // Model assignment resets currentIndex to 0 — restore after it settles
+                Qt.callLater(wallpaperSelector.jumpToApplied)
             }
         }
+    }
+
+    function jumpToApplied() {
+        const idx = wallpaperSelector.wallpapers.findIndex(w => w.path === wallpaperSelector.appliedPath)
+        thumbList.currentIndex = idx >= 0 ? idx : 0
+        thumbList.positionViewAtIndex(thumbList.currentIndex, ListView.Center)
     }
 
     function setWallpaper(path) {
         // execDetached survives Loader unload (Process child would die when WallpaperSelector destroyed)
         Quickshell.execDetached(["sh", "-c", "\"$HOME/scripts/change-wallpaper.sh\" \"$1\"", "sh", path])
-        wallpaperSelector.appliedPath = path
+        State.appliedWallpaper = path
         visible = false
     }
 
@@ -63,21 +71,28 @@ Scope {
         color: "transparent"
         WlrLayershell.namespace: "qs-overlay"
 
+        // Zero-size + transparent instead of visible:false — an invisible item
+        // cannot take active focus in Qt Quick, so key events never arrive.
         TextInput {
             id: focusInput
-            visible: false; readOnly: true; text: ""; focus: false
+            width: 1; height: 1
+            opacity: 0
+            readOnly: true
+            text: ""
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
                     wallpaperSelector.visible = false
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    if (wallpaperSelector.wallpapers.length > 0)
-                        wallpaperSelector.setWallpaper(wallpaperSelector.wallpapers[wallpaperSelector.selectedIndex].path)
-                } else if (event.key === Qt.Key_Down) {
-                    if (wallpaperSelector.selectedIndex < wallpaperSelector.wallpapers.length - 1)
-                        wallpaperSelector.selectedIndex++
-                } else if (event.key === Qt.Key_Up) {
-                    if (wallpaperSelector.selectedIndex > 0)
-                        wallpaperSelector.selectedIndex--
+                    if (thumbList.currentIndex >= 0 && thumbList.currentIndex < wallpaperSelector.wallpapers.length)
+                        wallpaperSelector.setWallpaper(wallpaperSelector.wallpapers[thumbList.currentIndex].path)
+                } else if (event.key === Qt.Key_Down || event.key === Qt.Key_J) {
+                    thumbList.incrementCurrentIndex()
+                } else if (event.key === Qt.Key_Up || event.key === Qt.Key_K) {
+                    thumbList.decrementCurrentIndex()
+                } else if (event.key === Qt.Key_Home) {
+                    thumbList.currentIndex = 0
+                } else if (event.key === Qt.Key_End) {
+                    thumbList.currentIndex = wallpaperSelector.wallpapers.length - 1
                 }
                 event.accepted = true
             }
@@ -89,15 +104,9 @@ Scope {
             interval: 60; repeat: false
             onTriggered: {
                 attempts++
-                try { focusInput.forceActiveFocus() } catch(e) {}
-                if (!panelWindow.activeFocus && attempts < 6) focusRetry.start()
+                focusInput.forceActiveFocus()
+                if (!focusInput.activeFocus && attempts < 6) focusRetry.start()
             }
-        }
-
-        Timer {
-            id: jumpTimer
-            interval: 30; repeat: false
-            onTriggered: thumbList.positionViewAtIndex(wallpaperSelector.selectedIndex, ListView.Center)
         }
 
         ParallelAnimation {
@@ -143,8 +152,10 @@ Scope {
                 clip: true
                 spacing: 8
                 model: wallpaperSelector.wallpapers
-                currentIndex: wallpaperSelector.selectedIndex
                 boundsBehavior: Flickable.StopAtBounds
+                // NOTE: no `currentIndex:` binding — StrictlyEnforceRange makes the
+                // ListView write currentIndex itself, which would break the binding
+                // permanently and freeze navigation. currentIndex IS the selection.
 
                 // Keep selected item locked in center — list scrolls, not cursor
                 preferredHighlightBegin: (height - wallpaperSelector.thumbH) / 2
@@ -160,7 +171,7 @@ Scope {
                     width: wallpaperSelector.thumbW
                     height: wallpaperSelector.thumbH
 
-                    readonly property bool isSel: index === wallpaperSelector.selectedIndex
+                    readonly property bool isSel: ListView.isCurrentItem
 
                     scale: isSel ? 1.0 : 0.94
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
@@ -236,13 +247,17 @@ Scope {
                         }
                     }
 
+                    // Hover must NOT change selection: the list scrolls under a
+                    // stationary cursor, so onEntered would fight the keyboard.
                     MouseArea {
                         id: wpMa
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onEntered: wallpaperSelector.selectedIndex = index
-                        onClicked: wallpaperSelector.setWallpaper(wpItem.modelData.path)
+                        onClicked: {
+                            thumbList.currentIndex = wpItem.index
+                            wallpaperSelector.setWallpaper(wpItem.modelData.path)
+                        }
                     }
                 }
             }
