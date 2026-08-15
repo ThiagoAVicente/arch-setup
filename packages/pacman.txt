@@ -46,11 +46,13 @@ hyprland
 hyprlock
 hyprpicker
 hyprpwcenter
+intel-media-driver
 intel-ucode
 jq
 less
 lib32-vulkan-intel
 libreoffice-fresh
+libva-utils
 libvirt
 linux
 linux-firmware
