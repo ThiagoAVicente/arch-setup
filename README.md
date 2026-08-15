@@ -28,41 +28,20 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 ├── setup.sh                 # Post-installation setup (run after reboot)
 │
 ├── packages/                # Package lists
-│   ├── core.txt            # Essential system packages
-│   ├── dev.txt             # Development tools
-│   ├── media.txt           # Media applications
-│   ├── wayland.txt         # Wayland/Hyprland environment
-│   └── yay.txt             # AUR packages
+│   ├── pacman.txt
+│   ├── nvidia.txt          # ( optional )
+│   ├── flatpak.txt         # ( manual installation :) )
+│   └── yay.txt           
 │
 ├── dotfiles/               # Configuration files
 │   ├── config/             # ~/.config directory contents
-│   │   ├── hypr/           # Hyprland configuration
-│   │   ├── waybar/         # Status bar configuration
-│   │   ├── rofi/           # Application launcher
-│   │   ├── foot/           # Terminal emulator
-│   │   ├── nvim/           # Neovim configuration
-│   │   ├── swaync/         # Notification daemon
-│   │   ├── cava/           # Audio visualizer
-│   │   ├── wal/            # Pywal color schemes
-│   │   ├── gtk-3.0/        # GTK3 theme settings
-│   │   ├── gtk-4.0/        # GTK4 theme settings
-│   │   ├── mpv/            # Media player config
-│   │   ├── imv/            # Image viewer config
-│   │   ├── helix/          # Helix editor config
-│   │   ├── rc/             # Shell config
-│   │   └── starship.toml   # Shell prompt config
 │   └── zshrc               # Zsh shell configuration
 │
 ├── scripts/                # Helper scripts
 │
 ├── bin/                    # Custom executables
-│   ├── curd-secure         # Sandboxed curd (bubblewrap)
-│   └── curd-secure-dub     # Sandboxed curd with audio
 │
 ├── apps/                   # Desktop application entries
-│   ├── curd-secure.desktop
-│   ├── curd-secure-dub.desktop
-│   └── cava.desktop
 │
 ├── services.txt            # System services to enable
 └── groups.txt              # User groups to add
