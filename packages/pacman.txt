@@ -76,6 +76,7 @@ pavucontrol
 pcmanfm
 pipewire-alsa
 pipewire-pulse
+playerctl
 protontricks
 proton-vpn-gtk-app
 pyright
