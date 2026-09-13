@@ -68,8 +68,7 @@ active_window = "#ffbf33f2"    # amber
 
 # Skip capturing live window thumbnails. Workspaces will show coloured
 # placeholder rectangles instead. Faster to open and uses less memory.
-#no_preview = true
-
+no_preview = false
 # After pressing 'm' to move the active window to another workspace,
 # also switch to that workspace (and close the overlay).
 # Set to false to move silently and stay on the current workspace.

@@ -10,7 +10,15 @@ Scope {
     id: wallpaperSelector
     property bool visible: false
     property string wallpaperDir: (Quickshell.env("HOME") || "") + "/Pictures/Wallpapers"
+    property string liveWallpaperDir: (Quickshell.env("HOME") || "") + "/Videos/live-wallpapers"
+    property string thumbCacheDir: (Quickshell.env("HOME") || "") + "/.cache/wallpaper-thumbs"
     property var wallpapers: []
+    // Bumped a few times after list load to force Image reload once thumbs land on disk
+    property int thumbGen: 0
+
+    function thumbCachePath(path) {
+        return wallpaperSelector.thumbCacheDir + "/" + path.replace(/\//g, "_") + ".jpg"
+    }
     // Survives Loader unload, so reopening starts on the applied wallpaper
     property string appliedPath: State.appliedWallpaper
 
@@ -31,21 +39,54 @@ Scope {
     Process {
         id: wallpaperListProcess
         command: ["sh", "-c",
-            "find " + wallpaperSelector.wallpaperDir +
-            " -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp' \\)" +
+            "find " + wallpaperSelector.wallpaperDir + " " + wallpaperSelector.liveWallpaperDir +
+            " -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp'" +
+            " -o -name '*.mp4' -o -name '*.mkv' -o -name '*.webm' -o -name '*.mov' -o -name '*.gif' \\)" +
             " 2>/dev/null | sort"]
         // Collect everything, assign the model ONCE. Appending per line resets the
         // ListView (and its currentIndex) on every single file found.
         stdout: StdioCollector {
             onStreamFinished: {
+                const videoExt = /\.(mp4|mkv|webm|mov|gif)$/i
                 const list = (text || "").split("\n")
                     .map(l => l.trim())
                     .filter(l => l.length > 0)
-                    .map(p => ({ path: p }))
+                    .map(p => ({ path: p, isVideo: videoExt.test(p) }))
                 wallpaperSelector.wallpapers = list
                 // Model assignment resets currentIndex to 0 — restore after it settles
                 Qt.callLater(wallpaperSelector.jumpToApplied)
+
+                const videos = list.filter(w => w.isVideo)
+                if (videos.length > 0) {
+                    thumbGenProcess.command = ["sh", "-c",
+                        "mkdir -p '" + wallpaperSelector.thumbCacheDir + "'; " +
+                        videos.map(w => {
+                            const out = wallpaperSelector.thumbCachePath(w.path)
+                            return "[ -f '" + out + "' ] || ffmpegthumbnailer -i '" + w.path +
+                                "' -o '" + out + "' -s 240 2>/dev/null"
+                        }).join("; ")]
+                    thumbGenProcess.running = true
+                    thumbPoll.attempts = 0
+                    thumbPoll.start()
+                }
             }
+        }
+    }
+
+    // Generates missing video thumbnails in background (once per file, cached to disk)
+    Process {
+        id: thumbGenProcess
+    }
+
+    // No file-watch API here — just bump thumbGen a few times so Image re-attempts load
+    Timer {
+        id: thumbPoll
+        property int attempts: 0
+        interval: 700; repeat: true
+        onTriggered: {
+            attempts++
+            wallpaperSelector.thumbGen++
+            if (attempts >= 8) thumbPoll.stop()
         }
     }
 
@@ -203,17 +244,50 @@ Scope {
                         Behavior on border.color { ColorAnimation { duration: 150 } }
 
                         Image {
+                            id: thumbImg
                             anchors.fill: parent
-                            source: "file://" + wpItem.modelData.path
+                            // Bumping thumbGen re-evaluates source, retrying once the
+                            // background ffmpegthumbnailer pass has written the file
+                            property int _gen: wallpaperSelector.thumbGen
+                            source: wpItem.modelData.isVideo
+                                ? ("file://" + wallpaperSelector.thumbCachePath(wpItem.modelData.path) + "?" + _gen)
+                                : ("file://" + wpItem.modelData.path)
                             sourceSize.width: 240
                             sourceSize.height: 135
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            cache: true
+                            cache: false
                             smooth: true
-                            opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
+                            opacity: (status === Image.Ready) ? (wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)) : 0
 
                             Behavior on opacity { NumberAnimation { duration: 150 } }
+                        }
+
+                        // Shown until the cached thumbnail lands (or if generation fails)
+                        Text {
+                            anchors.centerIn: parent
+                            visible: wpItem.modelData.isVideo && thumbImg.status !== Image.Ready
+                            text: "▶"
+                            font.pixelSize: 28
+                            color: "#e9e9ec"
+                            opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
+                        }
+
+                        // Filename so a video is identifiable even before/without a thumbnail
+                        Text {
+                            anchors.bottom: parent.bottom
+                            anchors.right: parent.right
+                            anchors.margins: 4
+                            visible: wpItem.modelData.isVideo
+                            text: wpItem.modelData.path.split("/").pop()
+                            color: "#e9e9ec"
+                            font.pixelSize: 8
+                            font.family: "FiraCode Nerd Font"
+                            elide: Text.ElideMiddle
+                            width: Math.min(implicitWidth, parent.width - 8)
+                            horizontalAlignment: Text.AlignRight
+                            style: Text.Outline
+                            styleColor: "#000000"
                         }
 
                         // "applied" badge — state chip with green dot

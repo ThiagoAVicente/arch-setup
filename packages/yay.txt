@@ -1,6 +1,5 @@
 bridge-utils
 claude-code
-curd
 envycontrol
 grimblast-git
 hyprexpose-git

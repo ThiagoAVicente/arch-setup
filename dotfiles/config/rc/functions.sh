@@ -96,6 +96,30 @@ open() {
 qrcode() {
   qrencode -s 10 -m 2 -o - "$1" | wl-copy --type image/png
 }
+virtmic() {
+  # Create/remove null-sink to route PC output into discord (or other) mic input
+  if [[ $# -ne 1 || ( "$1" != "start" && "$1" != "stop" ) ]]; then
+    echo "Usage: virtmic start|stop"
+    return 1
+  fi
+
+  if [[ "$1" == "start" ]]; then
+    pactl load-module module-null-sink sink_name=virtmic sink_properties=device.description=VirtMic
+    pactl load-module module-remap-source master=virtmic.monitor source_name=virtmic_mic source_properties=device.description=VirtMic-Input
+    echo "virtmic up. Move app output -> VirtMic. Discord input -> VirtMic-Input"
+    return 0
+  fi
+
+  local ids
+  ids="$(pactl list short modules | awk '($2=="module-null-sink" && /virtmic/) || ($2=="module-remap-source" && /virtmic_mic/){print $1}')"
+  if [[ -z "$ids" ]]; then
+    echo "virtmic not running."
+    return 1
+  fi
+  echo "$ids" | while read -r id; do pactl unload-module "$id"; done
+  echo "virtmic down"
+}
+
 econfig() {
   if [[ $# -ne 1 ]]; then
     echo "Usage: econfig <config_folder>"

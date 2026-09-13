@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Anime
-Comment=Sandboxed anime streaming
-Exec=/home/vcnt/.local/bin/curd-secure
-Icon=video-display
-Terminal=false
-Categories=AudioVideo;Network;Anime;
-StartupNotify=false
