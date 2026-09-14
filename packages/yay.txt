@@ -4,6 +4,7 @@ envycontrol
 grimblast-git
 hyprexpose-git
 jump
+mpvpaper
 protonup-qt-bin
 slack-desktop-wayland
 spotify

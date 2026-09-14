@@ -10,7 +10,7 @@ if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
       # Video wallpaper: mpvpaper decodes on GPU, no swww running underneath
       pkill -x mpvpaper
       pkill -x awww-daemon
-      mpvpaper -o "no-audio --loop --hwdec=auto --vo=gpu --panscan=1.0" '*' "$WALLPAPER" &
+      mpvpaper -o "no-audio --loop --hwdec=auto --vo=gpu --panscan=1.0 --scale=spline36" '*' "$WALLPAPER" &
       disown
       ;;
     *)
