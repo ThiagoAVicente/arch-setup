@@ -1,6 +1,7 @@
 bridge-utils
 claude-code
 envycontrol
+fogwall
 grimblast-git
 hyprexpose-git
 jump

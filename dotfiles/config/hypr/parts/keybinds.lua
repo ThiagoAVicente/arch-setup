@@ -42,11 +42,11 @@ hl.bind(mainMod .. " + H", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.window.move({ workspace = "special:magic", follow = false }))
 
 -- Scroll through workspaces
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "m-1" }))
 
-hl.bind(mainMod .. " + ALT + left", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + ALT + right", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mainMod .. " + ALT + left", hl.dsp.focus({ workspace = "m-1" }))
+hl.bind(mainMod .. " + ALT + right", hl.dsp.focus({ workspace = "m+1" }))
 
 -- Move/resize with mouse
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
@@ -96,8 +96,20 @@ hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("playerctl -p spotify play-pause"))
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(qs .. " powermenu"))
 hl.bind(mainMod .. " + ALT + W", hl.dsp.exec_cmd(qs .. " wallpaper"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd(os.getenv("HOME") .. "/scripts/wallpaper-daemon-toggle.sh"))
-hl.bind(mainMod .. " + P", hl.dsp.exec_cmd(os.getenv("HOME") .. "/scripts/toggle_debug.sh"))
 hl.bind("SUPER + S", hl.dsp.window.pin())
+
+-- Workspace peek submap: mod+P then a number peeks that workspace live.
+local workspacePeek = os.getenv("HOME") .. "/scripts/workspace-peek.sh"
+hl.bind(mainMod .. " + P", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"peek\")'"))
+hl.define_submap("peek", function()
+	for i = 1, 8 do
+		hl.bind(
+			tostring(i),
+			hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"reset\")' && " .. workspacePeek .. " " .. i)
+		)
+	end
+	hl.bind("Escape", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.submap(\"reset\")'"))
+end)
 
 -- Zoom
 hl.bind(

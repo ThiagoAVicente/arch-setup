@@ -68,6 +68,7 @@ hl.env("QT6CT_STYLE_OVERRIDE", "Fusion")
 -- GTK theming
 hl.env("GTK_THEME", "Adwaita:dark")
 
+hl.env("WORKSPACE_LIMIT", "8")
 -- dGPU (nvidia-open RTX5060, currently blacklisted — enable when activating dGPU)
 -- hl.env("GBM_BACKEND", "nvidia-drm")
 -- hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
