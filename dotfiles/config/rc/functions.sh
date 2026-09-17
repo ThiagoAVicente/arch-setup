@@ -98,7 +98,7 @@ qrcode() {
 }
 virtmic() {
   # Create/remove null-sink to route PC output into discord (or other) mic input
-  if [[ $# -ne 1 || ( "$1" != "start" && "$1" != "stop" ) ]]; then
+  if [[ $# -ne 1 || ("$1" != "start" && "$1" != "stop") ]]; then
     echo "Usage: virtmic start|stop"
     return 1
   fi
@@ -133,4 +133,16 @@ econfig() {
   fi
 
   $EDITOR "$config_folder"
+}
+
+poutput() {
+  local monitor="$1"
+
+  if ! xrandr --query | grep -q "^${monitor} connected"; then
+    echo "poutput: monitor '${monitor}' not connected" >&2
+    return 1
+  fi
+
+  xrandr --output "$monitor" --primary
+  echo "Some apps (e.g steam) need restart"
 }

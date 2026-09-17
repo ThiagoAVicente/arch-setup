@@ -122,6 +122,7 @@ woff2-font-awesome
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
+xorg-xrandr 
 xorg-xwayland
 zathura
 zathura-pdf-mupdf
