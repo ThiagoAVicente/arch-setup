@@ -42,11 +42,11 @@ hl.bind(mainMod .. " + H", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.window.move({ workspace = "special:magic", follow = false }))
 
 -- Scroll through workspaces
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "m+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "m-1" }))
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "r+1" }))
+hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "r-1" }))
 
-hl.bind(mainMod .. " + ALT + left", hl.dsp.focus({ workspace = "m-1" }))
-hl.bind(mainMod .. " + ALT + right", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind(mainMod .. " + ALT + left", hl.dsp.focus({ workspace = "r-1" }))
+hl.bind(mainMod .. " + ALT + right", hl.dsp.focus({ workspace = "r+1" }))
 
 -- Move/resize with mouse
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })

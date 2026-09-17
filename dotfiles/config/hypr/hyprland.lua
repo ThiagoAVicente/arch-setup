@@ -119,6 +119,12 @@ hl.config({
 		column_width = 0.5,
 		focus_fit_method = 0,
 	},
+
+	gestures = {
+		-- r-prefix: swipe cycles only occupied workspaces (skips empty
+		-- slots), instead of the default m-prefix (all monitor slots).
+		workspace_swipe_use_r = true,
+	},
 })
 
 -----------------
