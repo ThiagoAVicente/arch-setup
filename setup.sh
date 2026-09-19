@@ -109,6 +109,8 @@ if ! command -v yay &>/dev/null; then
   rm -rf /tmp/yay
 fi
 
+rustup default stable
+
 # Install AUR packages
 if [ -f "packages/yay.txt" ]; then
   print_step "Installing AUR packages (this may take a while)"
