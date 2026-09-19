@@ -95,6 +95,7 @@ rofi
 rustup
 shotcut
 slurp
+socat
 starship
 steam
 sudo
