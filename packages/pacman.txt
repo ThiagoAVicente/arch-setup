@@ -80,7 +80,6 @@ playerctl
 protontricks
 proton-vpn-gtk-app
 pyright
-python-pywal
 qalculate-gtk
 qemu-full
 qt5-base
