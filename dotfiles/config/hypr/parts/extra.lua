@@ -22,3 +22,6 @@ local intel = card_node("0000:00:02.0")
 if intel then
 	hl.env("AQ_DRM_DEVICES", intel)
 end
+
+hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
+hl.env("XCURSOR_SIZE", "30")
