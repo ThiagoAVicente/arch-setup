@@ -1,3 +1,4 @@
+ani-cli
 bridge-utils
 claude-code
 envycontrol
