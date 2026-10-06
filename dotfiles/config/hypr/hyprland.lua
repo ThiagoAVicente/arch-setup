@@ -90,6 +90,8 @@ hl.config({
 		disable_hyprland_logo = true,
 		key_press_enables_dpms = true,
 		mouse_move_enables_dpms = false,
+		-- Focusing a window under a fullscreen one: 1 = it takes over fullscreen
+		on_focus_under_fullscreen = 1,
 	},
 
 	input = {

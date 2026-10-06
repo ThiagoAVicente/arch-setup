@@ -1,6 +1,7 @@
 ani-cli
 bridge-utils
 claude-code
+claude-desktop
 envycontrol
 fogwall
 grimblast-git

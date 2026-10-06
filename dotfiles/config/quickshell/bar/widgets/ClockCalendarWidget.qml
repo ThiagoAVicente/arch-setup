@@ -5,10 +5,6 @@ import "../.." as Root
 Item {
     id: root
 
-    property bool calendarOpen: false
-    property bool showCalendar: true
-    signal calHoverChanged(bool hovered)
-
     implicitWidth: row.implicitWidth
     implicitHeight: 36
 
@@ -55,34 +51,14 @@ Item {
             }
         }
 
-        // ── Date chip — hover target for the calendar ────────────────────
-        Rectangle {
-            visible: root.showCalendar
+        // ── Date ─────────────────────────────────────────────────────────
+        Text {
             Layout.alignment: Qt.AlignVCenter
-            Layout.leftMargin: 8
-            width: dateText.implicitWidth + 20
-            height: 24
-            radius: height / 2
-            color: root.calendarOpen || calHover.hovered
-                ? Root.Theme.barHover : "transparent"
-            Behavior on color { ColorAnimation { duration: 130 } }
-
-            Text {
-                id: dateText
-                anchors.centerIn: parent
-                text: Qt.formatDate(root._time, "dd/MM")
-                font.family: Root.Theme.fontFamily
-                font.pixelSize: 13
-                color: root.calendarOpen || calHover.hovered
-                    ? Root.Theme.barText : Root.Theme.barSubtext
-                Behavior on color { ColorAnimation { duration: 130 } }
-            }
-
-            HoverHandler {
-                id: calHover
-                cursorShape: Qt.PointingHandCursor
-                onHoveredChanged: root.calHoverChanged(hovered)
-            }
+            Layout.leftMargin: 18
+            text: Qt.formatDate(root._time, "dd/MM")
+            font.family: Root.Theme.fontFamily
+            font.pixelSize: 13
+            color: Root.Theme.barSubtext
         }
     }
 }

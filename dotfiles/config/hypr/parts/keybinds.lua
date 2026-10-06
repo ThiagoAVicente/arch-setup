@@ -19,7 +19,7 @@ hl.bind(
 	mainMod .. " + ALT + S",
 	hl.dsp.exec_cmd("hyprctl keyword decoration:screen_shader '~/.config/hypr/shaders/contrast.glsl'")
 )
-
+hl.bind("CTRL + ALT + SPACE", hl.dsp.global("com.anthropic.Claude:C0C403E9B4A297D6C93E2F4BB86408F6-Ctrl+Alt+Space"))
 -- Move focus
 hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))

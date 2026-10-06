@@ -26,8 +26,6 @@ Scope {
         openPopout = ""
     }
 
-    Calendar { id: cal }
-
     // ── Horizontal bar (top) ───────────────────────────────────────────
     Variants {
         model: Quickshell.screens
@@ -87,12 +85,6 @@ Scope {
                     ClockCalendarWidget {
                         id: hClk
                         anchors.verticalCenter: parent.verticalCenter
-                        calendarOpen: cal.visible
-                        showCalendar: true
-                        onCalHoverChanged: hovered => {
-                            cal.iconHovered = hovered
-                            if (hovered) cal.open()
-                        }
                     }
                 }
 
