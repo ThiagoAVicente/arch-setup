@@ -58,18 +58,35 @@ Scope {
     }
 
     // ── Save ───────────────────────────────────────────────────────────────
+    // One persistent writer: at most one write in flight, latest state wins.
+    // Atomic tmp+mv so a killed write never leaves a truncated file.
+    property string _pendingJson: ""
+    property bool _dirty: false
+    readonly property string _writeScript:
+        "mkdir -p \"$(dirname \"$0\")\" && printf '%s' \"$1\" > \"$0.tmp\" && mv -f \"$0.tmp\" \"$0\""
+
     function save() {
-        const json = JSON.stringify(items)
-        const cmd = ["sh", "-c",
-            "mkdir -p \"$(dirname \"$0\")\"; printf '%s' \"$1\" > \"$0\"",
-            todo.storePath, json]
-        Qt.createQmlObject(
-            'import Quickshell.Io; Process { ' +
-            'command: ' + JSON.stringify(cmd) + '; ' +
-            'running: true ' +
-            '}',
-            todo
-        )
+        _pendingJson = JSON.stringify(items)
+        _dirty = true
+        if (!saveProcess.running) _flush()
+    }
+
+    function _flush() {
+        if (!_dirty) return
+        _dirty = false
+        saveProcess.command = ["sh", "-c", _writeScript, todo.storePath, _pendingJson]
+        saveProcess.running = true
+    }
+
+    Process {
+        id: saveProcess
+        onExited: todo._flush()
+    }
+
+    // Loader unload kills child processes — hand any unwritten state to a detached writer
+    Component.onDestruction: {
+        if (_dirty || saveProcess.running)
+            Quickshell.execDetached(["sh", "-c", _writeScript, todo.storePath, _pendingJson])
     }
 
     function parseInput(s) {
@@ -543,8 +560,5 @@ reuseItems: true
             }
         }
 
-        Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape) todo.visible = false
-        }
     }
 }
