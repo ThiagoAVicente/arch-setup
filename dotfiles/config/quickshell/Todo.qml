@@ -38,6 +38,15 @@ Scope {
         }
     }
 
+    // Drawer surface, read by shell.qml to morph into the next drawer
+    readonly property alias surface: goo
+
+    // Animated close: content out, surface drains back into the bar
+    function close() {
+        if (!visible || goo.closing) return
+        goo.close()
+    }
+
     Component.onCompleted: loadProcess.running = true
 
     // ── Load ───────────────────────────────────────────────────────────────
@@ -191,37 +200,32 @@ Scope {
         exclusiveZone: -1
         focusable: true
         color: "transparent"
-        WlrLayershell.namespace: "qs-overlay"
+        // Own namespace: no blur (must match the bar) and no compositor layer anim
+        WlrLayershell.namespace: "qs-drawer"
 
-        onVisibleChanged: {
-            if (visible) {
-                card.opacity = 0
-                card.scale = 0.97
-                openAnim.restart()
-            }
-        }
+        onVisibleChanged: if (visible) goo.open()
 
-        ParallelAnimation {
-            id: openAnim
-            NumberAnimation { target: card; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
-            NumberAnimation { target: card; property: "scale"; to: 1; duration: 180; easing.type: Easing.OutCubic }
-        }
-
-        // Click-away close (transparent — blur layerrule frosts the card only)
+        // Click-away close
         MouseArea {
             anchors.fill: parent
-            onClicked: todo.visible = false
+            onClicked: todo.close()
         }
 
-        Rectangle {
+        Root.LiquidSurface {
+            id: goo
+            fullW: 520
+            fullH: 560
+            onClosed: todo.visible = false
+        }
+
+        // Content only — the LiquidSurface is its surface
+        Item {
             id: card
-            anchors.centerIn: parent
-            width: 520
-            height: 560
-            color: Root.Theme.panelFrost
-            border.color: Root.Theme.hairline
-            border.width: 1
-            radius: 14
+            x: goo.cardX
+            y: goo.cardY
+            width: goo.fullW
+            height: goo.fullH - 1
+            opacity: goo.contentOpacity
             clip: true
 
             MouseArea { anchors.fill: parent; onClicked: {} }
@@ -353,7 +357,7 @@ Scope {
                             focus: true
                             selectionColor: Qt.rgba(1, 1, 1, 0.25)
 
-                            Keys.onEscapePressed: todo.visible = false
+                            Keys.onEscapePressed: todo.close()
                             Keys.onReturnPressed: {
                                 todo.addItem(text)
                                 text = ""

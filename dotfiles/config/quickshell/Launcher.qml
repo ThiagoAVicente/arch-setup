@@ -6,7 +6,6 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QtQuick.Shapes
 import "." as Root
 
 Scope {
@@ -70,11 +69,13 @@ Scope {
     }
 
     // Reverse of the open wave: content out, surface drains back into the bar
+    // Drawer surface, read by shell.qml to morph into the next drawer
+    readonly property alias surface: goo
+
     function close() {
-        if (!visible || closeAnim.running) return
-        openAnim.stop()
+        if (!visible || goo.closing) return
         focusRetry.stop()
-        closeAnim.start()
+        goo.close()
     }
 
     function launchApp(app) {
@@ -90,9 +91,9 @@ Scope {
         focusable: true
         color: "transparent"
         // Own namespace: no blur (must match the bar) and no compositor layer anim
-        WlrLayershell.namespace: "qs-launcher"
+        WlrLayershell.namespace: "qs-drawer"
 
-        onVisibleChanged: if (visible) openAnim.restart()
+        onVisibleChanged: if (visible) goo.open()
 
         Timer {
             id: focusRetry
@@ -105,105 +106,28 @@ Scope {
             }
         }
 
-        // ── Liquid surface ─────────────────────────────────────────────────
-        // A drop falls out of the bar's bottom edge, then spreads into the
-        // card with an overshoot while its bottom edge ripples. Concave fillets
-        // keep it fused to the bar pill. Collapsed state = defaults, since the
-        // Loader builds a fresh instance on every open.
-        Item {
-            id: goo
-            property real revealW: 36
-            property real revealH: 0
-            property real wave: 0
-            readonly property int fullW: 580
-            readonly property int fullH: 520
-            // Overlap the pill's bottom hairline by 1px so the join is seamless
-            readonly property int topY: Root.State.barHidden ? 0
-                : Root.Theme.barMarginTop + Root.Theme.barThickness - 1
-            readonly property int cx: Math.round(win.width / 2)
-            readonly property real leftX: cx - revealW / 2
-            readonly property real rightX: cx + revealW / 2
-            readonly property real bottomY: topY + revealH
-            readonly property real fillet: Root.State.barHidden ? 0 : Math.min(18, revealH / 2)
-            readonly property real corner: Math.min(14, revealH / 2, revealW / 2)
-        }
-
-        SequentialAnimation {
-            id: openAnim
-            // drip
-            ParallelAnimation {
-                NumberAnimation { target: goo; property: "revealH"; to: 46; duration: 140; easing.type: Easing.OutQuad }
-                NumberAnimation { target: goo; property: "revealW"; to: 64; duration: 140; easing.type: Easing.OutQuad }
-                NumberAnimation { target: goo; property: "wave"; to: 26; duration: 140; easing.type: Easing.OutQuad }
-            }
-            // spread + ripple
-            ParallelAnimation {
-                NumberAnimation { target: goo; property: "revealW"; to: goo.fullW; duration: 380; easing.type: Easing.OutBack; easing.overshoot: 1.1 }
-                NumberAnimation { target: goo; property: "revealH"; to: goo.fullH; duration: 440; easing.type: Easing.OutBack; easing.overshoot: 0.9 }
-                SequentialAnimation {
-                    NumberAnimation { target: goo; property: "wave"; to: 70;  duration: 150; easing.type: Easing.OutQuad }
-                    NumberAnimation { target: goo; property: "wave"; to: -28; duration: 200; easing.type: Easing.InOutSine }
-                    NumberAnimation { target: goo; property: "wave"; to: 10;  duration: 160; easing.type: Easing.InOutSine }
-                    NumberAnimation { target: goo; property: "wave"; to: 0;   duration: 140; easing.type: Easing.OutSine }
-                }
-                SequentialAnimation {
-                    PauseAnimation { duration: 260 }
-                    NumberAnimation { target: card; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
-                }
-            }
-        }
-
-        SequentialAnimation {
-            id: closeAnim
-            NumberAnimation { target: card; property: "opacity"; to: 0; duration: 70 }
-            ParallelAnimation {
-                NumberAnimation { target: goo; property: "revealH"; to: 0;  duration: 220; easing.type: Easing.InCubic }
-                NumberAnimation { target: goo; property: "revealW"; to: 36; duration: 220; easing.type: Easing.InCubic }
-                SequentialAnimation {
-                    NumberAnimation { target: goo; property: "wave"; to: -30; duration: 110; easing.type: Easing.OutQuad }
-                    NumberAnimation { target: goo; property: "wave"; to: 0;   duration: 110; easing.type: Easing.InQuad }
-                }
-            }
-            ScriptAction { script: launcher.visible = false }
-        }
-
         // Click-away close
         MouseArea {
             anchors.fill: parent
             onClicked: launcher.close()
         }
 
-        Shape {
-            anchors.fill: parent
-            preferredRendererType: Shape.CurveRenderer
-            visible: goo.revealH > 0.5
-
-            // Path is left open along the top so the hairline isn't drawn
-            // across the join with the bar
-            ShapePath {
-                fillColor: Root.Theme.barBg
-                strokeColor: Root.Theme.hairline
-                strokeWidth: 1
-                startX: goo.leftX - goo.fillet; startY: goo.topY
-                PathQuad { x: goo.leftX; y: goo.topY + goo.fillet; controlX: goo.leftX; controlY: goo.topY }
-                PathLine { x: goo.leftX; y: goo.bottomY - goo.corner }
-                PathQuad { x: goo.leftX + goo.corner; y: goo.bottomY; controlX: goo.leftX; controlY: goo.bottomY }
-                PathQuad { x: goo.rightX - goo.corner; y: goo.bottomY; controlX: goo.cx; controlY: goo.bottomY + goo.wave }
-                PathQuad { x: goo.rightX; y: goo.bottomY - goo.corner; controlX: goo.rightX; controlY: goo.bottomY }
-                PathLine { x: goo.rightX; y: goo.topY + goo.fillet }
-                PathQuad { x: goo.rightX + goo.fillet; y: goo.topY; controlX: goo.rightX; controlY: goo.topY }
-            }
+        Root.LiquidSurface {
+            id: goo
+            fullW: 580
+            fullH: 520
+            onClosed: launcher.visible = false
         }
 
         // ── Card ───────────────────────────────────────────────────────────
         // Content only — the Shape above is its surface
         Item {
             id: card
-            x: goo.cx - goo.fullW / 2
-            y: goo.topY + 1
+            x: goo.cardX
+            y: goo.cardY
             width: goo.fullW
             height: goo.fullH - 1
-            opacity: 0
+            opacity: goo.contentOpacity
             clip: true
 
             MouseArea { anchors.fill: parent; onClicked: {} }
