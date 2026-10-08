@@ -9,22 +9,33 @@ import "." as Root
 Scope {
     id: notifManager
 
-    // Single sweep timer fires every second, dismisses expired notifs.
+    // Single sweep timer (4x/s, keeps dismissal in sync with the progress bar) dismisses expired notifs.
     // Replaces per-notification Qt.createQmlObject Timer leak.
     property var _expiry: ({})
 
     Timer {
         id: expirySweep
-        interval: 1000
+        interval: 250
         repeat: true
         running: false
         onTriggered: {
             const now = Date.now()
             let any = false
+            // Drop entries for notifications closed elsewhere (X button, app, replace)
+            const live = {}
+            for (const n of server.trackedNotifications.values) live[n.id] = true
+            for (const id in notifManager._expiry)
+                if (!live[id]) delete notifManager._expiry[id]
+
             for (const n of server.trackedNotifications.values) {
-                any = true
                 const due = notifManager._expiry[n.id]
-                if (due !== undefined && now >= due) n.dismiss()
+                if (due === undefined) continue
+                if (now >= due) {
+                    delete notifManager._expiry[n.id]
+                    n.dismiss()
+                } else {
+                    any = true
+                }
             }
             if (!any) running = false
         }
@@ -39,8 +50,12 @@ Scope {
                 return
             }
             notification.tracked = true
-            const ms = notification.expireTimeout > 0 ? notification.expireTimeout : 5000
-            notifManager._expiry[notification.id] = Date.now() + ms
+            // expireTimeout 0 = never expire (spec); critical = user must dismiss
+            if (Root.NotifTimeout.persistent(notification)) {
+                delete notifManager._expiry[notification.id]
+                return
+            }
+            notifManager._expiry[notification.id] = Date.now() + Root.NotifTimeout.ms(notification)
             expirySweep.running = true
         }
     }

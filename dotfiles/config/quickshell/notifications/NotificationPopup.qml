@@ -189,6 +189,7 @@ Item {
         // Timeout progress hairline
         Rectangle {
             id: progressTrack
+            visible: !Root.NotifTimeout.persistent(popup.notification)
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 14; rightMargin: 14; bottomMargin: 1 }
             height: 2
             color: Qt.rgba(1, 1, 1, 0.06)
@@ -205,11 +206,7 @@ Item {
                     id: progressAnim
                     from: progressTrack.width
                     to: 0
-                    duration: {
-                        let n = popup.notification
-                        if (!n) return 5000
-                        return n.expireTimeout > 0 ? n.expireTimeout : 5000
-                    }
+                    duration: Root.NotifTimeout.ms(popup.notification)
                     running: popup.visible && popup.notification !== null
                     easing.type: Easing.Linear
                 }
