@@ -5,6 +5,7 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import "." as Root
 
 Scope {
     id: wallpaperSelector
@@ -20,7 +21,7 @@ Scope {
         return wallpaperSelector.thumbCacheDir + "/" + path.replace(/\//g, "_") + ".jpg"
     }
     // Survives Loader unload, so reopening starts on the applied wallpaper
-    property string appliedPath: State.appliedWallpaper
+    property string appliedPath: Root.State.appliedWallpaper
 
     readonly property int thumbH: 88   // thumbnail height
     readonly property int thumbW: 156  // thumbnail width
@@ -101,7 +102,7 @@ Scope {
     function setWallpaper(path) {
         // execDetached survives Loader unload (Process child would die when WallpaperSelector destroyed)
         Quickshell.execDetached(["sh", "-c", "\"$HOME/scripts/change-wallpaper.sh\" \"$1\"", "sh", path])
-        State.appliedWallpaper = path
+        Root.State.appliedWallpaper = path
         visible = false
     }
 
