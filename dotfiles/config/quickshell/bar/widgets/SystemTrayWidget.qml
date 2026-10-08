@@ -97,14 +97,21 @@ RowLayout {
                 implicitSize: 32
             }
 
+            // Created on first right-click, kept afterwards
             Loader {
                 id: menuLoader
-                active: trayItem.modelData?.hasMenu ?? false
-                sourceComponent: QsMenuAnchor {
-                    menu: trayItem.modelData.menu
-                    anchor.item: trayItem
-                    anchor.edges: Qt.BottomEdge
+                active: false
+                sourceComponent: TrayMenu {
+                    anchorItem: trayItem
+                    rootHandle: trayItem.modelData?.menu ?? null
                 }
+            }
+
+            function openMenu() {
+                if (!(modelData?.hasMenu ?? false)) return
+                menuLoader.active = true
+                if (menuLoader.item.visible) menuLoader.item.visible = false
+                else menuLoader.item.popup()
             }
 
             MouseArea {
@@ -122,7 +129,7 @@ RowLayout {
                     const proc = id.replace(/[_-]?(client|app|tray)$/, "")
                     if (event.button === Qt.RightButton && !(event.modifiers & Qt.ShiftModifier)) {
                         // Right-click → app's tray menu
-                        if (menuLoader.item) menuLoader.item.open()
+                        trayItem.openMenu()
                     } else if (event.button === Qt.RightButton) {
                         // Shift+right-click → kill
                         if (proc) {
@@ -147,9 +154,7 @@ RowLayout {
                     }
                 }
 
-                onPressAndHold: {
-                    if (menuLoader.item) menuLoader.item.open()
-                }
+                onPressAndHold: trayItem.openMenu()
             }
         }
     }
