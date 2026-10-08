@@ -39,10 +39,11 @@ Scope {
     Process {
         id: wallpaperListProcess
         command: ["sh", "-c",
-            "find " + wallpaperSelector.wallpaperDir + " " + wallpaperSelector.liveWallpaperDir +
+            "find \"$1\" \"$2\"" +
             " -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp'" +
             " -o -name '*.mp4' -o -name '*.mkv' -o -name '*.webm' -o -name '*.mov' -o -name '*.gif' \\)" +
-            " 2>/dev/null | sort"]
+            " 2>/dev/null | sort",
+            "sh", wallpaperSelector.wallpaperDir, wallpaperSelector.liveWallpaperDir]
         // Collect everything, assign the model ONCE. Appending per line resets the
         // ListView (and its currentIndex) on every single file found.
         stdout: StdioCollector {
@@ -58,13 +59,14 @@ Scope {
 
                 const videos = list.filter(w => w.isVideo)
                 if (videos.length > 0) {
+                    // Paths go in as positional args (in/out pairs) — never spliced into the script
+                    const args = []
+                    for (const w of videos) args.push(w.path, wallpaperSelector.thumbCachePath(w.path))
                     thumbGenProcess.command = ["sh", "-c",
-                        "mkdir -p '" + wallpaperSelector.thumbCacheDir + "'; " +
-                        videos.map(w => {
-                            const out = wallpaperSelector.thumbCachePath(w.path)
-                            return "[ -f '" + out + "' ] || ffmpegthumbnailer -i '" + w.path +
-                                "' -o '" + out + "' -s 240 2>/dev/null"
-                        }).join("; ")]
+                        "mkdir -p \"$0\"; while [ $# -ge 2 ]; do " +
+                        "[ -f \"$2\" ] || ffmpegthumbnailer -i \"$1\" -o \"$2\" -s 240 2>/dev/null; " +
+                        "shift 2; done",
+                        wallpaperSelector.thumbCacheDir].concat(args)
                     thumbGenProcess.running = true
                     thumbPoll.attempts = 0
                     thumbPoll.start()

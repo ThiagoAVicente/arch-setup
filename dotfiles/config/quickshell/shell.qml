@@ -52,7 +52,8 @@ ShellRoot {
     Process {
         id: ipcServer
         running: true
-        command: ["sh", "-c", "rm -f /tmp/qs.sock; nc -lkU /tmp/qs.sock"]
+        // Per-user runtime dir (0700) instead of world-writable /tmp
+        command: ["sh", "-c", "s=\"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/qs.sock\"; rm -f \"$s\"; exec nc -lkU \"$s\""]
         stdout: SplitParser {
             onRead: data => {
                 const cmd = data.trim()
