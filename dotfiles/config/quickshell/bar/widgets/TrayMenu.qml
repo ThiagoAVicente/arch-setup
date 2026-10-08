@@ -39,8 +39,9 @@ PopupWindow {
 
     Rectangle {
         id: card
-        width: Math.max(200, Math.min(320, col.implicitWidth + 12))
-        height: col.implicitHeight + 12
+        // Whole pixels — fractional sizes/offsets blur the text
+        width: Math.round(Math.max(200, Math.min(320, col.implicitWidth + 12)))
+        height: Math.round(col.implicitHeight + 12)
         radius: Root.Theme.radiusMd
         color: Root.Theme.panelSolid
         border.color: Root.Theme.hairline
@@ -133,6 +134,7 @@ PopupWindow {
                 Layout.preferredWidth: 12
                 color: Root.Theme.text
                 font.family: Root.Theme.fontFamily; font.pixelSize: 12
+                renderType: Text.NativeRendering
             }
             IconImage {
                 visible: row.iconSource !== ""
@@ -144,6 +146,7 @@ PopupWindow {
                 text: row.glyph
                 color: Root.Theme.subtext
                 font.family: Root.Theme.fontFamily; font.pixelSize: 12
+                renderType: Text.NativeRendering
             }
             Text {
                 Layout.fillWidth: true
@@ -151,12 +154,14 @@ PopupWindow {
                 elide: Text.ElideRight
                 color: Root.Theme.text
                 font.family: Root.Theme.fontFamily; font.pixelSize: 12
+                renderType: Text.NativeRendering
             }
             Text {
                 visible: row.hasChildren
                 text: "󰅂"
                 color: Root.Theme.muted
                 font.family: Root.Theme.fontFamily; font.pixelSize: 12
+                renderType: Text.NativeRendering
             }
         }
 
