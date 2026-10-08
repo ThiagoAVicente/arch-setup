@@ -15,8 +15,8 @@ Item {
     function getBluetoothIcon() {
         const adapter = Bluetooth.defaultAdapter
         if (!adapter || !adapter.enabled) return "󰂲"
-        for (const key in Bluetooth.devices) {
-            if (Bluetooth.devices[key] && Bluetooth.devices[key].connected) return "󰂱"
+        for (const d of Bluetooth.devices.values) {
+            if (d && d.connected) return "󰂱"
         }
         return "󰂯"
     }

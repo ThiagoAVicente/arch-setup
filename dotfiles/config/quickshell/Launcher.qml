@@ -27,6 +27,11 @@ Scope {
             searchField.text = ""
             selectedIndex = 0
             searchField.forceActiveFocus()
+            // Wayland grants keyboard focus async — retry until the field has it
+            focusRetry.attempts = 0
+            focusRetry.start()
+        } else {
+            focusRetry.stop()
         }
     }
 
@@ -82,6 +87,17 @@ Scope {
                 card.opacity = 0
                 card.scale = 0.97
                 openAnim.restart()
+            }
+        }
+
+        Timer {
+            id: focusRetry
+            property int attempts: 0
+            interval: 60; repeat: false
+            onTriggered: {
+                attempts++
+                searchField.forceActiveFocus()
+                if (!searchField.activeFocus && attempts < 6) focusRetry.start()
             }
         }
 
@@ -400,8 +416,5 @@ reuseItems: true
             }
         }
 
-        Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape) launcher.visible = false
-        }
     }
 }

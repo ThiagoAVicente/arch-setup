@@ -9,8 +9,9 @@ Scope {
     property int volume: 0
     property int brightness: 0
     property bool muted: false
-    property int lastVolume: 0
-    property int lastBrightness: 0
+    // -1 = not read yet; first read only seeds the value, never pops the OSD
+    property int lastVolume: -1
+    property int lastBrightness: -1
     property bool lastMuted: false
     property string osdType: ""
 
@@ -41,8 +42,14 @@ Scope {
                 if (parts.length !== 2) return
                 const v = parseInt(parts[0])
                 const m = parts[1] === "1"
+                if (isNaN(v)) return
+                if (osdScope.lastVolume < 0) {
+                    osdScope.volume = osdScope.lastVolume = v
+                    osdScope.muted = osdScope.lastMuted = m
+                    return
+                }
                 let changed = false
-                if (!isNaN(v) && v !== osdScope.lastVolume) {
+                if (v !== osdScope.lastVolume) {
                     osdScope.volume = v
                     osdScope.lastVolume = v
                     changed = true
@@ -64,9 +71,10 @@ Scope {
             onRead: data => {
                 let val = parseInt(data.trim())
                 if (!isNaN(val) && val !== osdScope.lastBrightness) {
+                    const first = osdScope.lastBrightness < 0
                     osdScope.brightness = val
                     osdScope.lastBrightness = val
-                    osdScope.showOSD("brightness")
+                    if (!first) osdScope.showOSD("brightness")
                 }
             }
         }

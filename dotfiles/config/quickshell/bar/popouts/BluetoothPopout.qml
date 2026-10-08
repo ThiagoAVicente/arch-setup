@@ -16,6 +16,12 @@ PanelWindow {
     signal closeRequested()
 
     visible: isOpen
+
+    // Don't leave the radio scanning after the popout closes
+    onIsOpenChanged: {
+        const adapter = Bluetooth.defaultAdapter
+        if (!isOpen && adapter && adapter.discovering) adapter.discovering = false
+    }
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
 
