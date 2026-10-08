@@ -67,7 +67,8 @@ RowLayout {
                 property string iconName: ""
                 running: false
                 command: ["sh", "-c",
-                    "find /usr/share/icons /usr/local/share/icons -maxdepth 6 \\( -path '*/cursors' -o -path '*/emblems' -o -path '*/mimetypes' \\) -prune -o -name '" + finder.iconName + ".*' -print 2>/dev/null | grep -E '\\.(svg|png)$' | grep -E '(22x22|24x24|16x16|scalable|panel|status|apps)' | head -1"
+                    "find /usr/share/icons /usr/local/share/icons -maxdepth 6 \\( -path '*/cursors' -o -path '*/emblems' -o -path '*/mimetypes' \\) -prune -o -name \"$1.*\" -print 2>/dev/null | grep -E '\\.(svg|png)$' | grep -E '(22x22|24x24|16x16|scalable|panel|status|apps)' | head -1",
+                    "sh", finder.iconName
                 ]
                 stdout: SplitParser {
                     onRead: data => {
@@ -97,6 +98,7 @@ RowLayout {
             }
 
             Loader {
+                id: menuLoader
                 active: trayItem.modelData?.hasMenu ?? false
                 sourceComponent: QsMenuAnchor {
                     menu: trayItem.modelData.menu
@@ -118,11 +120,14 @@ RowLayout {
                     const id = (item.id || "").toLowerCase()
                     // Normalize tray id → process basename (e.g. "spotify_client" → "spotify")
                     const proc = id.replace(/[_-]?(client|app|tray)$/, "")
-                    if (event.button === Qt.RightButton) {
-                        // Right-click → kill
+                    if (event.button === Qt.RightButton && !(event.modifiers & Qt.ShiftModifier)) {
+                        // Right-click → app's tray menu
+                        if (menuLoader.item) menuLoader.item.open()
+                    } else if (event.button === Qt.RightButton) {
+                        // Shift+right-click → kill
                         if (proc) {
                             clickRunner.command = ["sh", "-c",
-                                "pkill -x '" + proc + "' || pkill -if '" + proc + "'"]
+                                "pkill -x -- \"$1\" || pkill -if -- \"$1\"", "sh", proc]
                             clickRunner.running = true
                         }
                     } else if (event.button === Qt.MiddleButton) {
@@ -143,8 +148,7 @@ RowLayout {
                 }
 
                 onPressAndHold: {
-                    if (trayItem.modelData?.menu)
-                        trayItem.modelData.menu.open()
+                    if (menuLoader.item) menuLoader.item.open()
                 }
             }
         }
