@@ -67,4 +67,9 @@ QtObject {
     readonly property int paddingSm: 8
     readonly property int paddingMd: 12
     readonly property int paddingLg: 18
+
+    // Bar pill geometry (shared so overlays can attach to the bar)
+    readonly property int barThickness: 34
+    readonly property int barMarginTop: 4
+    readonly property int barMarginSide: 12
 }

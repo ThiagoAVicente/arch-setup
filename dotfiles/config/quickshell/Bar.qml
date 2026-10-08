@@ -15,9 +15,9 @@ Scope {
     property string openPopout: ""
     // Screen the open popout belongs to — popouts only show on this monitor
     property var popoutScreen: null
-    property bool barHidden: false
+    readonly property bool barHidden: Root.State.barHidden
 
-    readonly property int barThickness: 34
+    readonly property int barThickness: Root.Theme.barThickness
 
     function togglePopout(name, scr) {
         if (openPopout === name && popoutScreen === scr) {
@@ -29,7 +29,7 @@ Scope {
     }
 
     function toggleBar() {
-        barHidden = !barHidden
+        Root.State.barHidden = !Root.State.barHidden
         openPopout = ""
     }
 
@@ -62,7 +62,7 @@ Scope {
                 id: barPill
                 anchors {
                     left: parent.left; right: parent.right; top: parent.top
-                    leftMargin: 12; rightMargin: 12; topMargin: 4
+                    leftMargin: Root.Theme.barMarginSide; rightMargin: Root.Theme.barMarginSide; topMargin: Root.Theme.barMarginTop
                 }
                 height: barScope.barThickness
                 radius: height / 2
@@ -76,7 +76,7 @@ Scope {
                 ParallelAnimation {
                     id: showAnim
                     NumberAnimation { target: barPill; property: "opacity"; to: 1; duration: 260; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: barPill; property: "anchors.topMargin"; to: 4; duration: 260; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: barPill; property: "anchors.topMargin"; to: Root.Theme.barMarginTop; duration: 260; easing.type: Easing.OutCubic }
                 }
 
                 // Inset top highlight — glass depth without a second border

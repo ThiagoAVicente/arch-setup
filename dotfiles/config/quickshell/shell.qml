@@ -14,7 +14,11 @@ ShellRoot {
     // opening another swaps it in, which unloads (closes) the previous one.
     property string activeModal: ""
     function toggleModal(name) {
-        activeModal = (activeModal === name) ? "" : name
+        if (activeModal !== name) { activeModal = name; return }
+        // Let modals with an exit animation close themselves
+        const item = ({ launcher: launcherLoader })[name]?.item
+        if (item && item.close) item.close()
+        else activeModal = ""
     }
     // Guarded so an outgoing modal's teardown can't clear the incoming one
     function modalClosed(name) {
