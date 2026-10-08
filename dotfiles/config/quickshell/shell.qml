@@ -1,3 +1,6 @@
+// Render on Mesa (Intel iGPU, which drives the displays) without probing the
+// nvidia EGL vendor first: glvnd would otherwise load ~35MB of nvidia libs
+//@ pragma Env __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
