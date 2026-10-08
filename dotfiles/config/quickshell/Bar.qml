@@ -13,12 +13,19 @@ Scope {
     id: barScope
 
     property string openPopout: ""
+    // Screen the open popout belongs to — popouts only show on this monitor
+    property var popoutScreen: null
     property bool barHidden: false
 
     readonly property int barThickness: 34
 
-    function togglePopout(name) {
-        openPopout = (openPopout === name) ? "" : name
+    function togglePopout(name, scr) {
+        if (openPopout === name && popoutScreen === scr) {
+            openPopout = ""
+        } else {
+            popoutScreen = scr
+            openPopout = name
+        }
     }
 
     function toggleBar() {
@@ -107,12 +114,12 @@ Scope {
                     VolumeWidget {}
                     Item { Layout.preferredWidth: 10 }
                     NetworkWidget {
-                        popoutOpen: barScope.openPopout === "network"
-                        onTogglePopout: barScope.togglePopout("network")
+                        popoutOpen: barScope.openPopout === "network" && barScope.popoutScreen === hBar.modelData
+                        onTogglePopout: barScope.togglePopout("network", hBar.modelData)
                     }
                     BluetoothWidget {
-                        popoutOpen: barScope.openPopout === "bluetooth"
-                        onTogglePopout: barScope.togglePopout("bluetooth")
+                        popoutOpen: barScope.openPopout === "bluetooth" && barScope.popoutScreen === hBar.modelData
+                        onTogglePopout: barScope.togglePopout("bluetooth", hBar.modelData)
                     }
                     Item { Layout.preferredWidth: 10 }
                     NotificationsToggle {}
@@ -134,7 +141,7 @@ Scope {
             active: barScope._networkLoaded
             sourceComponent: NetworkPopout {
                 screen: modelData
-                isOpen: barScope.openPopout === "network"
+                isOpen: barScope.openPopout === "network" && barScope.popoutScreen === modelData
                 anchorLeft: false
                 onCloseRequested: barScope.openPopout = ""
             }
@@ -149,7 +156,7 @@ Scope {
             active: barScope._bluetoothLoaded
             sourceComponent: BluetoothPopout {
                 screen: modelData
-                isOpen: barScope.openPopout === "bluetooth"
+                isOpen: barScope.openPopout === "bluetooth" && barScope.popoutScreen === modelData
                 anchorLeft: false
                 onCloseRequested: barScope.openPopout = ""
             }
