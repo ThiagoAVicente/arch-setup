@@ -24,3 +24,11 @@ hl.window_rule({
     match   = { class = "^(firefox)$" },
     opacity = "1 override 1 override",
 })
+
+-- Fullscreen video in apps that don't send an idle inhibitor themselves
+-- still counts as activity (hypridle honors this)
+hl.window_rule({
+    name         = "idle-inhibit-fullscreen",
+    match        = { class = ".*" },
+    idle_inhibit = "fullscreen",
+})
