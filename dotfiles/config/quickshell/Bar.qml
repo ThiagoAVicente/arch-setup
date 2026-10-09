@@ -69,8 +69,6 @@ Scope {
                 color: Root.Theme.barBg
                 border.color: Root.Theme.hairline
                 border.width: 1
-                // The lock curtain draws its own copy of the bar
-                visible: !Root.State.lockActive
 
                 // Slide + fade in when the bar is shown
                 opacity: 1
