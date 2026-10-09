@@ -33,6 +33,8 @@ if display_gpu() == "nvidia" then
 	-- inherit it, so the decoder process ignores it.)
 	hl.env("LIBVA_DRIVER_NAME", "nvidia")
 	hl.env("NVD_BACKEND", "direct")
+	hl.env("__GL_SHADER_DISK_CACHE_SIZE", 10737418240)
+	hl.env("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP", 1)
 else
 	hl.env("LIBVA_DRIVER_NAME", "iHD")
 end
@@ -42,6 +44,14 @@ end
 -- These keep that blit path sane on nvidia.
 hl.env("AQ_MGPU_NO_EXPLICIT", "1")
 hl.env("AQ_FORCE_LINEAR_BLIT", "1")
+
+-- NVIDIA shader cache: the driver caps it at 1GB and prunes beyond that, so
+-- big DXVK caches (Overwatch ~1.3GB) recompile every session -> 100% CPU,
+-- GPU idle, low fps. Set session-wide so Steam's own shader pre-caching
+-- (fossilize_replay) sees it too, not only the game.
+-- https://github.com/ValveSoftware/steam-for-linux/issues/11392
+hl.env("__GL_SHADER_DISK_CACHE_SIZE", "12000000000")
+hl.env("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP", "1")
 
 -- Cursor
 hl.env("XCURSOR_THEME", "Sweet-cursors")
