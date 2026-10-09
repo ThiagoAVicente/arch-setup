@@ -10,6 +10,14 @@ ShellRoot {
     id: shell
 
     Bar { id: bar }
+
+    // Warm the app index and icon theme at startup. DesktopEntries scans
+    // lazily on first access; without this the launcher's first open pays
+    // ~200ms of scanning (and rebuilds its list once per entry found).
+    Component.onCompleted: {
+        DesktopEntries.applications
+        Quickshell.iconPath("application-x-executable")
+    }
     NotificationManager {}
     OSD {}
 
