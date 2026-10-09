@@ -14,10 +14,12 @@ Scope {
     property var items: []
     property var displayItems: []
 
-    readonly property string storePath: {
-        const home = Quickshell.env("HOME") || ""
-        return home + "/.cache/quickshell-todo.json"
-    }
+    // ~/.cache is disposable — todos live in XDG data. Older versions kept
+    // them in ~/.cache; that file is migrated on first load.
+    readonly property string _home: Quickshell.env("HOME") || ""
+    readonly property string storePath:
+        (Quickshell.env("XDG_DATA_HOME") || _home + "/.local/share") + "/quickshell/todo.json"
+    readonly property string legacyPath: _home + "/.cache/quickshell-todo.json"
 
     readonly property color cBg:      Root.Theme.bg
     readonly property color cMantle:  Root.Theme.mantle
@@ -34,7 +36,6 @@ Scope {
         if (visible) {
             inputField.text = ""
             inputField.forceActiveFocus()
-            loadProcess.running = true
         }
     }
 
@@ -47,55 +48,53 @@ Scope {
         goo.close()
     }
 
-    Component.onCompleted: loadProcess.running = true
+    // ── Storage ────────────────────────────────────────────────────────────
+    // FileView reads/writes directly (no shell processes). Writes are atomic
+    // and blocking, so nothing is lost when the drawer unloads right after an
+    // edit. watchChanges picks up edits made to the file from elsewhere.
+    function applyJson(text) {
+        try {
+            const parsed = JSON.parse(text || "[]")
+            if (!Array.isArray(parsed)) return
+            if (JSON.stringify(parsed) === JSON.stringify(todo.items)) return
+            todo.items = parsed
+        } catch (e) {
+            console.warn("todo: ignoring unparsable", todo.storePath, e)
+            return
+        }
+        todo.rebuildDisplay()
+    }
 
-    // ── Load ───────────────────────────────────────────────────────────────
-    Process {
-        id: loadProcess
-        command: ["sh", "-c", "cat \"$HOME/.cache/quickshell-todo.json\" 2>/dev/null || echo '[]'"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const parsed = JSON.parse(text || "[]")
-                    if (Array.isArray(parsed)) todo.items = parsed
-                } catch (e) {
-                    todo.items = []
-                }
-                todo.rebuildDisplay()
+    function save() {
+        store.setText(JSON.stringify(items))
+    }
+
+    FileView {
+        id: store
+        path: todo.storePath
+        blockLoading: true
+        blockWrites: true
+        atomicWrites: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: todo.applyJson(text())
+        onFileChanged: reload()
+        onLoadFailed: err => {
+            if (err !== FileViewError.FileNotFound) return
+            // First run on the new path: carry over the old ~/.cache file
+            const old = legacy.text()
+            if (old) {
+                todo.applyJson(old)
+                todo.save()
             }
         }
     }
 
-    // ── Save ───────────────────────────────────────────────────────────────
-    // One persistent writer: at most one write in flight, latest state wins.
-    // Atomic tmp+mv so a killed write never leaves a truncated file.
-    property string _pendingJson: ""
-    property bool _dirty: false
-    readonly property string _writeScript:
-        "mkdir -p \"$(dirname \"$0\")\" && printf '%s' \"$1\" > \"$0.tmp\" && mv -f \"$0.tmp\" \"$0\""
-
-    function save() {
-        _pendingJson = JSON.stringify(items)
-        _dirty = true
-        if (!saveProcess.running) _flush()
-    }
-
-    function _flush() {
-        if (!_dirty) return
-        _dirty = false
-        saveProcess.command = ["sh", "-c", _writeScript, todo.storePath, _pendingJson]
-        saveProcess.running = true
-    }
-
-    Process {
-        id: saveProcess
-        onExited: todo._flush()
-    }
-
-    // Loader unload kills child processes — hand any unwritten state to a detached writer
-    Component.onDestruction: {
-        if (_dirty || saveProcess.running)
-            Quickshell.execDetached(["sh", "-c", _writeScript, todo.storePath, _pendingJson])
+    FileView {
+        id: legacy
+        path: todo.legacyPath
+        blockLoading: true
+        printErrors: false
     }
 
     function parseInput(s) {
