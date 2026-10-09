@@ -11,3 +11,5 @@ WallpaperSelector 1.0 WallpaperSelector.qml
 PowerMenu 1.0 PowerMenu.qml
 Todo 1.0 Todo.qml
 LiquidSurface 1.0 LiquidSurface.qml
+LockScene 1.0 LockScene.qml
+LockCurtain 1.0 LockCurtain.qml

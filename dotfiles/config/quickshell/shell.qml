@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
+import "." as Root
 
 ShellRoot {
     id: shell
@@ -20,6 +21,23 @@ ShellRoot {
     }
     NotificationManager {}
     OSD {}
+
+    // ── Lock ───────────────────────────────────────────────────────────────
+    // The curtain animates here; the secure lock itself runs in its own
+    // process (lock.qml), see LockCurtain.qml
+    Loader {
+        id: lockLoader
+        active: Root.State.lockActive
+        sourceComponent: LockCurtain {
+            onFinished: Root.State.lockActive = false
+        }
+        onLoaded: item.lockDown()
+    }
+    function lock() {
+        if (Root.State.lockActive) return
+        activeModal = ""
+        Root.State.lockActive = true
+    }
 
     // All modals lazy-unload to free memory. Only one open at a time:
     // opening another swaps it in, which unloads (closes) the previous one.
@@ -100,6 +118,9 @@ ShellRoot {
                 const cmd = data.trim()
                 if (["launcher", "wallpaper", "powermenu", "todo"].includes(cmd)) shell.toggleModal(cmd)
                 else if (cmd === "bar") bar.toggleBar()
+                else if (cmd === "lock") shell.lock()
+                else if (cmd === "lock-secure") lockLoader.item?.secured()
+                else if (cmd === "lock-done") lockLoader.item?.liftUp()
             }
         }
     }

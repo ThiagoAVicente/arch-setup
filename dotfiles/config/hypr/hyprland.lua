@@ -87,6 +87,8 @@ hl.config({
 
 	misc = {
 		force_default_wallpaper = 0,
+		-- If the quickshell lock dies, let another locker (hyprlock) take over from a TTY
+		allow_session_lock_restore = true,
 		disable_hyprland_logo = true,
 		key_press_enables_dpms = true,
 		mouse_move_enables_dpms = false,
