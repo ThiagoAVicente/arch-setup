@@ -1,3 +1,4 @@
+import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Shapes
 import "." as Root
@@ -24,9 +25,13 @@ Item {
     property real wave: 0
     property real contentOpacity: 0
 
+    // No bar to hang from when it's toggled off or a fullscreen window covers
+    // it — then the drawer drops from the top edge of the display instead
+    readonly property bool barVisible: !Root.State.barHidden
+        && !(Hyprland.focusedMonitor?.activeWorkspace?.hasFullscreen ?? false)
     // Overlap the pill's bottom hairline by 1px so the join is seamless
-    readonly property int topY: Root.State.barHidden ? 0
-        : Root.Theme.barMarginTop + Root.Theme.barThickness - 1
+    readonly property int topY: barVisible
+        ? Root.Theme.barMarginTop + Root.Theme.barThickness - 1 : 0
     readonly property int cx: Math.round(width / 2)
     // Where callers place their content (fixed size, never scaled)
     readonly property int cardX: cx - Math.round(fullW / 2)
@@ -36,7 +41,7 @@ Item {
     readonly property real leftX: cx - revealW / 2
     readonly property real rightX: cx + revealW / 2
     readonly property real bottomY: topY + revealH
-    readonly property real fillet: Root.State.barHidden ? 0 : Math.min(18, revealH / 2)
+    readonly property real fillet: barVisible ? Math.min(18, revealH / 2) : 0
     readonly property real corner: Math.min(14, revealH / 2, revealW / 2)
 
     function open() {

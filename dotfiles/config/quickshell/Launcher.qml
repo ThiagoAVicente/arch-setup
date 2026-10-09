@@ -92,6 +92,8 @@ Scope {
         color: "transparent"
         // Own namespace: no blur (must match the bar) and no compositor layer anim
         WlrLayershell.namespace: "qs-drawer"
+        // Overlay layer so it also shows over fullscreen windows
+        WlrLayershell.layer: WlrLayer.Overlay
 
         onVisibleChanged: if (visible) goo.open()
 
