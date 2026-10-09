@@ -22,6 +22,10 @@ CPU_BOOST_ON_AC=1
 CPU_BOOST_ON_BAT=0
 CPU_HWP_DYN_BOOST_ON_AC=1
 CPU_HWP_DYN_BOOST_ON_BAT=0
+# Booting on battery caps scaling_max_freq at base clock (2.6/1.9 GHz) and
+# re-enabling boost on AC doesn't lift it — re-apply the real max on AC.
+# (Kernel clamps per policy, so E-cores get their own 3.6 GHz max.)
+CPU_SCALING_MAX_FREQ_ON_AC=4700000
 
 # ── Platform profile ──────────────────────────────────────────────────
 # legiond overrides these when you change power mode — that's fine
