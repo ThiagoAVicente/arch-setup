@@ -1,0 +1,4 @@
+
+arch-setup is preloaded in /root/arch-setup.
+Connect to the internet (iwctl), then run: arch-setup
+

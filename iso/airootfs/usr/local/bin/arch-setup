@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Run the preloaded installer (repo snapshot lives in /root/arch-setup)
+exec bash /root/arch-setup/arch-install.sh "$@"

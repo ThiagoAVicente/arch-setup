@@ -55,6 +55,21 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 
 ### Step 1: Base System Installation
 
+**Option A: arch-setup ISO (no clone needed)**
+
+Every GitHub release ships an `arch-setup-<version>-x86_64.iso` with this repo
+preloaded at `/root/arch-setup`. Flash it, boot it, then:
+
+```bash
+iwctl station wlan0 connect "SSID"
+arch-setup
+```
+
+To build it locally: `sudo pacman -S archiso && sudo ./iso/build.sh`
+(output in `out/`).
+
+**Option B: stock Arch ISO**
+
 Boot from Arch Linux ISO and run:
 
 ```bash

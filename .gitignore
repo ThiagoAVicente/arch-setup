@@ -32,3 +32,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# ISO build output
+out/
