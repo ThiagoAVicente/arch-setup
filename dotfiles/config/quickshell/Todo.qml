@@ -112,6 +112,14 @@ Scope {
             d = new Date(today); d.setDate(d.getDate() + days)
         } else if (/^\d{4}-\d{2}-\d{2}$/.test(tok)) {
             d = new Date(tok + "T00:00:00")
+        } else if (/^\d{1,2}\/\d{1,2}(\/\d{2,4})?$/.test(tok)) {
+            // Portuguese day-first: 25/12, 25/12/26, 25/12/2026. Without a
+            // year it's the next 25/12 to come
+            const [dd, mm, yy] = tok.split("/").map(n => parseInt(n))
+            const year = yy === undefined ? today.getFullYear() : yy < 100 ? 2000 + yy : yy
+            d = new Date(year, mm - 1, dd)
+            if (d.getMonth() !== mm - 1 || d.getDate() !== dd) return { text: s.trim(), due: null }
+            if (yy === undefined && d < today) d.setFullYear(year + 1)
         } else {
             return { text: s.trim(), due: null }
         }
@@ -130,10 +138,8 @@ Scope {
         else if (days === 0) label = "today"
         else if (days === 1) label = "tomorrow"
         else if (days < 7) label = days + "d"
-        else {
-            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-            label = months[d.getMonth()] + " " + d.getDate()
-        }
+        // Day first, like the bar's date; the year only when it isn't this one
+        else label = Qt.formatDate(d, d.getFullYear() === today.getFullYear() ? "dd/MM" : "dd/MM/yy")
         let color = cMuted
         if (days < 0) color = cRed
         else if (days <= 2) color = Qt.color("#f9e2af")
@@ -370,7 +376,7 @@ Scope {
                             Text {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
-                                text: "Add a task... (@today, @tomorrow, @+3, @2026-06-01)"
+                                text: "Add a task... (@today, @tomorrow, @+3, @25/12)"
                                 color: todo.cMuted
                                 font.pixelSize: 15
                                 font.family: "FiraCode Nerd Font"
