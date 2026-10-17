@@ -7,7 +7,7 @@ Grid {
     property color color: "white"
 
     // Columns only: setting rows too passes through a 2×2 grid mid-switch
-    columns: vertical ? 2 : 3
+    columns: vertical ? 3 : 2
     spacing: 3
 
     Repeater {
