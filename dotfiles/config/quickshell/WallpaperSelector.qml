@@ -341,36 +341,6 @@ Scope {
                             color: "#e9e9ec"
                             opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
                         }
-
-                        // "applied" badge — state chip with green dot
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.margins: 7
-                            visible: wpItem.modelData.path === wallpaperSelector.appliedPath
-                            width: badgeRow.implicitWidth + 16
-                            height: 17
-                            radius: height / 2
-                            color: Qt.rgba(0.04, 0.04, 0.05, 0.72)
-
-                            Row {
-                                id: badgeRow
-                                anchors.centerIn: parent
-                                spacing: 5
-                                Rectangle {
-                                    width: 5; height: 5; radius: 2.5
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: Root.Theme.ok
-                                }
-                                Text {
-                                    text: "applied"
-                                    color: "#e9e9ec"
-                                    font.pixelSize: 9
-                                    font.family: "FiraCode Nerd Font"
-                                    font.letterSpacing: 1
-                                }
-                            }
-                        }
                     }
 
                     // Hover must NOT change selection: the list scrolls under a
