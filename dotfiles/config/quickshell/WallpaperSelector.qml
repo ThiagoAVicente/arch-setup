@@ -138,8 +138,11 @@ Scope {
 
     function jumpToApplied() {
         const idx = wallpaperSelector.wallpapers.findIndex(w => w.path === wallpaperSelector.appliedPath)
+        // Snap there without the scroll animation: positionViewAtIndex fights
+        // StrictlyEnforceRange and settles one item off
+        thumbList.highlightMoveDuration = 0
         thumbList.currentIndex = idx >= 0 ? idx : 0
-        thumbList.positionViewAtIndex(thumbList.currentIndex, ListView.Center)
+        Qt.callLater(() => thumbList.highlightMoveDuration = -1)
     }
 
     function setWallpaper(path) {
