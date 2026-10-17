@@ -28,15 +28,19 @@ ShellRoot {
     // surface from the old size instead of dripping from scratch
     property int morphW: 0
     property int morphH: 0
+    // Outgoing drawer kept loaded until the incoming one is on screen
+    property string handoffModal: ""
     function drawerLoader(name) {
         return ({ launcher: launcherLoader, todo: todoLoader })[name] ?? null
     }
     function toggleModal(name) {
+        if (name === handoffModal) return
         if (activeModal !== name) {
             const out = drawerLoader(activeModal)?.item
             const swap = out && drawerLoader(name) && out.surface
             morphW = swap ? Math.round(out.surface.revealW) : 0
             morphH = swap ? Math.round(out.surface.revealH) : 0
+            handoffModal = swap ? activeModal : ""
             activeModal = name
             return
         }
@@ -49,17 +53,21 @@ ShellRoot {
         if (item.surface) {
             item.surface.fromW = morphW
             item.surface.fromH = morphH
+            const out = drawerLoader(handoffModal)?.item
+            if (out && out.surface)
+                out.surface.handOff(item.surface.fullW, item.surface.fullH)
         }
         morphW = morphH = 0
     }
     // Guarded so an outgoing modal's teardown can't clear the incoming one
     function modalClosed(name) {
         if (activeModal === name) activeModal = ""
+        if (handoffModal === name) handoffModal = ""
     }
 
     Loader {
         id: launcherLoader
-        active: shell.activeModal === "launcher"
+        active: shell.activeModal === "launcher" || shell.handoffModal === "launcher"
         sourceComponent: Launcher {
             onVisibleChanged: if (!visible) shell.modalClosed("launcher")
         }
@@ -83,7 +91,7 @@ ShellRoot {
     }
     Loader {
         id: todoLoader
-        active: shell.activeModal === "todo"
+        active: shell.activeModal === "todo" || shell.handoffModal === "todo"
         sourceComponent: Todo {
             onVisibleChanged: if (!visible) shell.modalClosed("todo")
         }

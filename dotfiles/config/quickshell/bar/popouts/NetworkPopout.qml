@@ -12,22 +12,40 @@ PanelWindow {
 
     required property bool isOpen
     required property bool anchorLeft
+    // Owner of popoutSurface/popoutScreen, shared by all bar popouts
+    required property var hub
     property bool closeOnClickOut: true
 
     signal closeRequested()
 
-    visible: isOpen
+    // Stays mapped while the surface drains back into the bar
+    property bool shown: false
+    visible: shown
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     focusable: false
+    // Same drawer surface as the launcher/todo: no blur, no compositor
+    // layer anim, and above the bar so the drop fuses with the pill
+    WlrLayershell.namespace: "qs-drawer"
+    WlrLayershell.layer: WlrLayer.Overlay
 
+    // Hang below the pill's flat bottom edge, clear of its rounded end
     anchors { top: true; left: anchorLeft; right: !anchorLeft }
-    margins.top: 52
-    margins.left: anchorLeft ? 8 : 0
-    margins.right: anchorLeft ? 0 : 8
+    margins.left: anchorLeft ? Root.Theme.barMarginSide + Root.Theme.barThickness / 2 : 0
+    margins.right: anchorLeft ? 0 : Root.Theme.barMarginSide + Root.Theme.barThickness / 2
 
-    implicitWidth: 304
-    implicitHeight: card.height + 8
+    // Room for the fillets at the join and the overshoot/ripple below
+    implicitWidth: goo.fullW + 40
+    implicitHeight: goo.topY + goo.fullH + 72
+    // Only the card takes input; the rest of the window is see-through
+    mask: Region { item: card }
+
+    Root.LiquidSurface {
+        id: goo
+        fullW: 296
+        fullH: card.height + 1
+        onClosed: root.shown = false
+    }
 
     // ── Network state ──────────────────────────────────────────────────
     property bool wifiEnabled: true
@@ -218,38 +236,40 @@ PanelWindow {
 
     Timer { id: monDebounce; interval: 400; onTriggered: root.refreshAll() }
 
+    // Lazily created already open, so the first open has no change signal
+    Component.onCompleted: if (isOpen) isOpenChanged()
     onIsOpenChanged: {
         if (isOpen) {
             view = "wireless"
             connectingToSsid = ""
             Qt.callLater(root.refreshAll)
+            shown = true
+            // Switching popouts on the same screen: grow out of the open one
+            const prev = hub.popoutSurface
+            const swap = prev && prev !== goo && hub.popoutSurfaceScreen === root.screen
+                && prev.revealH > 0
+            goo.fromW = swap ? Math.round(prev.revealW) : 0
+            goo.fromH = swap ? Math.round(prev.revealH) : 0
+            if (swap) prev.handOff(goo.fullW, goo.fullH)
+            hub.popoutSurface = goo
+            hub.popoutSurfaceScreen = root.screen
+            goo.open()
+        } else {
+            // The next popout may still take over the draining surface
+            goo.close()
         }
     }
 
     // ── UI ─────────────────────────────────────────────────────────────
-    Rectangle {
+    Item {
         id: card
 
-        anchors.top: parent.top
-        anchors.left: root.anchorLeft ? parent.left : undefined
-        anchors.right: root.anchorLeft ? undefined : parent.right
-        anchors.topMargin: 4
-
-        width: 296
+        // Content only — the LiquidSurface is its surface
+        x: goo.cardX
+        y: goo.cardY
+        width: goo.fullW
         height: mainCol.implicitHeight + 20
-        radius: 14
-
-        color: Root.Theme.surface
-        border.width: 1
-        border.color: Root.Theme.surface2
-
-        // Smooth appear animation
-        opacity: root.isOpen ? 1 : 0
-        scale: root.isOpen ? 1 : 0.95
-        transformOrigin: Item.TopRight
-
-        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-        Behavior on scale   { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        opacity: goo.contentOpacity
 
         ColumnLayout {
             id: mainCol

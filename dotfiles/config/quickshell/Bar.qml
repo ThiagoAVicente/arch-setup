@@ -15,6 +15,9 @@ Scope {
     property string openPopout: ""
     // Screen the open popout belongs to — popouts only show on this monitor
     property var popoutScreen: null
+    // Surface of the popout on screen; the next one morphs out of it
+    property var popoutSurface: null
+    property var popoutSurfaceScreen: null
     readonly property bool barHidden: Root.State.barHidden
 
     readonly property int barThickness: Root.Theme.barThickness
@@ -143,6 +146,7 @@ Scope {
                 screen: modelData
                 isOpen: barScope.openPopout === "network" && barScope.popoutScreen === modelData
                 anchorLeft: false
+                hub: barScope
                 onCloseRequested: barScope.openPopout = ""
             }
         }
@@ -158,6 +162,7 @@ Scope {
                 screen: modelData
                 isOpen: barScope.openPopout === "bluetooth" && barScope.popoutScreen === modelData
                 anchorLeft: false
+                hub: barScope
                 onCloseRequested: barScope.openPopout = ""
             }
         }

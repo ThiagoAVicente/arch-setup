@@ -7,6 +7,7 @@ import "." as Root
 // bar's bottom edge and spreads it into the card with an overshoot while the
 // bottom edge ripples; closing drains it back. With fromW/fromH set it
 // instead morphs from another drawer's size (launcher <-> todo swap).
+// Once open, size changes (content-sized popouts) glide to the new size.
 // Collapsed state is the default, since drawers are rebuilt on every open.
 Item {
     id: goo
@@ -17,6 +18,8 @@ Item {
     // Seed size when replacing another drawer; 0 = drip from the bar
     property int fromW: 0
     property int fromH: 0
+    // Horizontal centre of the drop; -1 = middle of the parent
+    property int centerX: -1
 
     signal closed()
 
@@ -32,11 +35,13 @@ Item {
     // Overlap the pill's bottom hairline by 1px so the join is seamless
     readonly property int topY: barVisible
         ? Root.Theme.barMarginTop + Root.Theme.barThickness - 1 : 0
-    readonly property int cx: Math.round(width / 2)
+    readonly property int cx: centerX >= 0 ? centerX : Math.round(width / 2)
     // Where callers place their content (fixed size, never scaled)
     readonly property int cardX: cx - Math.round(fullW / 2)
     readonly property int cardY: topY + 1
-    readonly property bool closing: closeAnim.running
+    readonly property bool closing: closeAnim.running || handoffAnim.running
+    // Fully grown; from here on reveal follows fullW/fullH
+    property bool settled: false
 
     readonly property real leftX: cx - revealW / 2
     readonly property real rightX: cx + revealW / 2
@@ -46,6 +51,9 @@ Item {
 
     function open() {
         closeAnim.stop()
+        handoffAnim.stop()
+        resizeAnim.stop()
+        settled = false
         contentOpacity = 0
         if (fromW > 0 && fromH > 0) {
             revealW = fromW
@@ -56,10 +64,31 @@ Item {
         }
     }
 
-    function close() {
-        if (closeAnim.running) return
+    // Another drawer takes over: it morphs from this one's shape, so this
+    // one tracks the same shape (content hidden) until the new window is
+    // on screen, then goes — no blank frame between the two
+    function handOff(toW, toH) {
         openAnim.stop()
         morphAnim.stop()
+        resizeAnim.stop()
+        closeAnim.stop()
+        settled = false
+        contentOpacity = 0
+        handoffW = toW
+        handoffH = toH
+        handoffFromH = revealH
+        handoffAnim.restart()
+    }
+    property int handoffW: 0
+    property int handoffH: 0
+    property real handoffFromH: 0
+
+    function close() {
+        if (closeAnim.running || handoffAnim.running) return
+        openAnim.stop()
+        morphAnim.stop()
+        resizeAnim.stop()
+        settled = false
         closeAnim.start()
     }
 
@@ -86,6 +115,7 @@ Item {
                 NumberAnimation { target: goo; property: "contentOpacity"; to: 1; duration: 130; easing.type: Easing.OutCubic }
             }
         }
+        ScriptAction { script: goo.settle() }
     }
 
     // Reshape from the previous drawer's size; the edge sloshes the way it moved
@@ -101,6 +131,33 @@ Item {
         SequentialAnimation {
             PauseAnimation { duration: 110 }
             NumberAnimation { target: goo; property: "contentOpacity"; to: 1; duration: 130; easing.type: Easing.OutCubic }
+        }
+        onFinished: goo.settle()
+    }
+
+    // Content grew or shrank after opening (list loaded, tab switched)
+    function settle() {
+        settled = true
+        if (revealW !== fullW || revealH !== fullH) resizeAnim.restart()
+    }
+    onFullWChanged: if (settled) resizeAnim.restart()
+    onFullHChanged: if (settled) resizeAnim.restart()
+
+    ParallelAnimation {
+        id: resizeAnim
+        NumberAnimation { target: goo; property: "revealW"; to: goo.fullW; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 0.8 }
+        NumberAnimation { target: goo; property: "revealH"; to: goo.fullH; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 0.8 }
+    }
+
+    // Same curve as morphAnim so both surfaces stay in register
+    ParallelAnimation {
+        id: handoffAnim
+        NumberAnimation { target: goo; property: "revealW"; to: goo.handoffW; duration: 280; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
+        NumberAnimation { target: goo; property: "revealH"; to: goo.handoffH; duration: 280; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+        SequentialAnimation {
+            NumberAnimation { target: goo; property: "wave"; to: goo.handoffH >= goo.handoffFromH ? 34 : -34; duration: 90; easing.type: Easing.OutQuad }
+            PauseAnimation { duration: 30 }
+            ScriptAction { script: goo.closed() }
         }
     }
 
