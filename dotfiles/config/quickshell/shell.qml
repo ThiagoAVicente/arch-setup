@@ -51,11 +51,14 @@ ShellRoot {
     }
     function seedMorph(item) {
         if (item.surface) {
-            item.surface.fromW = morphW
-            item.surface.fromH = morphH
             const out = drawerLoader(handoffModal)?.item
-            if (out && out.surface)
-                out.surface.handOff(item.surface.fullW, item.surface.fullH)
+            // Only morph within one monitor; across monitors the old drawer
+            // drains on its screen while the new one drips on the other
+            const same = out && out.surface && out.surface.screen === item.surface.screen
+            item.surface.fromW = same ? morphW : 0
+            item.surface.fromH = same ? morphH : 0
+            if (same) out.surface.handOff(item.surface.fullW, item.surface.fullH)
+            else if (out && out.close) out.close()
         }
         morphW = morphH = 0
     }

@@ -158,6 +158,9 @@ Scope {
 
     PanelWindow {
         id: panelWindow
+        // Open on the focused monitor and stay there (no binding: focus
+        // moving while open must not move the drawer)
+        Component.onCompleted: screen = Root.BarLayout.focusedScreen()
         visible: wallpaperSelector.visible
         anchors { top: true; left: true; right: true; bottom: true }
         exclusiveZone: -1

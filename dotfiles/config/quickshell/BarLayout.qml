@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 
 // Which screen edge the bar sits on, per monitor (keyed by screen name).
@@ -27,6 +28,15 @@ Singleton {
         next[screenName] = edge
         edges = next
         store.setText(JSON.stringify(edges) + "\n")
+    }
+
+    // Screen of the focused monitor: drawers open there, hanging off that
+    // screen's bar
+    function focusedScreen() {
+        const name = Hyprland.focusedMonitor?.name
+        for (const s of Quickshell.screens)
+            if (s.name === name) return s
+        return null
     }
 
     function isVertical(edge) {

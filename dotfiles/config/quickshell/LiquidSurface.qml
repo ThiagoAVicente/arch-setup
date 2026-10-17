@@ -31,14 +31,16 @@ Item {
 
     // Edge of this window's screen the bar sits on; the surface grows out of
     // it. Geometry below is written for the top edge and mirrored for bottom.
-    readonly property string edge: Root.BarLayout.edgeOf(QsWindow.window?.screen?.name ?? "")
+    readonly property var screen: QsWindow.window?.screen ?? null
+    readonly property string edge: Root.BarLayout.edgeOf(screen?.name ?? "")
     readonly property bool fromBottom: edge === "bottom"
     function sy(v) { return fromBottom ? height - v : v }
 
     // No bar to hang from when it's toggled off or a fullscreen window covers
     // it — then the drawer drops from the top edge of the display instead
     readonly property bool barVisible: !Root.State.barHidden
-        && !(Hyprland.focusedMonitor?.activeWorkspace?.hasFullscreen ?? false)
+        && !((screen ? Hyprland.monitorFor(screen) : Hyprland.focusedMonitor)
+             ?.activeWorkspace?.hasFullscreen ?? false)
     // Overlap the pill's bottom hairline by 1px so the join is seamless
     readonly property int topY: barVisible
         ? Root.Theme.barMarginTop + Root.Theme.barThickness - 1 : 0
