@@ -31,7 +31,7 @@ ShellRoot {
     // Outgoing drawer kept loaded until the incoming one is on screen
     property string handoffModal: ""
     function drawerLoader(name) {
-        return ({ launcher: launcherLoader, todo: todoLoader })[name] ?? null
+        return ({ launcher: launcherLoader, todo: todoLoader, wallpaper: wallpaperLoader })[name] ?? null
     }
     function toggleModal(name) {
         if (name === handoffModal) return
@@ -75,11 +75,11 @@ ShellRoot {
     }
     Loader {
         id: wallpaperLoader
-        active: shell.activeModal === "wallpaper"
+        active: shell.activeModal === "wallpaper" || shell.handoffModal === "wallpaper"
         sourceComponent: WallpaperSelector {
             onVisibleChanged: if (!visible) shell.modalClosed("wallpaper")
         }
-        onLoaded: if (item) item.toggle()
+        onLoaded: if (item) { shell.seedMorph(item); item.toggle() }
     }
     Loader {
         id: powerMenuLoader

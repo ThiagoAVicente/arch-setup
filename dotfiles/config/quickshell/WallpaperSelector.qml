@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import QtQuick.Effects
 import "." as Root
 
@@ -23,8 +24,8 @@ Scope {
     // Survives Loader unload, so reopening starts on the applied wallpaper
     property string appliedPath: Root.State.appliedWallpaper
 
-    readonly property int thumbH: 88   // thumbnail height
-    readonly property int thumbW: 156  // thumbnail width
+    readonly property int thumbH: 117  // thumbnail height (16:9)
+    readonly property int thumbW: 208  // thumbnail width
 
     function toggle() {
         visible = !visible
@@ -35,6 +36,16 @@ Scope {
         } else {
             focusRetry.stop()
         }
+    }
+
+    // Drawer surface, read by shell.qml to morph into the next drawer
+    readonly property alias surface: goo
+
+    // Animated close: content out, surface drains back into the bar
+    function close() {
+        if (!visible || goo.closing) return
+        focusRetry.stop()
+        goo.close()
     }
 
     Process {
@@ -103,8 +114,11 @@ Scope {
         // execDetached survives Loader unload (Process child would die when WallpaperSelector destroyed)
         Quickshell.execDetached(["sh", "-c", "\"$HOME/scripts/change-wallpaper.sh\" \"$1\"", "sh", path])
         Root.State.appliedWallpaper = path
-        visible = false
+        close()
     }
+
+    readonly property var current: thumbList.currentIndex >= 0 && thumbList.currentIndex < wallpapers.length
+        ? wallpapers[thumbList.currentIndex] : null
 
     PanelWindow {
         id: panelWindow
@@ -113,7 +127,12 @@ Scope {
         exclusiveZone: -1
         focusable: true
         color: "transparent"
-        WlrLayershell.namespace: "qs-overlay"
+        // Own namespace: no blur (must match the bar) and no compositor layer anim
+        WlrLayershell.namespace: "qs-drawer"
+        // Overlay layer so it also shows over fullscreen windows
+        WlrLayershell.layer: WlrLayer.Overlay
+
+        onVisibleChanged: if (visible) goo.open()
 
         // Zero-size + transparent instead of visible:false — an invisible item
         // cannot take active focus in Qt Quick, so key events never arrive.
@@ -124,18 +143,19 @@ Scope {
             readOnly: true
             text: ""
             Keys.onPressed: event => {
-                if (event.key === Qt.Key_Escape) {
-                    wallpaperSelector.visible = false
-                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    if (thumbList.currentIndex >= 0 && thumbList.currentIndex < wallpaperSelector.wallpapers.length)
-                        wallpaperSelector.setWallpaper(wallpaperSelector.wallpapers[thumbList.currentIndex].path)
-                } else if (event.key === Qt.Key_Down || event.key === Qt.Key_J) {
+                const k = event.key
+                if (k === Qt.Key_Escape) {
+                    wallpaperSelector.close()
+                } else if (k === Qt.Key_Return || k === Qt.Key_Enter) {
+                    if (wallpaperSelector.current)
+                        wallpaperSelector.setWallpaper(wallpaperSelector.current.path)
+                } else if (k === Qt.Key_Right || k === Qt.Key_L || k === Qt.Key_Down || k === Qt.Key_J) {
                     thumbList.incrementCurrentIndex()
-                } else if (event.key === Qt.Key_Up || event.key === Qt.Key_K) {
+                } else if (k === Qt.Key_Left || k === Qt.Key_H || k === Qt.Key_Up || k === Qt.Key_K) {
                     thumbList.decrementCurrentIndex()
-                } else if (event.key === Qt.Key_Home) {
+                } else if (k === Qt.Key_Home) {
                     thumbList.currentIndex = 0
-                } else if (event.key === Qt.Key_End) {
+                } else if (k === Qt.Key_End) {
                     thumbList.currentIndex = wallpaperSelector.wallpapers.length - 1
                 }
                 event.accepted = true
@@ -153,48 +173,77 @@ Scope {
             }
         }
 
-        ParallelAnimation {
-            id: wsOpenAnim
-            OpacityAnimator  { target: wsStrip;    from: 0;   to: 1.0; duration: 200; easing.type: Easing.OutCubic }
-            NumberAnimation  { target: wsStrip; property: "anchors.leftMargin"; from: 0; to: 24; duration: 220; easing.type: Easing.OutCubic }
-        }
-
-        onVisibleChanged: {
-            if (visible) {
-                wsStrip.opacity = 0
-                wsStrip.anchors.leftMargin = 0
-                wsOpenAnim.start()
-                focusRetry.attempts = 0
-                focusRetry.start()
-            } else {
-                focusRetry.stop()
-            }
-        }
-
-        // Click-away close (transparent)
+        // Click-away close
         MouseArea {
             anchors.fill: parent
-            onClicked: wallpaperSelector.visible = false
+            onClicked: wallpaperSelector.close()
         }
 
-        // ── Drum-roller strip — no background, thumbnails float ────────────
-        Item {
-            id: wsStrip
-            anchors.left: parent.left
-            anchors.leftMargin: 24
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: wallpaperSelector.thumbW
-            opacity: 0
+        Root.LiquidSurface {
+            id: goo
+            fullW: 940
+            fullH: 240
+            onClosed: wallpaperSelector.visible = false
+        }
 
-            // Stop click-through
+        // Content only — the LiquidSurface is its surface
+        Item {
+            id: card
+            x: goo.cardX
+            y: goo.cardY
+            width: goo.fullW
+            height: goo.fullH - 1
+            opacity: goo.contentOpacity
+            clip: true
+
             MouseArea { anchors.fill: parent; onClicked: {} }
 
+            // ── Header ─────────────────────────────────────────────────────
+            Item {
+                id: header
+                anchors { top: parent.top; left: parent.left; right: parent.right }
+                height: 44
+
+                RowLayout {
+                    anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
+                    spacing: 10
+
+                    Text {
+                        text: "\u{f03e}"
+                        font.pixelSize: 13
+                        font.family: "FiraCode Nerd Font"
+                        color: Root.Theme.subtext
+                    }
+                    Text {
+                        text: "WALLPAPERS"
+                        font.pixelSize: 10
+                        font.family: "FiraCode Nerd Font"
+                        font.letterSpacing: 2
+                        color: Root.Theme.muted
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        visible: wallpaperSelector.wallpapers.length > 0
+                        text: (thumbList.currentIndex + 1) + "/" + wallpaperSelector.wallpapers.length
+                        font.pixelSize: 11
+                        font.family: "FiraCode Nerd Font"
+                        color: Root.Theme.muted
+                    }
+                }
+
+                Rectangle {
+                    anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                    height: 1
+                    color: Qt.rgba(1, 1, 1, 0.06)
+                }
+            }
+
+            // ── Carousel — selection stays centred, the strip scrolls ──────
             ListView {
                 id: thumbList
-                anchors.fill: parent
-                clip: true
-                spacing: 8
+                anchors { top: header.bottom; left: parent.left; right: parent.right; bottom: footer.top }
+                orientation: ListView.Horizontal
+                spacing: 14
                 model: wallpaperSelector.wallpapers
                 boundsBehavior: Flickable.StopAtBounds
                 // NOTE: no `currentIndex:` binding — StrictlyEnforceRange makes the
@@ -202,22 +251,37 @@ Scope {
                 // permanently and freeze navigation. currentIndex IS the selection.
 
                 // Keep selected item locked in center — list scrolls, not cursor
-                preferredHighlightBegin: (height - wallpaperSelector.thumbH) / 2
-                preferredHighlightEnd:   (height + wallpaperSelector.thumbH) / 2
+                preferredHighlightBegin: (width - wallpaperSelector.thumbW) / 2
+                preferredHighlightEnd:   (width + wallpaperSelector.thumbW) / 2
                 highlightRangeMode: ListView.StrictlyEnforceRange
-                highlightMoveVelocity: 1400
+                highlightMoveVelocity: 1800
                 highlightMoveDuration: -1  // velocity-controlled
+
+                // Wheel steps one wallpaper at a time, either axis
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    property real acc: 0
+                    onWheel: event => {
+                        acc += event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x
+                        while (acc <= -120) { thumbList.incrementCurrentIndex(); acc += 120 }
+                        while (acc >= 120)  { thumbList.decrementCurrentIndex(); acc -= 120 }
+                    }
+                }
 
                 delegate: Item {
                     id: wpItem
                     required property var modelData
                     required property int index
                     width: wallpaperSelector.thumbW
-                    height: wallpaperSelector.thumbH
+                    height: thumbList.height
 
                     readonly property bool isSel: ListView.isCurrentItem
+                    // 0 at the centre, 1 at the card edge — thumbs fade out sideways
+                    readonly property real dist: Math.min(1, Math.abs(x - thumbList.contentX + width / 2
+                        - thumbList.width / 2) / (thumbList.width / 2))
 
-                    scale: isSel ? 1.0 : 0.94
+                    opacity: 1 - dist * dist * 0.85
+                    scale: isSel ? 1.0 : 0.9
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                     z: isSel ? 1 : 0
 
@@ -231,14 +295,16 @@ Scope {
                         blur: 1.0
                         blurMax: 32
                         opacity: wpItem.isSel ? 0.5 : 0
-                        scale: 1.15
+                        scale: 1.12
                         z: -1
                         Behavior on opacity { NumberAnimation { duration: 180 } }
                     }
 
                     ClippingRectangle {
                         id: thumbClip
-                        anchors.fill: parent
+                        anchors.centerIn: parent
+                        width: wallpaperSelector.thumbW
+                        height: wallpaperSelector.thumbH
                         radius: 10
                         color: "#1a1a1c"
                         border.color: wpItem.isSel ? Qt.rgba(1, 1, 1, 0.35) : Qt.rgba(1, 1, 1, 0.07)
@@ -255,8 +321,8 @@ Scope {
                             source: wpItem.modelData.isVideo
                                 ? ("file://" + wallpaperSelector.thumbCachePath(wpItem.modelData.path) + "?" + _gen)
                                 : ("file://" + wpItem.modelData.path)
-                            sourceSize.width: 240
-                            sourceSize.height: 135
+                            sourceSize.width: 320
+                            sourceSize.height: 180
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: false
@@ -274,23 +340,6 @@ Scope {
                             font.pixelSize: 28
                             color: "#e9e9ec"
                             opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
-                        }
-
-                        // Filename so a video is identifiable even before/without a thumbnail
-                        Text {
-                            anchors.bottom: parent.bottom
-                            anchors.right: parent.right
-                            anchors.margins: 4
-                            visible: wpItem.modelData.isVideo
-                            text: wpItem.modelData.path.split("/").pop()
-                            color: "#e9e9ec"
-                            font.pixelSize: 8
-                            font.family: "FiraCode Nerd Font"
-                            elide: Text.ElideMiddle
-                            width: Math.min(implicitWidth, parent.width - 8)
-                            horizontalAlignment: Text.AlignRight
-                            style: Text.Outline
-                            styleColor: "#000000"
                         }
 
                         // "applied" badge — state chip with green dot
@@ -311,7 +360,7 @@ Scope {
                                 Rectangle {
                                     width: 5; height: 5; radius: 2.5
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: "#7fb98a"
+                                    color: Root.Theme.ok
                                 }
                                 Text {
                                     text: "applied"
@@ -326,19 +375,60 @@ Scope {
 
                     // Hover must NOT change selection: the list scrolls under a
                     // stationary cursor, so onEntered would fight the keyboard.
+                    // First click centres a side thumb, clicking the centred one applies it.
                     MouseArea {
                         id: wpMa
-                        anchors.fill: parent
+                        anchors.fill: thumbClip
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            thumbList.currentIndex = wpItem.index
-                            wallpaperSelector.setWallpaper(wpItem.modelData.path)
+                            if (wpItem.isSel) wallpaperSelector.setWallpaper(wpItem.modelData.path)
+                            else thumbList.currentIndex = wpItem.index
                         }
                     }
                 }
             }
 
+            // ── Footer — name of the centred wallpaper ─────────────────────
+            Item {
+                id: footer
+                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                height: 34
+
+                Rectangle {
+                    anchors { top: parent.top; left: parent.left; right: parent.right }
+                    height: 1
+                    color: Qt.rgba(1, 1, 1, 0.06)
+                }
+
+                RowLayout {
+                    anchors { fill: parent; leftMargin: 18; rightMargin: 18 }
+                    spacing: 8
+
+                    Text {
+                        visible: wallpaperSelector.current?.isVideo ?? false
+                        text: "LIVE"
+                        font.pixelSize: 9
+                        font.family: "FiraCode Nerd Font"
+                        font.letterSpacing: 1.5
+                        color: Root.Theme.ok
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: wallpaperSelector.current ? wallpaperSelector.current.path.split("/").pop() : ""
+                        font.pixelSize: 11
+                        font.family: "FiraCode Nerd Font"
+                        color: Root.Theme.subtext
+                        elide: Text.ElideMiddle
+                    }
+                    Text {
+                        text: "←/→ browse · enter apply · esc close"
+                        font.pixelSize: 10
+                        font.family: "FiraCode Nerd Font"
+                        color: Root.Theme.muted
+                    }
+                }
+            }
         }
     }
 }
