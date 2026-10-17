@@ -10,7 +10,9 @@ if pgrep -x wf-recorder >/dev/null; then
 else
   # Start recording
   FILENAME=~/Videos/Recordings/recording_$(date +'%Y-%m-%d_%H-%M-%S').mp4
-  wf-recorder --no-dmabuf -x yuv420p -g "$(slurp)" -f "$FILENAME" &
+  # Capture system audio (games, videos) from the current output's monitor
+  wf-recorder --no-dmabuf -x yuv420p -g "$(slurp)" \
+    --audio="$(pactl get-default-sink).monitor" -f "$FILENAME" &
   while ! pgrep -x wf-recorder >/dev/null; do sleep 0.1; done
   pkill -42 waybar
 fi

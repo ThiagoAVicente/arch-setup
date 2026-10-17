@@ -21,8 +21,40 @@ Scope {
     function thumbCachePath(path) {
         return wallpaperSelector.thumbCacheDir + "/" + path.replace(/\//g, "_") + ".jpg"
     }
-    // Survives Loader unload, so reopening starts on the applied wallpaper
+    // Survives Loader unload (State) and reboots (file), so reopening starts
+    // on the applied wallpaper
     property string appliedPath: Root.State.appliedWallpaper
+    readonly property string appliedStorePath:
+        (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") || "") + "/.local/state")
+        + "/quickshell/wallpaper"
+
+    FileView {
+        id: appliedStore
+        path: wallpaperSelector.appliedStorePath
+        blockLoading: true
+        blockWrites: true
+        atomicWrites: true
+        printErrors: false
+        onLoaded: {
+            const p = text().trim()
+            if (p && !Root.State.appliedWallpaper) Root.State.appliedWallpaper = p
+        }
+        // Never saved yet: ask awww what it is showing (static wallpapers)
+        onLoadFailed: if (!Root.State.appliedWallpaper) awwwQuery.running = true
+    }
+
+    Process {
+        id: awwwQuery
+        command: ["awww", "query"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const m = (text || "").match(/image: (.+)$/m)
+                if (!m || Root.State.appliedWallpaper) return
+                Root.State.appliedWallpaper = m[1].trim()
+                Qt.callLater(wallpaperSelector.jumpToApplied)
+            }
+        }
+    }
 
     readonly property int thumbH: 117  // thumbnail height (16:9)
     readonly property int thumbW: 208  // thumbnail width
@@ -114,6 +146,7 @@ Scope {
         // execDetached survives Loader unload (Process child would die when WallpaperSelector destroyed)
         Quickshell.execDetached(["sh", "-c", "\"$HOME/scripts/change-wallpaper.sh\" \"$1\"", "sh", path])
         Root.State.appliedWallpaper = path
+        appliedStore.setText(path + "\n")
         close()
     }
 

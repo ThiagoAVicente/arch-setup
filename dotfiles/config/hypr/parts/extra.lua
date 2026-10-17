@@ -18,10 +18,12 @@ local function card_node(pci)
 	return out:match("^card%d+$") and "/dev/dri/" .. out or nil
 end
 
-local intel = card_node("0000:00:02.0")
-if intel then
-	hl.env("AQ_DRM_DEVICES", intel)
-end
+-- Disabled: keep nvidia outputs (HDMI) hot-pluggable. Testing whether the dGPU
+-- still reaches D3cold with Hyprland holding it open on driver 615.
+-- local intel = card_node("0000:00:02.0")
+-- if intel then
+-- 	hl.env("AQ_DRM_DEVICES", intel)
+-- end
 
 hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
 hl.env("XCURSOR_SIZE", "30")
