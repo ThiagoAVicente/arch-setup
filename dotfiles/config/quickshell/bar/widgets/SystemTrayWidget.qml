@@ -6,12 +6,19 @@ import QtQuick
 import QtQuick.Layouts
 import "../.." as Root
 
-RowLayout {
+// GridLayout with flow switched at runtime so a single Repeater handles both
+// orientations without duplicating Process/Loader instances per item.
+GridLayout {
     id: root
-    spacing: 4
+    // Horizontal: left-to-right row; Vertical: top-to-bottom column
+    flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+    columnSpacing: 4
+    rowSpacing: 4
 
+    property bool vertical: false
     property var iconCache: ({})
-    readonly property bool barAtBottom: Root.BarLayout.edgeOf(QsWindow.window?.screen?.name ?? "") === "bottom"
+    // Full edge string: "top" | "bottom" | "left" | "right"
+    readonly property string barEdge: Root.BarLayout.edgeOf(QsWindow.window?.screen?.name ?? "")
 
     Repeater {
         model: SystemTray.items
@@ -105,7 +112,7 @@ RowLayout {
                 active: false
                 sourceComponent: TrayMenu {
                     anchorItem: trayItem
-                    barAtBottom: root.barAtBottom
+                    barEdge: root.barEdge
                     rootHandle: trayItem.modelData?.menu ?? null
                 }
             }

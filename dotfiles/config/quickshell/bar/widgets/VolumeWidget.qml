@@ -7,20 +7,26 @@ import "../.." as Root
 Item {
     id: root
 
+    property bool vertical: false
+
     property int volume: 0
     property bool muted: false
 
-    implicitWidth: row.implicitWidth + 18
-    implicitHeight: 24
+    // Horizontal: wide pill around icon + number; Vertical: narrower taller pill
+    implicitWidth: vertical ? 30 : hRow.implicitWidth + 18
+    implicitHeight: vertical ? vCol.implicitHeight + 10 : 24
 
     Rectangle {
-        anchors.fill: parent; radius: height / 2
+        anchors.fill: parent
+        radius: root.vertical ? 10 : height / 2
         color: volMa.containsMouse ? Root.Theme.barHover : "transparent"
         Behavior on color { ColorAnimation { duration: 130 } }
     }
 
+    // ── Horizontal: icon + number side by side ────────────────────────────
     RowLayout {
-        id: row
+        id: hRow
+        visible: !root.vertical
         anchors.centerIn: parent
         spacing: 5
 
@@ -48,6 +54,43 @@ Item {
                 id: volDip
                 NumberAnimation { target: volLabel; property: "opacity"; to: 0.5; duration: 80; easing.type: Easing.InCubic }
                 NumberAnimation { target: volLabel; property: "opacity"; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+            }
+        }
+    }
+
+    // ── Vertical: icon on top, number below ──────────────────────────────
+    Column {
+        id: vCol
+        visible: root.vertical
+        anchors.centerIn: parent
+        spacing: 3
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Root.IconMaps.volumeIcon(root.volume, root.muted)
+            color: root.muted ? Root.Theme.barMuted
+                : volMa.containsMouse ? Root.Theme.barAccent : Root.Theme.barSubtext
+            font.family: Root.Theme.fontFamily
+            font.pixelSize: 14
+            Behavior on color { ColorAnimation { duration: 130 } }
+        }
+
+        Text {
+            id: vVolLabel
+            visible: !root.muted
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.volume
+            color: volMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
+            font.family: Root.Theme.fontMono
+            font.pixelSize: 10
+            Behavior on color { ColorAnimation { duration: 130 } }
+
+            // Quick dip on value change
+            onTextChanged: vVolDip.restart()
+            SequentialAnimation {
+                id: vVolDip
+                NumberAnimation { target: vVolLabel; property: "opacity"; to: 0.5; duration: 80; easing.type: Easing.InCubic }
+                NumberAnimation { target: vVolLabel; property: "opacity"; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
             }
         }
     }

@@ -22,12 +22,25 @@ PopupWindow {
     }
 
     anchor.item: anchorItem
-    // Opens away from the bar, whichever edge it sits on
-    property bool barAtBottom: false
-    anchor.edges: barAtBottom ? Edges.Top : Edges.Bottom
-    anchor.gravity: barAtBottom ? Edges.Top : Edges.Bottom
-    anchor.margins.top: barAtBottom ? 0 : 10
-    anchor.margins.bottom: barAtBottom ? 10 : 0
+    // Opens away from the bar, whichever edge it sits on.
+    // barEdge: "top" | "bottom" | "left" | "right"
+    property string barEdge: "top"
+    anchor.edges: {
+        if (barEdge === "bottom") return Edges.Top
+        if (barEdge === "left")   return Edges.Right
+        if (barEdge === "right")  return Edges.Left
+        return Edges.Bottom  // default: top bar → open below
+    }
+    anchor.gravity: {
+        if (barEdge === "bottom") return Edges.Top
+        if (barEdge === "left")   return Edges.Right
+        if (barEdge === "right")  return Edges.Left
+        return Edges.Bottom
+    }
+    anchor.margins.top:    barEdge === "bottom" ? 0 : (barEdge === "top" ? 10 : 0)
+    anchor.margins.bottom: barEdge === "bottom" ? 10 : 0
+    anchor.margins.left:   barEdge === "left"   ? 10 : 0
+    anchor.margins.right:  barEdge === "right"  ? 10 : 0
     // Closes on click outside (xdg_popup grab)
     grabFocus: true
     color: "transparent"

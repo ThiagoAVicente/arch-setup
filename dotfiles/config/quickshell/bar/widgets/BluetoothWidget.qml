@@ -6,6 +6,7 @@ import "../.." as Root
 Item {
     id: root
 
+    property bool vertical: false
     property bool popoutOpen: false
     signal togglePopout()
 

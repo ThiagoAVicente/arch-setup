@@ -29,15 +29,24 @@ PanelWindow {
     WlrLayershell.namespace: "qs-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
 
-    // Hang off the pill's flat edge, clear of its rounded end
-    readonly property bool barAtBottom: Root.BarLayout.edgeOf(screen?.name ?? "") === "bottom"
-    anchors { top: !barAtBottom; bottom: barAtBottom; left: anchorLeft; right: !anchorLeft }
-    margins.left: anchorLeft ? Root.Theme.barMarginSide + Root.Theme.barThickness / 2 : 0
-    margins.right: anchorLeft ? 0 : Root.Theme.barMarginSide + Root.Theme.barThickness / 2
+    // Hang off the pill's flat edge, clear of its rounded end. On a side bar
+    // the widgets sit at its lower end, so the popout does too.
+    readonly property string barEdge: Root.BarLayout.edgeOf(screen?.name ?? "")
+    readonly property bool barVertical: Root.BarLayout.isVertical(barEdge)
+    readonly property int endInset: Root.Theme.barMarginSide + Root.Theme.barThickness / 2
+    anchors {
+        top: barEdge === "top"
+        bottom: barVertical || barEdge === "bottom"
+        left: barVertical ? barEdge === "left" : anchorLeft
+        right: barVertical ? barEdge === "right" : !anchorLeft
+    }
+    margins.left: !barVertical && anchorLeft ? endInset : 0
+    margins.right: !barVertical && !anchorLeft ? endInset : 0
+    margins.bottom: barVertical ? endInset : 0
 
-    // Room for the fillets at the join and the overshoot/ripple below
-    implicitWidth: goo.fullW + 40
-    implicitHeight: goo.topY + goo.fullH + 72
+    // Room for the fillets at the join and the overshoot/ripple away from it
+    implicitWidth: barVertical ? goo.topY + goo.fullW + 72 : goo.fullW + 40
+    implicitHeight: barVertical ? goo.fullH + 40 : goo.topY + goo.fullH + 72
     // Only the card takes input; the rest of the window is see-through
     mask: Region { item: card }
 

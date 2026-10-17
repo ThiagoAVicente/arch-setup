@@ -6,10 +6,12 @@ import "../.." as Root
 Item {
     id: root
 
+    property bool vertical: false
     property bool popoutOpen: false
     signal togglePopout()
 
-    implicitWidth: row.implicitWidth + 18
+    // Vertical: icon-only pill at fixed 30px; Horizontal: sized to content
+    implicitWidth: root.vertical ? 30 : row.implicitWidth + 18
     implicitHeight: 24
 
     // Background pill
@@ -48,7 +50,9 @@ Item {
 
         Text {
             id: ssidLabel
-            visible: text.length > 0
+            // Hide in vertical mode — icon-only; keep text intact so blink
+            // condition (text === "") still reflects real connection status.
+            visible: !root.vertical && text.length > 0
             text: ""
             color: root.popoutOpen ? Root.Theme.panelSolid
                 : hovMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted

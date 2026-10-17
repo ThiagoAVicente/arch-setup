@@ -6,6 +6,8 @@ import "../.." as Root
 Item {
     id: root
 
+    property bool vertical: false
+
     implicitWidth: 24
     implicitHeight: 24
 

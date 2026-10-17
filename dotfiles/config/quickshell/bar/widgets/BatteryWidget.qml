@@ -7,6 +7,8 @@ import "../.." as Root
 Item {
     id: root
 
+    property bool vertical: false
+
     property int percentage: 0
     property bool charging: false
     property int lastPct: 100
@@ -30,17 +32,21 @@ Item {
 
     visible: percentage > 0 || charging
 
-    implicitWidth: row.implicitWidth + 18
-    implicitHeight: 24
+    // Horizontal: wide pill around icon + number; Vertical: narrower taller pill
+    implicitWidth: vertical ? 30 : hRow.implicitWidth + 18
+    implicitHeight: vertical ? vCol.implicitHeight + 10 : 24
 
     Rectangle {
-        anchors.fill: parent; radius: height / 2
+        anchors.fill: parent
+        radius: root.vertical ? 10 : height / 2
         color: batMa.containsMouse ? Root.Theme.barHover : "transparent"
         Behavior on color { ColorAnimation { duration: 130 } }
     }
 
+    // ── Horizontal: icon + number side by side ────────────────────────────
     RowLayout {
-        id: row
+        id: hRow
+        visible: !root.vertical
         anchors.centerIn: parent
         spacing: 5
 
@@ -63,6 +69,38 @@ Item {
                 : batMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
             font.family: Root.Theme.fontMono
             font.pixelSize: 12
+            Behavior on color { ColorAnimation { duration: 300 } }
+        }
+    }
+
+    // ── Vertical: icon on top, number below ──────────────────────────────
+    Column {
+        id: vCol
+        visible: root.vertical
+        anchors.centerIn: parent
+        spacing: 3
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Root.IconMaps.batteryIcon(root.percentage, root.charging)
+            color: {
+                if (root.charging) return Root.Theme.ok
+                if (root.percentage <= 10) return Root.Theme.critical
+                if (root.percentage <= 20) return Root.Theme.alert
+                return batMa.containsMouse ? Root.Theme.barAccent : Root.Theme.barSubtext
+            }
+            font.family: Root.Theme.fontFamily
+            font.pixelSize: 14
+            Behavior on color { ColorAnimation { duration: 300 } }
+        }
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.percentage
+            color: root.percentage <= 20 && !root.charging ? Root.Theme.critical
+                : batMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
+            font.family: Root.Theme.fontMono
+            font.pixelSize: 10
             Behavior on color { ColorAnimation { duration: 300 } }
         }
     }
