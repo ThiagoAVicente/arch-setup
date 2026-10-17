@@ -220,8 +220,9 @@ Scope {
 
         Root.LiquidSurface {
             id: goo
-            fullW: 940
-            fullH: 240
+            // A strip along the bar: wide under a horizontal bar, tall beside a side bar
+            fullW: vertical ? 264 : 940
+            fullH: vertical ? 720 : 240
             onClosed: wallpaperSelector.visible = false
         }
 
@@ -281,7 +282,8 @@ Scope {
             ListView {
                 id: thumbList
                 anchors { top: header.bottom; left: parent.left; right: parent.right; bottom: footer.top }
-                orientation: ListView.Horizontal
+                readonly property bool vertical: goo.vertical
+                orientation: vertical ? ListView.Vertical : ListView.Horizontal
                 spacing: 14
                 model: wallpaperSelector.wallpapers
                 boundsBehavior: Flickable.StopAtBounds
@@ -290,8 +292,10 @@ Scope {
                 // permanently and freeze navigation. currentIndex IS the selection.
 
                 // Keep selected item locked in center — list scrolls, not cursor
-                preferredHighlightBegin: (width - wallpaperSelector.thumbW) / 2
-                preferredHighlightEnd:   (width + wallpaperSelector.thumbW) / 2
+                readonly property int span: vertical ? height : width
+                readonly property int thumbSpan: vertical ? wallpaperSelector.thumbH : wallpaperSelector.thumbW
+                preferredHighlightBegin: (span - thumbSpan) / 2
+                preferredHighlightEnd:   (span + thumbSpan) / 2
                 highlightRangeMode: ListView.StrictlyEnforceRange
                 highlightMoveVelocity: 1800
                 highlightMoveDuration: -1  // velocity-controlled
@@ -311,13 +315,14 @@ Scope {
                     id: wpItem
                     required property var modelData
                     required property int index
-                    width: wallpaperSelector.thumbW
-                    height: thumbList.height
+                    width: thumbList.vertical ? thumbList.width : wallpaperSelector.thumbW
+                    height: thumbList.vertical ? wallpaperSelector.thumbH : thumbList.height
 
                     readonly property bool isSel: ListView.isCurrentItem
-                    // 0 at the centre, 1 at the card edge — thumbs fade out sideways
-                    readonly property real dist: Math.min(1, Math.abs(x - thumbList.contentX + width / 2
-                        - thumbList.width / 2) / (thumbList.width / 2))
+                    // 0 at the centre, 1 at the card edge — thumbs fade out along the strip
+                    readonly property real dist: thumbList.vertical
+                        ? Math.min(1, Math.abs(y - thumbList.contentY + height / 2 - thumbList.height / 2) / (thumbList.height / 2))
+                        : Math.min(1, Math.abs(x - thumbList.contentX + width / 2 - thumbList.width / 2) / (thumbList.width / 2))
 
                     opacity: 1 - dist * dist * 0.85
                     scale: isSel ? 1.0 : 0.9
@@ -431,6 +436,8 @@ Scope {
                         elide: Text.ElideMiddle
                     }
                     Text {
+                        // No room beside the name in the narrow strip
+                        visible: !thumbList.vertical
                         text: "←/→ browse · enter apply · esc close"
                         font.pixelSize: 10
                         font.family: "FiraCode Nerd Font"
