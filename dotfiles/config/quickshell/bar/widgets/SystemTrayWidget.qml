@@ -4,12 +4,14 @@ import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
+import "../.." as Root
 
 RowLayout {
     id: root
     spacing: 4
 
     property var iconCache: ({})
+    readonly property bool barAtBottom: Root.BarLayout.edgeOf(QsWindow.window?.screen?.name ?? "") === "bottom"
 
     Repeater {
         model: SystemTray.items
@@ -103,6 +105,7 @@ RowLayout {
                 active: false
                 sourceComponent: TrayMenu {
                     anchorItem: trayItem
+                    barAtBottom: root.barAtBottom
                     rootHandle: trayItem.modelData?.menu ?? null
                 }
             }

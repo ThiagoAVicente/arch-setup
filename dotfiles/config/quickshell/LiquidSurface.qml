@@ -1,3 +1,4 @@
+import Quickshell
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Shapes
@@ -28,6 +29,12 @@ Item {
     property real wave: 0
     property real contentOpacity: 0
 
+    // Edge of this window's screen the bar sits on; the surface grows out of
+    // it. Geometry below is written for the top edge and mirrored for bottom.
+    readonly property string edge: Root.BarLayout.edgeOf(QsWindow.window?.screen?.name ?? "")
+    readonly property bool fromBottom: edge === "bottom"
+    function sy(v) { return fromBottom ? height - v : v }
+
     // No bar to hang from when it's toggled off or a fullscreen window covers
     // it — then the drawer drops from the top edge of the display instead
     readonly property bool barVisible: !Root.State.barHidden
@@ -38,7 +45,7 @@ Item {
     readonly property int cx: centerX >= 0 ? centerX : Math.round(width / 2)
     // Where callers place their content (fixed size, never scaled)
     readonly property int cardX: cx - Math.round(fullW / 2)
-    readonly property int cardY: topY + 1
+    readonly property int cardY: fromBottom ? height - topY - fullH : topY + 1
     readonly property bool closing: closeAnim.running || handoffAnim.running
     // Fully grown; from here on reveal follows fullW/fullH
     property bool settled: false
@@ -186,14 +193,14 @@ Item {
             fillColor: Root.Theme.barBg
             strokeColor: Root.Theme.hairline
             strokeWidth: 1
-            startX: goo.leftX - goo.fillet; startY: goo.topY
-            PathQuad { x: goo.leftX; y: goo.topY + goo.fillet; controlX: goo.leftX; controlY: goo.topY }
-            PathLine { x: goo.leftX; y: goo.bottomY - goo.corner }
-            PathQuad { x: goo.leftX + goo.corner; y: goo.bottomY; controlX: goo.leftX; controlY: goo.bottomY }
-            PathQuad { x: goo.rightX - goo.corner; y: goo.bottomY; controlX: goo.cx; controlY: goo.bottomY + goo.wave }
-            PathQuad { x: goo.rightX; y: goo.bottomY - goo.corner; controlX: goo.rightX; controlY: goo.bottomY }
-            PathLine { x: goo.rightX; y: goo.topY + goo.fillet }
-            PathQuad { x: goo.rightX + goo.fillet; y: goo.topY; controlX: goo.rightX; controlY: goo.topY }
+            startX: goo.leftX - goo.fillet; startY: goo.sy(goo.topY)
+            PathQuad { x: goo.leftX; y: goo.sy(goo.topY + goo.fillet); controlX: goo.leftX; controlY: goo.sy(goo.topY) }
+            PathLine { x: goo.leftX; y: goo.sy(goo.bottomY - goo.corner) }
+            PathQuad { x: goo.leftX + goo.corner; y: goo.sy(goo.bottomY); controlX: goo.leftX; controlY: goo.sy(goo.bottomY) }
+            PathQuad { x: goo.rightX - goo.corner; y: goo.sy(goo.bottomY); controlX: goo.cx; controlY: goo.sy(goo.bottomY + goo.wave) }
+            PathQuad { x: goo.rightX; y: goo.sy(goo.bottomY - goo.corner); controlX: goo.rightX; controlY: goo.sy(goo.bottomY) }
+            PathLine { x: goo.rightX; y: goo.sy(goo.topY + goo.fillet) }
+            PathQuad { x: goo.rightX + goo.fillet; y: goo.sy(goo.topY); controlX: goo.rightX; controlY: goo.sy(goo.topY) }
         }
     }
 }

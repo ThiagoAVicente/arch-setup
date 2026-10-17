@@ -1,5 +1,6 @@
 module Root
 singleton State 1.0 State.qml
+singleton BarLayout 1.0 BarLayout.qml
 singleton Theme 1.0 Theme.qml
 singleton IconMaps 1.0 IconMaps.qml
 singleton NotifTimeout 1.0 NotifTimeout.qml

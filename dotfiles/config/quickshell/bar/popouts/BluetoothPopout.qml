@@ -51,8 +51,9 @@ PanelWindow {
     WlrLayershell.namespace: "qs-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
 
-    // Hang below the pill's flat bottom edge, clear of its rounded end
-    anchors { top: true; left: anchorLeft; right: !anchorLeft }
+    // Hang off the pill's flat edge, clear of its rounded end
+    readonly property bool barAtBottom: Root.BarLayout.edgeOf(screen?.name ?? "") === "bottom"
+    anchors { top: !barAtBottom; bottom: barAtBottom; left: anchorLeft; right: !anchorLeft }
     margins.left: anchorLeft ? Root.Theme.barMarginSide + Root.Theme.barThickness / 2 : 0
     margins.right: anchorLeft ? 0 : Root.Theme.barMarginSide + Root.Theme.barThickness / 2
 
