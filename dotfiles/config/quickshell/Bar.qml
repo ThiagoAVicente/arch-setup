@@ -93,6 +93,7 @@ Scope {
                 dragging = true
             }
             function dragMove(gx, gy) {
+                console.info("bar-drag-dbg:", modelData.name, "move", Math.round(gx), Math.round(gy), !!ghostLoader.item)
                 if (!dragging || !ghostLoader.item) return
                 dropEdge = edgeAt(gx, gy)
                 ghostLoader.item.targetRect = slotRect(dropEdge)
@@ -254,6 +255,7 @@ Scope {
                                 }
                                 // Keeps receiving motion outside the bar while held
                                 onPositionChanged: m => {
+                                    console.info("bar-drag-dbg: pos", Math.round(m.x), Math.round(m.y), pressed, lifting)
                                     if (!pressed) return
                                     const g = toScreen(m)
                                     if (!lifting) {
