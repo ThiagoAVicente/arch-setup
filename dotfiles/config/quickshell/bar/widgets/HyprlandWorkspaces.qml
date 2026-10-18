@@ -4,11 +4,17 @@ import QtQuick
 import QtQuick.Layouts
 import "../.." as Root
 
+// Workspaces 1–8 as a strip of marks:
+//   this monitor's workspace → lit pill with its number
+//   the other monitor's      → dimmer disc with its number
+//   has windows              → solid dot
+//   empty                    → faint small dot
+// Hovering the strip numbers every mark.
 // Root is a Grid positioner so it sizes itself from its children and the bar
 // can read its implicitWidth/implicitHeight directly via the positioner bounds.
 Grid {
     id: root
-    spacing: 7
+    spacing: 6
     // Horizontal: 8 side-by-side; Vertical: stacked in one column
     columns: root.vertical ? 1 : 8
     verticalItemAlignment: Grid.AlignVCenter
@@ -16,7 +22,8 @@ Grid {
 
     property bool vertical: false
 
-    // Collect which workspace is focused on each monitor
+    // Monitor this bar sits on, and the workspace each monitor shows
+    readonly property string thisMonitor: QsWindow.window?.screen?.name ?? ""
     property var monitorWorkspaces: {
         let map = {}
         for (let m of Hyprland.monitors.values) {
@@ -25,40 +32,40 @@ Grid {
         return map
     }
 
-    property string thisMonitor: {
-        for (let m of Hyprland.monitors.values) {
-            if (m.focused) return m.name
-        }
-        return ""
-    }
+    HoverHandler { id: hover }
+    readonly property bool numbered: hover.hovered
 
     Repeater {
         model: 8
 
         Item {
+            id: slot
             required property int index
-            property int wsId: index + 1
-            property var workspace: Hyprland.workspaces.values.find(w => w.id === wsId)
-            property bool isThisMonitorActive: Hyprland.focusedWorkspace !== null && Hyprland.focusedWorkspace !== undefined && Hyprland.focusedWorkspace.id === wsId
-            property bool isOtherMonitorActive: !isThisMonitorActive && root.monitorWorkspaces[wsId] !== undefined
-            property bool hasWindows: workspace !== null && workspace !== undefined && workspace.windows !== null && workspace.windows !== undefined && workspace.windows.length > 0
+            readonly property int wsId: index + 1
+            readonly property var workspace: Hyprland.workspaces.values.find(w => w.id === wsId)
+            readonly property string shownOn: root.monitorWorkspaces[wsId] ?? ""
+            readonly property bool isHere: shownOn !== "" && shownOn === root.thisMonitor
+            readonly property bool isElsewhere: shownOn !== "" && !isHere
+            readonly property bool hasWindows: (workspace?.toplevels?.values?.length ?? 0) > 0
+            readonly property bool showNumber: isHere || isElsewhere || root.numbered
 
-            // Horizontal: pill animates WIDTH (24/12/5), height fixed 5
-            // Vertical:   pill animates HEIGHT (24/12/5), width fixed 5
-            width:  root.vertical ? 5 : (isThisMonitorActive ? 24 : (isOtherMonitorActive ? 12 : 5))
-            height: root.vertical ? (isThisMonitorActive ? 24 : (isOtherMonitorActive ? 12 : 5)) : 5
+            // Long side runs along the bar
+            readonly property real len: isHere ? 28 : showNumber ? 16 : hasWindows ? 7 : 5
+            readonly property real thick: showNumber ? 16 : hasWindows ? 7 : 5
+            width: root.vertical ? thick : len
+            height: root.vertical ? len : thick
 
             Behavior on width  { NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
             Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
 
-            // Soft halo under the active dot — the one lit element on the bar
+            // Soft halo under this monitor's workspace — the one lit element on the bar
             Rectangle {
                 anchors.centerIn: parent
-                width: parent.width + 10
-                height: parent.height + 10
+                width: parent.width + 8
+                height: parent.height + 8
                 radius: Math.min(width, height) / 2
                 color: Qt.rgba(1, 1, 1, 0.08)
-                opacity: isThisMonitorActive ? 1 : 0
+                opacity: slot.isHere ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 200 } }
             }
 
@@ -66,15 +73,28 @@ Grid {
                 anchors.fill: parent
                 radius: Math.min(width, height) / 2
 
-                color: isThisMonitorActive
+                color: slot.isHere
                     ? Root.Theme.barText
-                    : isOtherMonitorActive
-                        ? Qt.rgba(1, 1, 1, 0.6)
-                        : (hasWindows ? Qt.rgba(1, 1, 1, 0.5) : Qt.rgba(1, 1, 1, 0.22))
+                    : slot.isElsewhere
+                        ? Qt.rgba(1, 1, 1, 0.55)
+                        : slot.hasWindows
+                            ? Qt.rgba(1, 1, 1, slot.showNumber ? 0.32 : 0.7)
+                            : Qt.rgba(1, 1, 1, slot.showNumber ? 0.1 : 0.22)
 
                 Behavior on color { ColorAnimation { duration: 200 } }
             }
 
+            Text {
+                anchors.centerIn: parent
+                text: slot.wsId
+                font.family: Root.Theme.fontMono
+                font.pixelSize: 10
+                font.weight: Font.Bold
+                color: slot.isHere || slot.isElsewhere ? Root.Theme.panelSolid
+                    : slot.hasWindows ? Root.Theme.barText : Root.Theme.barMuted
+                opacity: slot.showNumber ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
         }
     }
 }
