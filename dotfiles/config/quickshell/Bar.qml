@@ -187,7 +187,12 @@ Scope {
                     MusicRipple {
                         id: lip
                         edge: perScreen.edge
-                        opacity: perScreen.carried ? 0 : 1
+                        // Out of the way while carried, and under open drawers and
+                        // popouts, whose see-through surface it would show through
+                        readonly property bool covered: Root.State.drawerOpen
+                            || (barScope.openPopout !== "" && barScope.popoutScreen === perScreen.modelData)
+                        opacity: perScreen.carried || covered ? 0 : 1
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
                         readonly property int gap: Root.Theme.barMarginTop
                         readonly property int side: Root.Theme.barMarginSide
                         readonly property int t: barScope.barThickness

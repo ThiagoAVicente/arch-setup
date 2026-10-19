@@ -25,6 +25,7 @@ ShellRoot {
     // All modals lazy-unload to free memory. Only one open at a time:
     // opening another swaps it in, which unloads (closes) the previous one.
     property string activeModal: ""
+    Binding { target: Root.State; property: "drawerOpen"; value: shell.activeModal !== "" }
     // Drawers grow out of the bar; swapping one for another morphs the
     // surface from the old size instead of dripping from scratch
     property int morphW: 0
