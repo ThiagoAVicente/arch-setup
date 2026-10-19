@@ -54,6 +54,11 @@ Scope {
             property bool dragging: false
             // Real bar hidden: the ghost is carrying it
             property bool carried: false
+            // Grip held: the bar window covers the whole screen so the pointer
+            // never leaves it. Hyprland drops the press grab when the cursor
+            // leaves a layer surface over a workspace that has no windows yet.
+            property bool holding: false
+            readonly property bool fullSurface: holding || dragging
             property rect dragFrom
             property real grabAlong: 0
             property real grabAcross: 0
@@ -93,7 +98,6 @@ Scope {
                 dragging = true
             }
             function dragMove(gx, gy) {
-                console.info("bar-drag-dbg:", modelData.name, "move", Math.round(gx), Math.round(gy), !!ghostLoader.item)
                 if (!dragging || !ghostLoader.item) return
                 dropEdge = edgeAt(gx, gy)
                 ghostLoader.item.targetRect = slotRect(dropEdge)
@@ -150,8 +154,8 @@ Scope {
                     left: perScreen.edge !== "right"
                     right: perScreen.edge !== "left"
                 }
-                implicitWidth: barScope.barThickness + 8
-                implicitHeight: barScope.barThickness + 8
+                implicitWidth: perScreen.fullSurface && perScreen.vertical ? perScreen.modelData.width : barScope.barThickness + 8
+                implicitHeight: perScreen.fullSurface && !perScreen.vertical ? perScreen.modelData.height : barScope.barThickness + 8
                 color: "transparent"
                 exclusiveZone: barScope.barThickness
                 // No compositor layer anim: re-anchoring on drop must not slide
@@ -251,11 +255,12 @@ Scope {
                                 }
                                 onPressed: m => {
                                     pressX = m.x; pressY = m.y
+                                    perScreen.holding = true
                                     console.info("bar-drag:", perScreen.modelData.name, "press", perScreen.dragging, perScreen.carried)
                                 }
-                                // Keeps receiving motion outside the bar while held
+                                // The window grows to the whole screen while held,
+                                // so motion keeps arriving wherever the cursor goes
                                 onPositionChanged: m => {
-                                    console.info("bar-drag-dbg: pos", Math.round(m.x), Math.round(m.y), pressed, lifting)
                                     if (!pressed) return
                                     const g = toScreen(m)
                                     if (!lifting) {
@@ -269,11 +274,13 @@ Scope {
                                 onReleased: {
                                     if (lifting) perScreen.dragEnd()
                                     lifting = false
+                                    perScreen.holding = false
                                 }
                                 onCanceled: {
                                     console.info("bar-drag:", perScreen.modelData.name, "canceled")
                                     if (lifting) perScreen.dragEnd()
                                     lifting = false
+                                    perScreen.holding = false
                                 }
                             }
                         }
