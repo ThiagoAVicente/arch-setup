@@ -24,8 +24,20 @@ Item {
     property int fromH: 0
     // Centre of the drop along the edge; -1 = middle of the parent
     property int centerX: -1
+    // Where this window starts along the edge, in screen px (popouts are
+    // small windows; drawers cover the screen and leave it at 0)
+    property real alongOffset: 0
 
     signal closed()
+
+    // Tell the bar's music lip where this surface meets the bar, so it parts
+    // around it instead of showing through
+    readonly property string holeKey: "surface-" + Math.random().toString(36).slice(2)
+    readonly property var hole: barVisible && revealH > 0.5
+        ? { screen: screen?.name ?? "", c: alongOffset + cx, half: revealW / 2 + fillet }
+        : null
+    onHoleChanged: Root.State.setHole(holeKey, hole)
+    Component.onDestruction: Root.State.setHole(holeKey, null)
 
     property real revealW: 36
     property real revealH: 0

@@ -52,6 +52,10 @@ PanelWindow {
 
     Root.LiquidSurface {
         id: goo
+        // Window sits at the bar's far end; its start along the edge
+        alongOffset: root.barVertical
+            ? (root.screen?.height ?? 0) - root.endInset - root.implicitHeight
+            : root.anchorLeft ? root.endInset : (root.screen?.width ?? 0) - root.endInset - root.implicitWidth
         fullW: 296
         fullH: card.height + 1
         onClosed: root.shown = false

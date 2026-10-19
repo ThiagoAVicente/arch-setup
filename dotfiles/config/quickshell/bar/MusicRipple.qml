@@ -10,6 +10,10 @@ Item {
     id: ripple
 
     required property string edge
+    // Screen this lip is on, and where the item starts along the edge (screen
+    // px), to place the gaps left for open drawers/popouts
+    property string screenName: ""
+    property real alongOrigin: 0
     // Room the lip may grow into, away from the bar
     readonly property real maxDepth: 22
     readonly property bool vertical: edge === "left" || edge === "right"
@@ -46,8 +50,21 @@ Item {
         if (n < 2) return ""
         const step = span / (n - 1)
         const base = -2
+        // Parts around drawers/popouts hanging off the bar, easing to nothing
+        // at their fillets
+        const gaps = []
+        for (const k in Root.State.holes) {
+            const h = Root.State.holes[k]
+            if (h.screen === screenName) gaps.push([h.c - alongOrigin, h.half])
+        }
+        const feather = 28
+        const open = u => {
+            let f = 1
+            for (const g of gaps) f = Math.min(f, Math.max(0, Math.min(1, (Math.abs(u - g[0]) - g[1]) / feather)))
+            return f
+        }
         // Tapers to nothing at both ends so it melts into the bar's corners
-        const depth = i => Math.sqrt(Math.sin(Math.PI * i / (n - 1))) * (1 + p[i] * maxDepth)
+        const depth = i => Math.sqrt(Math.sin(Math.PI * i / (n - 1)) * open(inset + i * step)) * (1 + p[i] * maxDepth)
         let d = "M " + pt(inset, base) + " L " + pt(inset, depth(0))
         for (let i = 1; i < n; i++) {
             const u0 = inset + (i - 1) * step, u1 = inset + i * step
