@@ -55,18 +55,63 @@ Personal Arch Linux setup with automated installation scripts and dotfiles confi
 
 ### Step 1: Base System Installation
 
-**Option A: arch-setup ISO (no clone needed)**
+**Option A: arch-setup ISO (recommended, no clone needed)**
 
-Every GitHub release ships an `arch-setup-<version>-x86_64.iso` with this repo
-preloaded at `/root/arch-setup`. Flash it, boot it, then:
+Every [GitHub release](https://github.com/ThiagoAVicente/arch-setup/releases)
+ships an `arch-setup-<version>-x86_64.iso`: the official Arch live ISO with this
+repo preloaded at `/root/arch-setup` and an `arch-setup` command that runs the
+installer.
 
-```bash
-iwctl station wlan0 connect "SSID"
-arch-setup
-```
+1. **Download** the `.iso` and its `.sha256` from the latest release, then check it:
 
-To build it locally: `sudo pacman -S archiso && sudo ./iso/build.sh`
-(output in `out/`).
+   ```bash
+   sha256sum -c arch-setup-<version>-x86_64.iso.sha256
+   ```
+
+2. **Flash it to a USB stick** (everything on the stick is erased). Find the
+   stick with `lsblk` and replace `/dev/sdX` with the whole device, not a partition:
+
+   ```bash
+   sudo dd if=arch-setup-<version>-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+   ```
+
+   On Windows or macOS use [Rufus](https://rufus.ie) (DD mode) or
+   [balenaEtcher](https://etcher.balena.io). Copying it onto a
+   [Ventoy](https://www.ventoy.net) stick also works.
+
+3. **Boot from the USB.** Open the firmware boot menu (usually F12, F10, F8 or
+   Esc at power-on) and pick the stick. The machine must boot in **UEFI** mode;
+   disable Secure Boot if the stick doesn't show up or refuses to boot.
+
+4. **Connect to the internet.** Ethernet works on its own. For Wi-Fi:
+
+   ```bash
+   iwctl
+   [iwd]# device list                       # wireless device name, e.g. wlan0
+   [iwd]# station wlan0 scan
+   [iwd]# station wlan0 get-networks
+   [iwd]# station wlan0 connect "SSID"      # asks for the password
+   [iwd]# exit
+   ping -c 3 archlinux.org                   # check it works
+   ```
+
+5. **Run the installer:**
+
+   ```bash
+   arch-setup
+   ```
+
+   It asks for the target disk (**the whole disk is wiped**), hostname, user,
+   keymap, passwords, encryption and swap, then installs the base system (see
+   what it does below). The repo snapshot is copied to `~/installation` on the
+   new system.
+
+6. **Reboot**, remove the USB stick, log in and continue with
+   [Step 2](#step-2-post-installation-setup).
+
+To build the ISO yourself: `sudo pacman -S archiso && sudo ./iso/build.sh`
+(output in `out/`). Publishing a GitHub release builds it automatically and
+attaches it to the release.
 
 **Option B: stock Arch ISO**
 
@@ -194,7 +239,7 @@ See [KEYBINDINGS](docs/keybindings.md) for full list. Key bindings:
 - **UEFI system** 
 - **Internet connection** during installation
 - **2GB+ RAM** recommended
-- **20GB+ RAM** recommended
+- **20GB+ disk** recommended
  
 ## Additional Resources
 
