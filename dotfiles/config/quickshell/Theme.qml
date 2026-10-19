@@ -70,6 +70,8 @@ QtObject {
 
     // Bar pill geometry (shared so overlays can attach to the bar)
     readonly property int barThickness: 34
-    readonly property int barMarginTop: 4
+    // Flush with the screen edge: the gap under the bar is where the
+    // music lip shows
+    readonly property int barMarginTop: 0
     readonly property int barMarginSide: 12
 }
