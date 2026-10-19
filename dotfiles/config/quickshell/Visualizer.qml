@@ -6,11 +6,14 @@ import Quickshell.Services.Mpris
 import QtQuick
 
 // Audio levels for the bar's music ripple. One cava process, run only while
-// a media player is playing, so it costs nothing the rest of the time.
+// Spotify is playing, so it costs nothing the rest of the time and videos or
+// games don't start it.
 Singleton {
     id: viz
 
-    readonly property bool playing: Mpris.players.values.some(p => p.isPlaying)
+    readonly property bool playing: Mpris.players.values.some(p =>
+        p.isPlaying && ((p.identity ?? "").toLowerCase().includes("spotify")
+                        || (p.dbusName ?? "").toLowerCase().includes("spotify")))
     // 48 bands, 0..1, bass first
     property var levels: []
 
