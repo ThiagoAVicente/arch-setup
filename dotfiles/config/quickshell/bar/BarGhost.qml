@@ -80,7 +80,7 @@ PanelWindow {
         id: liftAnim
         target: ghost; property: "len"
         to: ghost.carriedLen
-        duration: 280; easing.type: Easing.OutBack; easing.overshoot: 1.3
+        duration: 260; easing.type: Easing.OutCubic
     }
 
     // ── Slot preview ───────────────────────────────────────────────────
@@ -157,8 +157,8 @@ PanelWindow {
         id: dropAnim
         ScriptAction { script: liftAnim.stop() }
         ParallelAnimation {
-            NumberAnimation { target: pill; property: "x"; to: ghost.targetRect.x; duration: 340; easing.type: Easing.OutBack; easing.overshoot: ghost.vertical ? 1.6 : 1.1 }
-            NumberAnimation { target: pill; property: "y"; to: ghost.targetRect.y; duration: 340; easing.type: Easing.OutBack; easing.overshoot: ghost.vertical ? 1.1 : 1.6 }
+            NumberAnimation { target: pill; property: "x"; to: ghost.targetRect.x; duration: 320; easing.type: Easing.OutCubic }
+            NumberAnimation { target: pill; property: "y"; to: ghost.targetRect.y; duration: 320; easing.type: Easing.OutCubic }
             NumberAnimation { target: pill; property: "width"; to: ghost.targetRect.width; duration: 360; easing.type: Easing.OutCubic }
             NumberAnimation { target: pill; property: "height"; to: ghost.targetRect.height; duration: 360; easing.type: Easing.OutCubic }
         }
