@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Toggle screen recording and notify waybar
+# Toggle screen recording and tell the quickshell bar (recording indicator)
 
 if pgrep -x wf-recorder >/dev/null; then
   # Stop recording
   pkill -SIGINT wf-recorder
   while pgrep -x wf-recorder >/dev/null; do sleep 0.1; done
-  pkill -42 waybar
+  "$HOME/scripts/qs-cmd.sh" recording
 else
   # Start recording
   FILENAME=~/Videos/Recordings/recording_$(date +'%Y-%m-%d_%H-%M-%S').mp4
@@ -14,5 +14,5 @@ else
   wf-recorder --no-dmabuf -x yuv420p -g "$(slurp)" \
     --audio="$(pactl get-default-sink).monitor" -f "$FILENAME" &
   while ! pgrep -x wf-recorder >/dev/null; do sleep 0.1; done
-  pkill -42 waybar
+  "$HOME/scripts/qs-cmd.sh" recording
 fi

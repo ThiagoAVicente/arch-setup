@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
+import "." as Root
 
 ShellRoot {
     id: shell
@@ -111,6 +112,7 @@ ShellRoot {
                 const cmd = data.trim()
                 if (["launcher", "wallpaper", "powermenu", "todo"].includes(cmd)) shell.toggleModal(cmd)
                 else if (cmd === "bar") bar.toggleBar()
+                else if (cmd === "recording") Root.Recording.refresh()
             }
         }
     }

@@ -85,6 +85,7 @@ PanelWindow {
 
     // ── Slot preview ───────────────────────────────────────────────────
     Rectangle {
+        id: preview
         x: ghost.targetRect.x
         y: ghost.targetRect.y
         width: ghost.targetRect.width
@@ -93,12 +94,16 @@ PanelWindow {
         color: Qt.rgba(1, 1, 1, 0.04)
         border.color: Qt.rgba(1, 1, 1, 0.22)
         border.width: 1
-        opacity: ghost.carrying ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 160 } }
-        Behavior on x { SpringAnimation { spring: 4; damping: 0.35 } }
-        Behavior on y { SpringAnimation { spring: 4; damping: 0.35 } }
-        Behavior on width { SpringAnimation { spring: 4; damping: 0.35 } }
-        Behavior on height { SpringAnimation { spring: 4; damping: 0.35 } }
+        // Jumps to the new slot and fades in there; morphing between a
+        // horizontal and a side slot ballooned through a big circle
+        property real fadeIn: 1
+        opacity: (ghost.carrying ? 1 : 0) * fadeIn
+        Behavior on opacity { enabled: ghost.carrying === false; NumberAnimation { duration: 160 } }
+        NumberAnimation { id: previewFade; target: preview; property: "fadeIn"; from: 0; to: 1; duration: 180 }
+        Connections {
+            target: ghost
+            function onTargetRectChanged() { if (ghost.carrying) previewFade.restart() }
+        }
     }
 
     // ── Carried pill ───────────────────────────────────────────────────
@@ -118,9 +123,9 @@ PanelWindow {
 
         Behavior on x { enabled: ghost.carrying; SpringAnimation { spring: 6; damping: 0.38; mass: 0.7 } }
         Behavior on y { enabled: ghost.carrying; SpringAnimation { spring: 6; damping: 0.38; mass: 0.7 } }
-        // Turning between a horizontal and a side slot wobbles a little
-        Behavior on width { enabled: ghost.carrying; SpringAnimation { spring: 5; damping: 0.32 } }
-        Behavior on height { enabled: ghost.carrying; SpringAnimation { spring: 5; damping: 0.32 } }
+        // Turning between a horizontal and a side slot eases over
+        Behavior on width { enabled: ghost.carrying; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        Behavior on height { enabled: ghost.carrying; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
 
         // Swings with speed across its length, stretches along the motion
         rotation: ghost.carrying

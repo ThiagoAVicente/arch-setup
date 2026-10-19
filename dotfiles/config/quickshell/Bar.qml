@@ -99,8 +99,13 @@ Scope {
             }
             function dragMove(gx, gy) {
                 if (!dragging || !ghostLoader.item) return
-                dropEdge = edgeAt(gx, gy)
-                ghostLoader.item.targetRect = slotRect(dropEdge)
+                // Retarget only when the edge changes, so the preview fades
+                // in once per slot rather than on every pointer move
+                const e = edgeAt(gx, gy)
+                if (e !== dropEdge) {
+                    dropEdge = e
+                    ghostLoader.item.targetRect = slotRect(e)
+                }
                 ghostLoader.item.move(gx, gy)
             }
             function dragEnd() {
@@ -118,11 +123,23 @@ Scope {
                 Root.BarLayout.setEdge(modelData.name, dropEdge)
                 ghostLoader.item.drop()
             }
-            // Ghost reached the slot: show the real bar, then drop the ghost
-            // a beat later so there is never a frame without a bar
-            function landed() {
-                carried = false
-                ghostRelease.restart()
+            // Ghost reached the slot: show the real bar once its window has
+            // actually been re-anchored and resized (the compositor answers a
+            // few frames later), then drop the ghost a beat after that, so
+            // there is never a frame without a bar or a half-sized one
+            function landed() { settleCheck.start() }
+            Timer {
+                id: settleCheck
+                interval: 16; repeat: true
+                property int tries: 0
+                onTriggered: {
+                    const ready = hBar.width === perScreen.modelData.width && hBar.height === perScreen.modelData.height
+                    if (ready || ++tries > 30) {
+                        stop(); tries = 0
+                        perScreen.carried = false
+                        ghostRelease.restart()
+                    }
+                }
             }
 
             Timer {
@@ -154,8 +171,10 @@ Scope {
                     left: perScreen.edge !== "right"
                     right: perScreen.edge !== "left"
                 }
-                implicitWidth: perScreen.fullSurface && perScreen.vertical ? perScreen.modelData.width : barScope.barThickness + 8
-                implicitHeight: perScreen.fullSurface && !perScreen.vertical ? perScreen.modelData.height : barScope.barThickness + 8
+                // Full length along the edge even before the compositor
+                // stretches it, so a re-anchor never renders a stub of a bar
+                implicitWidth: perScreen.fullSurface || !perScreen.vertical ? perScreen.modelData.width : barScope.barThickness + 8
+                implicitHeight: perScreen.fullSurface || perScreen.vertical ? perScreen.modelData.height : barScope.barThickness + 8
                 color: "transparent"
                 exclusiveZone: barScope.barThickness
                 // No compositor layer anim: re-anchoring on drop must not slide
@@ -208,6 +227,9 @@ Scope {
                         height: 1
                         color: Root.Theme.panelHi
                     }
+
+                    // Ripples with whatever is playing, behind the widgets
+                    MusicRipple { edge: perScreen.edge }
 
                     // ── Start: grip + clock ────────────────────────────────
                     GridLayout {
@@ -307,6 +329,7 @@ Scope {
                         rowSpacing: 2
                         columnSpacing: 2
 
+                        RecordingWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         SystemTrayWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         Item { Layout.preferredWidth: perScreen.vertical ? 1 : 10; Layout.preferredHeight: perScreen.vertical ? 10 : 1 }
                         CpuWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
