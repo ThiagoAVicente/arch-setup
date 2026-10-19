@@ -231,10 +231,23 @@ Scope {
                     y: perScreen.vertical ? side : (perScreen.edge === "bottom" ? parent.height - gap - height : gap)
                     width: perScreen.vertical ? barScope.barThickness : parent.width - 2 * side
                     height: perScreen.vertical ? parent.height - 2 * side : barScope.barThickness
-                    radius: Math.min(width, height) / 2
+                    // Flush with the screen edge: square corners and no outline on
+                    // that side, rounded towards the screen
+                    readonly property real round: Math.min(width, height) / 2
+                    topLeftRadius: perScreen.edge === "top" || perScreen.edge === "left" ? 0 : round
+                    topRightRadius: perScreen.edge === "top" || perScreen.edge === "right" ? 0 : round
+                    bottomLeftRadius: perScreen.edge === "bottom" || perScreen.edge === "left" ? 0 : round
+                    bottomRightRadius: perScreen.edge === "bottom" || perScreen.edge === "right" ? 0 : round
                     color: Root.Theme.barBg
-                    border.color: Root.Theme.hairline
-                    border.width: 1
+
+                    // Hairline only along the inner edge
+                    Rectangle {
+                        color: Root.Theme.hairline
+                        x: perScreen.edge === "left" ? parent.width - 1 : perScreen.edge === "right" ? 0 : parent.round
+                        y: perScreen.edge === "top" ? parent.height - 1 : perScreen.edge === "bottom" ? 0 : parent.round
+                        width: perScreen.vertical ? 1 : parent.width - 2 * parent.round
+                        height: perScreen.vertical ? parent.height - 2 * parent.round : 1
+                    }
 
                     // Hidden while the ghost carries it. Opacity only: an invisible
                     // item would cancel the grip's pointer grab mid-drag
@@ -257,14 +270,6 @@ Scope {
                         id: showAnim
                         NumberAnimation { target: barPill; property: "reveal"; to: 1; duration: 260; easing.type: Easing.OutCubic }
                         NumberAnimation { target: barPill; property: "slide"; to: 0; duration: 260; easing.type: Easing.OutCubic }
-                    }
-
-                    // Inset top highlight — glass depth without a second border
-                    Rectangle {
-                        visible: !perScreen.vertical
-                        anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
-                        height: 1
-                        color: Root.Theme.panelHi
                     }
 
                     // ── Start: grip + clock ────────────────────────────────
