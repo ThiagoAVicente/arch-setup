@@ -160,6 +160,45 @@ Scope {
                 }
             }
 
+            // Music lip: its own surface on the layer under windows, so it
+            // shows in the gap below the bar and slips behind windows.
+            // Exists only while something plays.
+            LazyLoader {
+                active: Root.Visualizer.playing && !barScope.barHidden
+                PanelWindow {
+                    id: lipWin
+                    screen: perScreen.modelData
+                    anchors {
+                        top: perScreen.edge !== "bottom"
+                        bottom: perScreen.edge !== "top"
+                        left: perScreen.edge !== "right"
+                        right: perScreen.edge !== "left"
+                    }
+                    readonly property real depth: barScope.barThickness + 8 + lip.maxDepth
+                    implicitWidth: perScreen.vertical ? depth : perScreen.modelData.width
+                    implicitHeight: perScreen.vertical ? perScreen.modelData.height : depth
+                    exclusionMode: ExclusionMode.Ignore
+                    color: "transparent"
+                    WlrLayershell.namespace: "qs-drawer"
+                    WlrLayershell.layer: WlrLayer.Bottom
+                    mask: Region {}
+
+                    // Hangs off the pill's inner edge (same geometry as the bar)
+                    MusicRipple {
+                        id: lip
+                        edge: perScreen.edge
+                        opacity: perScreen.carried ? 0 : 1
+                        readonly property int gap: Root.Theme.barMarginTop
+                        readonly property int side: Root.Theme.barMarginSide
+                        readonly property int t: barScope.barThickness
+                        x: perScreen.edge === "left" ? gap + t : perScreen.edge === "right" ? lipWin.width - gap - t - maxDepth : side
+                        y: perScreen.edge === "top" ? gap + t : perScreen.edge === "bottom" ? lipWin.height - gap - t - maxDepth : side
+                        width: perScreen.vertical ? maxDepth : lipWin.width - 2 * side
+                        height: perScreen.vertical ? lipWin.height - 2 * side : maxDepth
+                    }
+                }
+            }
+
             PanelWindow {
                 id: hBar
                 screen: perScreen.modelData
@@ -227,9 +266,6 @@ Scope {
                         height: 1
                         color: Root.Theme.panelHi
                     }
-
-                    // Ripples with whatever is playing, behind the widgets
-                    MusicRipple { edge: perScreen.edge }
 
                     // ── Start: grip + clock ────────────────────────────────
                     GridLayout {

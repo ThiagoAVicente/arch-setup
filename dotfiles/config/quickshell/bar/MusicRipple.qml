@@ -1,49 +1,69 @@
 import QtQuick
+import QtQuick.Shapes
 import "../" as Root
 
-// Music ripple along the bar's inner edge (the side facing the screen):
-// cava bands mirrored from the middle outwards, bass in the centre. Sits
-// behind the widgets; flat and invisible when nothing is playing.
+// Music hanging off the bar's inner edge (the side facing the screen): one
+// smooth liquid lip in the bar's colour whose depth follows the cava bands,
+// mirrored from the middle outwards with the bass in the centre. It sinks
+// back into the bar when nothing plays.
 Item {
     id: ripple
-    anchors.fill: parent
 
     required property string edge
+    // Room the lip may grow into, away from the bar
+    readonly property real maxDepth: 22
     readonly property bool vertical: edge === "left" || edge === "right"
-    readonly property var levels: Root.Visualizer.levels
-    readonly property int bands: 48
-    readonly property int slots: bands * 2
-    // Keep clear of the rounded ends
-    readonly property real inset: Math.min(width, height) / 2
+    // Keep clear of the bar's rounded ends
+    property real inset: 17
     readonly property real span: (vertical ? height : width) - 2 * inset
-    readonly property real step: span / slots
-    readonly property real maxDepth: 14
 
     visible: Root.Visualizer.playing
-    opacity: Root.Visualizer.playing ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: 300 } }
 
-    Repeater {
-        model: ripple.slots
+    // Bands mirrored around the centre, softened with their neighbours so
+    // the lip rolls instead of spiking
+    readonly property var profile: {
+        const lv = Root.Visualizer.levels
+        const n = lv.length
+        if (n === 0) return []
+        const soft = []
+        for (let i = 0; i < n; i++) {
+            const a = lv[Math.max(0, i - 1)], b = lv[i], c = lv[Math.min(n - 1, i + 1)]
+            soft.push((a + 2 * b + c) / 4)
+        }
+        return soft.slice().reverse().concat(soft)
+    }
 
-        Rectangle {
-            required property int index
-            // Mirror around the middle: centre slots carry the lowest band
-            readonly property int band: index < ripple.bands ? ripple.bands - 1 - index : index - ripple.bands
-            readonly property real level: ripple.levels[band] ?? 0
-            property real depth: 1.5 + level * ripple.maxDepth
-            readonly property real along: ripple.inset + index * ripple.step + ripple.step * 0.15
-            readonly property real breadth: ripple.step * 0.7
+    // Bar frame (u along the edge, v away from the bar) -> item coordinates
+    function px(u, v) { return edge === "left" ? v : edge === "right" ? width - v : u }
+    function py(u, v) { return edge === "top" ? v : edge === "bottom" ? height - v : u }
+    function pt(u, v) { return px(u, v).toFixed(1) + " " + py(u, v).toFixed(1) }
 
-            radius: 2
-            color: Qt.rgba(1, 1, 1, 0.1 + level * 0.22)
+    // Quadratic curve through the midpoints of the band tips, closed along
+    // a base tucked 2px under the bar's edge
+    readonly property string svg: {
+        const p = profile
+        const n = p.length
+        if (n < 2) return ""
+        const step = span / (n - 1)
+        const base = -2
+        // Tapers to nothing at both ends so it melts into the bar's corners
+        const depth = i => Math.sqrt(Math.sin(Math.PI * i / (n - 1))) * (1 + p[i] * maxDepth)
+        let d = "M " + pt(inset, base) + " L " + pt(inset, depth(0))
+        for (let i = 1; i < n; i++) {
+            const u0 = inset + (i - 1) * step, u1 = inset + i * step
+            d += " Q " + pt(u0, depth(i - 1)) + " " + pt((u0 + u1) / 2, (depth(i - 1) + depth(i)) / 2)
+        }
+        d += " L " + pt(inset + span, depth(n - 1)) + " L " + pt(inset + span, base) + " Z"
+        return d
+    }
 
-            x: ripple.vertical ? (ripple.edge === "left" ? ripple.width - depth - 1 : 1) : along
-            y: ripple.vertical ? along : (ripple.edge === "bottom" ? 1 : ripple.height - depth - 1)
-            width: ripple.vertical ? depth : breadth
-            height: ripple.vertical ? breadth : depth
-
-            Behavior on depth { NumberAnimation { duration: 90; easing.type: Easing.OutQuad } }
+    Shape {
+        anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
+        ShapePath {
+            fillColor: Root.Theme.barBg
+            strokeColor: "transparent"
+            PathSvg { path: ripple.svg }
         }
     }
 }
