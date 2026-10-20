@@ -43,13 +43,14 @@ Item {
     function pt(u, v) { return px(u, v).toFixed(1) + " " + py(u, v).toFixed(1) }
 
     // Quadratic curve through the midpoints of the band tips, closed along
-    // a base tucked 2px under the bar's edge
+    // the bar's edge (not under it: overlapping the translucent pill would
+    // show as a darker seam)
     readonly property string svg: {
         const p = profile
         const n = p.length
         if (n < 2) return ""
         const step = span / (n - 1)
-        const base = -2
+        const base = 0
         // Parts around drawers/popouts hanging off the bar, easing to nothing
         // at their fillets
         const gaps = []

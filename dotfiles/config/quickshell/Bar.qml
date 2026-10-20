@@ -237,8 +237,6 @@ Scope {
                     height: perScreen.vertical ? parent.height - 2 * side : barScope.barThickness
                     radius: Math.min(width, height) / 2
                     color: Root.Theme.barBg
-                    border.color: Root.Theme.hairline
-                    border.width: 1
 
                     // Hidden while the ghost carries it. Opacity only: an invisible
                     // item would cancel the grip's pointer grab mid-drag
@@ -263,12 +261,38 @@ Scope {
                         NumberAnimation { target: barPill; property: "slide"; to: 0; duration: 260; easing.type: Easing.OutCubic }
                     }
 
-                    // Inset top highlight — glass depth without a second border
+                    // Inset top highlight — glass depth without a second border.
+                    // On a bottom bar the top is the edge the music lip hangs
+                    // from, so it goes while the lip is out
                     Rectangle {
                         visible: !perScreen.vertical
+                            && !(perScreen.edge === "bottom" && Root.Visualizer.playing)
                         anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
                         height: 1
                         color: Root.Theme.panelHi
+                    }
+
+                    // Hairline drawn separately so its inner-edge row can be
+                    // clipped off while the music lip hangs there: the lip sits
+                    // on a lower layer, so it can't cover the line itself, and
+                    // painting over it would stack two translucent fills
+                    Item {
+                        readonly property int cut: Root.Visualizer.playing ? 1 : 0
+                        clip: true
+                        x: perScreen.edge === "right" ? cut : 0
+                        y: perScreen.edge === "bottom" ? cut : 0
+                        width: parent.width - (perScreen.vertical ? cut : 0)
+                        height: parent.height - (perScreen.vertical ? 0 : cut)
+                        Rectangle {
+                            x: -parent.x
+                            y: -parent.y
+                            width: barPill.width
+                            height: barPill.height
+                            radius: barPill.radius
+                            color: "transparent"
+                            border.color: Root.Theme.hairline
+                            border.width: 1
+                        }
                     }
 
                     // ── Start: grip + clock ────────────────────────────────

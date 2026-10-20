@@ -188,9 +188,9 @@ Scope {
                 } else if (k === Qt.Key_Return || k === Qt.Key_Enter) {
                     if (wallpaperSelector.current)
                         wallpaperSelector.setWallpaper(wallpaperSelector.current.path)
-                } else if (k === Qt.Key_Right || k === Qt.Key_L || k === Qt.Key_Down || k === Qt.Key_J) {
+                } else if (k === Qt.Key_Right || k === Qt.Key_L || k === Qt.Key_D || k === Qt.Key_Down || k === Qt.Key_J) {
                     thumbList.incrementCurrentIndex()
-                } else if (k === Qt.Key_Left || k === Qt.Key_H || k === Qt.Key_Up || k === Qt.Key_K) {
+                } else if (k === Qt.Key_Left || k === Qt.Key_H || k === Qt.Key_A || k === Qt.Key_Up || k === Qt.Key_K) {
                     thumbList.decrementCurrentIndex()
                 } else if (k === Qt.Key_Home) {
                     thumbList.currentIndex = 0
