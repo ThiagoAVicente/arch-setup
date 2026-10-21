@@ -375,6 +375,10 @@ Scope {
                             Layout.alignment: Qt.AlignCenter
                             vertical: perScreen.vertical
                         }
+                        NowPlayingWidget {
+                            Layout.alignment: Qt.AlignCenter
+                            vertical: perScreen.vertical
+                        }
                     }
 
                     // ── Centre: workspaces ─────────────────────────────────

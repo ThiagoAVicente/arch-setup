@@ -11,6 +11,8 @@ Singleton {
     id: viz
 
     readonly property bool playing: Mpris.players.values.some(p => p.isPlaying)
+    // The player that's playing, for the bar's now-playing text
+    readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? null
     // 48 bands, 0..1, bass first
     property var levels: []
 

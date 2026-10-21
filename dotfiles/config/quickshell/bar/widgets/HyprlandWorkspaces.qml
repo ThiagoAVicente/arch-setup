@@ -5,11 +5,12 @@ import QtQuick.Layouts
 import "../.." as Root
 
 // Workspaces 1–8 as a strip of marks:
-//   this monitor's workspace → lit pill with its number
-//   the other monitor's      → dimmer disc with its number
+//   this monitor's workspace → lit pill
+//   the other monitor's      → dimmer short pill
 //   has windows              → solid dot
 //   empty                    → faint small dot
-// Hovering the strip numbers every mark.
+// Right after a switch on this monitor the two shown workspaces carry their
+// numbers for a moment, then settle back. Hovering numbers every mark.
 // Root is a Grid positioner so it sizes itself from its children and the bar
 // can read its implicitWidth/implicitHeight directly via the positioner bounds.
 Grid {
@@ -35,6 +36,12 @@ Grid {
     HoverHandler { id: hover }
     readonly property bool numbered: hover.hovered
 
+    // Flash the numbers when this monitor changes workspace
+    readonly property int hereId: Hyprland.monitors.values.find(m => m.name === root.thisMonitor)?.activeWorkspace?.id ?? -1
+    property bool flashing: false
+    onHereIdChanged: { flashing = true; flashTimer.restart() }
+    Timer { id: flashTimer; interval: 1500; onTriggered: root.flashing = false }
+
     Repeater {
         model: 8
 
@@ -47,11 +54,11 @@ Grid {
             readonly property bool isHere: shownOn !== "" && shownOn === root.thisMonitor
             readonly property bool isElsewhere: shownOn !== "" && !isHere
             readonly property bool hasWindows: (workspace?.toplevels?.values?.length ?? 0) > 0
-            readonly property bool showNumber: isHere || isElsewhere || root.numbered
+            readonly property bool showNumber: root.numbered || (root.flashing && (isHere || isElsewhere))
 
             // Long side runs along the bar
-            readonly property real len: isHere ? 28 : showNumber ? 16 : hasWindows ? 7 : 5
-            readonly property real thick: showNumber ? 16 : hasWindows ? 7 : 5
+            readonly property real len: isHere ? 28 : showNumber ? 16 : isElsewhere ? 12 : hasWindows ? 7 : 5
+            readonly property real thick: showNumber ? 16 : isHere || isElsewhere ? 8 : hasWindows ? 7 : 5
             width: root.vertical ? thick : len
             height: root.vertical ? len : thick
 
