@@ -1,7 +1,7 @@
 # History settings
 HISTFILE=~/.zsh_history     # Where to save history
-HISTSIZE=1000               # Number of commands to keep in memory
-SAVEHIST=1000               # Number of commands to save to HISTFILE
+HISTSIZE=50000              # Number of commands to keep in memory
+SAVEHIST=50000              # Number of commands to save to HISTFILE
 setopt HIST_IGNORE_DUPS     # Don’t record consecutive duplicates
 setopt HIST_IGNORE_ALL_DUPS # Remove older duplicates
 setopt HIST_SAVE_NO_DUPS    # Don’t save duplicates to file

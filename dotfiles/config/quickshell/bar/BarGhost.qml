@@ -40,7 +40,7 @@ PanelWindow {
     // Shrinks from the bar's length to carriedLen on pickup
     property real len: Math.max(fromRect.width, fromRect.height)
 
-    // Cursor target; the pill springs after it
+    // Cursor target; the pill sits under it
     property real cursorX: fromRect.x + (fromRect.height > fromRect.width ? grabAcross : grabAlong)
     property real cursorY: fromRect.y + (fromRect.height > fromRect.width ? grabAlong : grabAcross)
     // Smoothed pointer velocity, px/s
@@ -121,8 +121,8 @@ PanelWindow {
         // Swings from its grip end
         transformOrigin: ghost.vertical ? Item.Top : Item.Left
 
-        Behavior on x { enabled: ghost.carrying; SpringAnimation { spring: 6; damping: 0.38; mass: 0.7 } }
-        Behavior on y { enabled: ghost.carrying; SpringAnimation { spring: 6; damping: 0.38; mass: 0.7 } }
+        // Position tracks the cursor directly (a spring here trailed tens of
+        // px behind a fast drag); the swing and stretch below keep it lively
         // Turning between a horizontal and a side slot eases over
         Behavior on width { enabled: ghost.carrying; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
         Behavior on height { enabled: ghost.carrying; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
