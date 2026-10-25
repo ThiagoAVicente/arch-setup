@@ -1,6 +1,11 @@
-// Render on Mesa (Intel iGPU, which drives the displays) without probing the
-// nvidia EGL vendor first: glvnd would otherwise load ~35MB of nvidia libs
-//@ pragma Env __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json
+// One render thread and GL context for all windows instead of one per
+// window: ~60MB less with the NVIDIA driver
+//@ pragma Env QSG_RENDER_LOOP=basic
+// jemalloc (quickshell is linked with it): hand freed memory back to the
+// system within a second, one arena
+//@ pragma Env MALLOC_CONF=narenas:1,dirty_decay_ms:1000,muzzy_decay_ms:0,tcache:false
+// The EGL driver (NVIDIA or Mesa, whichever GPU drives the screens) is picked
+// by ~/scripts/qs-start.sh
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland

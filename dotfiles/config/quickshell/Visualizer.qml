@@ -13,8 +13,26 @@ Singleton {
     readonly property bool playing: Mpris.players.values.some(p => p.isPlaying)
     // The player that's playing, for the bar's now-playing text
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? null
-    // 48 bands, 0..1, bass first
+    // 24 bands, 0..1, bass first
     property var levels: []
+    // Same bands softened with their neighbours, packed four to a vec4 for
+    // the lip shader. Worked out once here and shared by every screen's lip
+    readonly property var packed: {
+        const lv = levels
+        const n = lv.length
+        const out = []
+        for (let q = 0; q < 6; q++) {
+            const s = []
+            for (let j = 0; j < 4; j++) {
+                const i = q * 4 + j
+                if (i >= n) { s.push(0); continue }
+                const a = lv[Math.max(0, i - 1)], b = lv[i], c = lv[Math.min(n - 1, i + 1)]
+                s.push((a + 2 * b + c) / 4)
+            }
+            out.push(Qt.vector4d(s[0], s[1], s[2], s[3]))
+        }
+        return out
+    }
 
     Process {
         id: cava

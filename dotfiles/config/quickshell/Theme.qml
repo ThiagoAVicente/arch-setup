@@ -49,7 +49,7 @@ QtObject {
     readonly property color barSubtext:    "#c9c9cf"
     readonly property color barMuted:      "#8f8f96"
     readonly property color barAccent:     "#ffffff"
-    readonly property color barBorder:     hairline
+    readonly property color barBorder:     Qt.rgba(0.90, 0.22, 0.25, 0.55)
     readonly property color barBorderStrong:Qt.rgba(1, 1, 1, 0.22)
     readonly property color barHover:      Qt.rgba(1, 1, 1, 0.06)
     readonly property color barHoverStrong:Qt.rgba(1, 1, 1, 0.10)

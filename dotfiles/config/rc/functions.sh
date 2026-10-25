@@ -146,3 +146,8 @@ poutput() {
   xrandr --output "$monitor" --primary
   echo "Some apps (e.g steam) need restart"
 }
+
+wallpaper() {
+
+  mv $@ ~/Pictures/Wallpapers/
+}

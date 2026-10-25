@@ -58,6 +58,13 @@ Scope {
             // never leaves it. Hyprland drops the press grab when the cursor
             // leaves a layer surface over a workspace that has no windows yet.
             property bool holding: false
+
+            // Fullscreen window on this screen, and whether the bar was called
+            // back up over it (Hyprland stacks a freshly shown bar above the
+            // fullscreen window; otherwise the window covers it)
+            readonly property bool fullscreenHere: Hyprland.monitorFor(modelData)?.activeWorkspace?.hasFullscreen ?? false
+            property bool raisedOverFullscreen: false
+            onFullscreenHereChanged: if (!fullscreenHere) raisedOverFullscreen = false
             readonly property bool fullSurface: holding || dragging
             property rect dragFrom
             property real grabAlong: 0
@@ -180,7 +187,11 @@ Scope {
                     exclusionMode: ExclusionMode.Ignore
                     color: "transparent"
                     WlrLayershell.namespace: "qs-drawer"
-                    WlrLayershell.layer: WlrLayer.Bottom
+                    // Follows the bar over a fullscreen window only when the bar
+                    // itself was called up there; otherwise it stays under the
+                    // window (re-created on every track change, so it must not
+                    // pop up over a fullscreen video on its own)
+                    WlrLayershell.layer: perScreen.raisedOverFullscreen ? WlrLayer.Top : WlrLayer.Bottom
                     mask: Region {}
 
                     // Hangs off the pill's inner edge (same geometry as the bar)
@@ -223,7 +234,10 @@ Scope {
                 // No compositor layer anim: re-anchoring on drop must not slide
                 WlrLayershell.namespace: "qs-drawer"
 
-                onVisibleChanged: if (visible) barPill.show()
+                onVisibleChanged: if (visible) {
+                    barPill.show()
+                    if (perScreen.fullscreenHere) perScreen.raisedOverFullscreen = true
+                }
 
                 MouseArea { anchors.fill: parent; z: -1; onClicked: barScope.openPopout = "" }
 
@@ -276,22 +290,33 @@ Scope {
                     // clipped off while the music lip hangs there: the lip sits
                     // on a lower layer, so it can't cover the line itself, and
                     // painting over it would stack two translucent fills
-                    Item {
-                        readonly property int cut: Root.Visualizer.playing ? 1 : 0
-                        clip: true
-                        x: perScreen.edge === "right" ? cut : 0
-                        y: perScreen.edge === "bottom" ? cut : 0
-                        width: parent.width - (perScreen.vertical ? cut : 0)
-                        height: parent.height - (perScreen.vertical ? 0 : cut)
-                        Rectangle {
-                            x: -parent.x
-                            y: -parent.y
-                            width: barPill.width
-                            height: barPill.height
-                            radius: barPill.radius
-                            color: "transparent"
-                            border.color: Root.Theme.hairline
-                            border.width: 1
+                    // Only the stretch the lip spans (MusicRipple's inset) is
+                    // cut, so the rounded ends stay whole and meet the lip's rim
+                    Repeater {
+                        model: 3
+                        Item {
+                            required property int index
+                            readonly property int inset: 17
+                            readonly property int len: perScreen.vertical ? barPill.height : barPill.width
+                            // Along the bar: start and length of this stretch
+                            readonly property int a: index === 0 ? 0 : index === 1 ? inset : len - inset
+                            readonly property int l: index === 1 ? len - 2 * inset : inset
+                            readonly property int cut: index === 1 && Root.Visualizer.playing ? 1 : 0
+                            clip: true
+                            x: perScreen.vertical ? (perScreen.edge === "right" ? cut : 0) : a
+                            y: perScreen.vertical ? a : (perScreen.edge === "bottom" ? cut : 0)
+                            width: perScreen.vertical ? barPill.width - cut : l
+                            height: perScreen.vertical ? l : barPill.height - cut
+                            Rectangle {
+                                x: -parent.x
+                                y: -parent.y
+                                width: barPill.width
+                                height: barPill.height
+                                radius: barPill.radius
+                                color: "transparent"
+                                border.color: Root.Theme.barBorder
+                                border.width: 1
+                            }
                         }
                     }
 

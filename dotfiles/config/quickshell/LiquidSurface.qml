@@ -216,7 +216,7 @@ Item {
         // across the join with the bar
         ShapePath {
             fillColor: Root.Theme.barBg
-            strokeColor: Root.Theme.hairline
+            strokeColor: Root.Theme.barBorder
             strokeWidth: 1
             startX: goo.px(goo.leftX - goo.fillet, goo.topY); startY: goo.py(goo.leftX - goo.fillet, goo.topY)
             PathQuad {
