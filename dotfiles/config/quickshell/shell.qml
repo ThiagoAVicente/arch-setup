@@ -1,6 +1,5 @@
-// One render thread and GL context for all windows instead of one per
-// window: ~60MB less with the NVIDIA driver
-//@ pragma Env QSG_RENDER_LOOP=basic
+// Not QSG_RENDER_LOOP=basic: one shared render thread saved ~60MB with the
+// NVIDIA driver, but a bar dropped on a new edge stayed blank until hovered
 // jemalloc (quickshell is linked with it): hand freed memory back to the
 // system within a second, one arena
 //@ pragma Env MALLOC_CONF=narenas:1,dirty_decay_ms:1000,muzzy_decay_ms:0,tcache:false
