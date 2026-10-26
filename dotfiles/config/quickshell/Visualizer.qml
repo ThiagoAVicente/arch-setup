@@ -13,15 +13,15 @@ Singleton {
     readonly property bool playing: Mpris.players.values.some(p => p.isPlaying)
     // The player that's playing, for the bar's now-playing text
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? null
-    // 24 bands, 0..1, bass first
+    // 32 bands, 0..1, bass first
     property var levels: []
     // Same bands softened with their neighbours, packed four to a vec4 for
-    // the lip shader. Worked out once here and shared by every screen's lip
+    // the wave shader. Worked out once here and shared by every screen's bar
     readonly property var packed: {
         const lv = levels
         const n = lv.length
         const out = []
-        for (let q = 0; q < 6; q++) {
+        for (let q = 0; q < 8; q++) {
             const s = []
             for (let j = 0; j < 4; j++) {
                 const i = q * 4 + j
@@ -32,6 +32,13 @@ Singleton {
             out.push(Qt.vector4d(s[0], s[1], s[2], s[3]))
         }
         return out
+    }
+    // Loudest softened band this frame: the wave's outer side runs on
+    // peak - level, the inverse of the inner side, and settles with it
+    readonly property real peak: {
+        let m = 0
+        for (const v of packed) m = Math.max(m, v.x, v.y, v.z, v.w)
+        return m
     }
 
     Process {

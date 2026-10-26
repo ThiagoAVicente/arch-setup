@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Color Picker
+GenericName=Pick a colour from the screen
+Comment=Click anywhere on screen; its hex code goes to the clipboard
+# hyprpicker shows a still of the screen grabbed as it starts; wait for the
+# launcher to close first or it shows up in that still
+Exec=sh -c "sleep 0.2; exec hyprpicker --autocopy --format=hex"
+Icon=colorpicker
+Terminal=false
+Categories=Graphics;
+Keywords=color;colour;picker;hex;eyedropper;hyprpicker;

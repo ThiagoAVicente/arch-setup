@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import "." as Root
 
 QtObject {
     // Neutral grayscale palette — lifted to make white borders glow
@@ -49,7 +50,7 @@ QtObject {
     readonly property color barSubtext:    "#c9c9cf"
     readonly property color barMuted:      "#8f8f96"
     readonly property color barAccent:     "#ffffff"
-    readonly property color barBorder:     Qt.rgba(0.90, 0.22, 0.25, 0.55)
+    readonly property color barBorder:     Qt.rgba(Root.Accent.color.r, Root.Accent.color.g, Root.Accent.color.b, 0.85)
     readonly property color barBorderStrong:Qt.rgba(1, 1, 1, 0.22)
     readonly property color barHover:      Qt.rgba(1, 1, 1, 0.06)
     readonly property color barHoverStrong:Qt.rgba(1, 1, 1, 0.10)
@@ -70,6 +71,10 @@ QtObject {
 
     // Bar pill geometry (shared so overlays can attach to the bar)
     readonly property int barThickness: 34
-    readonly property int barMarginTop: 4
-    readonly property int barMarginSide: 12
+    readonly property int barBorderWidth: 2
+    // Space kept around the pill for the music wave (bar/MusicRipple.qml),
+    // reserved whether or not anything plays so windows never reflow
+    readonly property int barWaveRoom: 15
+    readonly property int barMarginTop: barWaveRoom
+    readonly property int barMarginSide: barWaveRoom
 }

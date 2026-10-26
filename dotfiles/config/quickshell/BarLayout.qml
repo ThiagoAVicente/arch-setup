@@ -18,8 +18,21 @@ Singleton {
         (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") || "") + "/.local/state")
         + "/quickshell/bar.json"
 
+    // "top", "bottom", "left", "right", or "center": dropped in the middle
+    // of the screen as a round desktop widget
     function edgeOf(screenName) {
         return edges[screenName] ?? defaultEdge
+    }
+
+    // Edge that drawers and popouts hang from: a centred bar has none, so
+    // they drop from the top as if the bar were hidden
+    function dockEdgeOf(screenName) {
+        const e = edgeOf(screenName)
+        return e === "center" ? "top" : e
+    }
+
+    function isCentered(screenName) {
+        return edgeOf(screenName) === "center"
     }
 
     function setEdge(screenName, edge) {

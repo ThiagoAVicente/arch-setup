@@ -4,6 +4,7 @@ singleton BarLayout 1.0 BarLayout.qml
 singleton Recording 1.0 Recording.qml
 singleton Visualizer 1.0 Visualizer.qml
 singleton Theme 1.0 Theme.qml
+singleton Accent 1.0 Accent.qml
 singleton IconMaps 1.0 IconMaps.qml
 singleton NotifTimeout 1.0 NotifTimeout.qml
 Bar 1.0 Bar.qml

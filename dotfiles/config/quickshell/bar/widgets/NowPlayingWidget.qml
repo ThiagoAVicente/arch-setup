@@ -30,8 +30,8 @@ Item {
             : esc(title)
     }
 
-    readonly property int maxWidth: 260
-    readonly property int lead: 18 // same gap as clock → date
+    property int maxWidth: 260
+    property int lead: 18 // same gap as clock → date
     readonly property int pad: 10
 
     implicitWidth: shown ? Math.min(label.implicitWidth, maxWidth) + 2 * pad + lead : 0

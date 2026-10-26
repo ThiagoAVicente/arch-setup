@@ -46,7 +46,7 @@ Item {
 
     // Edge of this window's screen the bar sits on; the surface grows out of it
     readonly property var screen: QsWindow.window?.screen ?? null
-    readonly property string edge: Root.BarLayout.edgeOf(screen?.name ?? "")
+    readonly property string edge: Root.BarLayout.dockEdgeOf(screen?.name ?? "")
     readonly property bool vertical: Root.BarLayout.isVertical(edge)
     readonly property int alongFull: vertical ? fullH : fullW
     readonly property int depthFull: vertical ? fullW : fullH
@@ -56,7 +56,9 @@ Item {
 
     // No bar to hang from when it's toggled off or a fullscreen window covers
     // it — then the drawer drops from that edge of the display instead
-    readonly property bool barVisible: !Root.State.barHidden
+    // A centred bar is a widget in the middle of the screen, nothing to
+    // hang from: drop from the screen edge as if the bar were hidden
+    readonly property bool barVisible: !Root.State.barHidden && !Root.BarLayout.isCentered(screen?.name ?? "")
         && !((screen ? Hyprland.monitorFor(screen) : Hyprland.focusedMonitor)
              ?.activeWorkspace?.hasFullscreen ?? false)
     // Overlap the pill's bottom hairline by 1px so the join is seamless
@@ -217,7 +219,7 @@ Item {
         ShapePath {
             fillColor: Root.Theme.barBg
             strokeColor: Root.Theme.barBorder
-            strokeWidth: 1
+            strokeWidth: Root.Theme.barBorderWidth
             startX: goo.px(goo.leftX - goo.fillet, goo.topY); startY: goo.py(goo.leftX - goo.fillet, goo.topY)
             PathQuad {
                 x: goo.px(goo.leftX, goo.topY + goo.fillet); y: goo.py(goo.leftX, goo.topY + goo.fillet)

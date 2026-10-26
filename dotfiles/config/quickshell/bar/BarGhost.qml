@@ -31,7 +31,8 @@ PanelWindow {
     // Pointer stays with the bar's grip (implicit grab), never this window
     mask: Region {}
 
-    readonly property real thickness: Math.min(fromRect.width, fromRect.height)
+    // Across the pill; the round widget hands in the bar's thickness
+    property real thickness: Math.min(fromRect.width, fromRect.height)
     // Length of the pill while carried
     readonly property real carriedLen: 420
     // Pill lies the way the target slot does

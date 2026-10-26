@@ -31,7 +31,7 @@ PanelWindow {
 
     // Hang off the pill's flat edge, clear of its rounded end. On a side bar
     // the widgets sit at its lower end, so the popout does too.
-    readonly property string barEdge: Root.BarLayout.edgeOf(screen?.name ?? "")
+    readonly property string barEdge: Root.BarLayout.dockEdgeOf(screen?.name ?? "")
     readonly property bool barVertical: Root.BarLayout.isVertical(barEdge)
     readonly property int endInset: Root.Theme.barMarginSide + Root.Theme.barThickness / 2
     anchors {
