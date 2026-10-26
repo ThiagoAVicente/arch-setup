@@ -98,12 +98,12 @@ Scope {
                     .filter(l => l.length > 0)
                     .map(p => ({ path: p, isVideo: videoExt.test(p) }))
                 wallpaperSelector.wallpapers = list
-                // Model assignment resets currentIndex to 0 — restore after it settles
+                // Model assignment resets currentIndex to 0; restore after it settles
                 Qt.callLater(wallpaperSelector.jumpToApplied)
 
                 const videos = list.filter(w => w.isVideo)
                 if (videos.length > 0) {
-                    // Paths go in as positional args (in/out pairs) — never spliced into the script
+                    // Paths go in as positional args (in/out pairs), never spliced into the script
                     const args = []
                     for (const w of videos) args.push(w.path, wallpaperSelector.thumbCachePath(w.path))
                     thumbGenProcess.command = ["sh", "-c",
@@ -124,7 +124,7 @@ Scope {
         id: thumbGenProcess
     }
 
-    // No file-watch API here — just bump thumbGen a few times so Image re-attempts load
+    // No file-watch API here; just bump thumbGen a few times so Image re-attempts load
     Timer {
         id: thumbPoll
         property int attempts: 0
@@ -173,7 +173,7 @@ Scope {
 
         onVisibleChanged: if (visible) goo.open()
 
-        // Zero-size + transparent instead of visible:false — an invisible item
+        // Zero-size + transparent instead of visible:false; an invisible item
         // cannot take active focus in Qt Quick, so key events never arrive.
         TextInput {
             id: focusInput
@@ -226,7 +226,7 @@ Scope {
             onClosed: wallpaperSelector.visible = false
         }
 
-        // Content only — the LiquidSurface is its surface
+        // Content only: the LiquidSurface is its surface
         Item {
             id: card
             x: goo.cardX
@@ -278,7 +278,7 @@ Scope {
                 }
             }
 
-            // ── Carousel — selection stays centred, the strip scrolls ──────
+            // ── Carousel: selection stays centred, the strip scrolls ──────
             ListView {
                 id: thumbList
                 anchors { top: header.bottom; left: parent.left; right: parent.right; bottom: footer.top }
@@ -287,11 +287,11 @@ Scope {
                 spacing: 14
                 model: wallpaperSelector.wallpapers
                 boundsBehavior: Flickable.StopAtBounds
-                // NOTE: no `currentIndex:` binding — StrictlyEnforceRange makes the
+                // NOTE: no `currentIndex:` binding; StrictlyEnforceRange makes the
                 // ListView write currentIndex itself, which would break the binding
                 // permanently and freeze navigation. currentIndex IS the selection.
 
-                // Keep selected item locked in center — list scrolls, not cursor
+                // Keep selected item locked in center; list scrolls, not cursor
                 readonly property int span: vertical ? height : width
                 readonly property int thumbSpan: vertical ? wallpaperSelector.thumbH : wallpaperSelector.thumbW
                 preferredHighlightBegin: (span - thumbSpan) / 2
@@ -319,7 +319,7 @@ Scope {
                     height: thumbList.vertical ? wallpaperSelector.thumbH : thumbList.height
 
                     readonly property bool isSel: ListView.isCurrentItem
-                    // 0 at the centre, 1 at the card edge — thumbs fade out along the strip
+                    // 0 at the centre, 1 at the card edge; thumbs fade out along the strip
                     readonly property real dist: thumbList.vertical
                         ? Math.min(1, Math.abs(y - thumbList.contentY + height / 2 - thumbList.height / 2) / (thumbList.height / 2))
                         : Math.min(1, Math.abs(x - thumbList.contentX + width / 2 - thumbList.width / 2) / (thumbList.width / 2))
@@ -329,7 +329,7 @@ Scope {
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                     z: isSel ? 1 : 0
 
-                    // Ambient backlight — the selected thumb glows with its own colors
+                    // Ambient backlight: the selected thumb glows with its own colors
                     MultiEffect {
                         anchors.fill: thumbClip
                         anchors.margins: -6
@@ -403,7 +403,7 @@ Scope {
                 }
             }
 
-            // ── Footer — name of the centred wallpaper ─────────────────────
+            // ── Footer: name of the centred wallpaper ─────────────────────
             Item {
                 id: footer
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }

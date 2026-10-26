@@ -13,7 +13,7 @@ PanelWindow {
 
     // Pill rect at pickup, in screen coordinates
     required property rect fromRect
-    // Cursor offset inside the pill at pickup, along and across the bar —
+    // Cursor offset inside the pill at pickup, along and across the bar,
     // kept under the cursor whichever way the pill is turned
     required property real grabAlong
     required property real grabAcross

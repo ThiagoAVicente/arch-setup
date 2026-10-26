@@ -15,7 +15,7 @@ Scope {
     id: barScope
 
     property string openPopout: ""
-    // Screen the open popout belongs to — popouts only show on this monitor
+    // Screen the open popout belongs to; popouts only show on this monitor
     property var popoutScreen: null
     // Surface of the popout on screen; the next one morphs out of it
     property var popoutSurface: null
@@ -271,7 +271,7 @@ Scope {
                         height: barPill.height + 2 * room
                     }
 
-                    // Inset top highlight — glass depth without a second border.
+                    // Inset top highlight: glass depth without a second border.
                     // Goes while the wave is out, its rim takes that edge
                     Rectangle {
                         visible: !perScreen.vertical && !Root.Visualizer.playing

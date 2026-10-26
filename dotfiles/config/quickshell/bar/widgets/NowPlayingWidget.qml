@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import "../.." as Root
 
-// "Title — Artist" of whatever is playing, after the clock, as dark text on
+// "Title · Artist" of whatever is playing, after the clock, as dark text on
 // a glowing white pill. Display only. Slides open while something plays and
 // closes when it stops; hidden on a vertical bar, where there's no room for
 // a line of text.
@@ -26,7 +26,7 @@ Item {
     }
     function format() {
         return artist !== ""
-            ? esc(title) + "<font color=\"#5c5c64\"> — " + esc(artist) + "</font>"
+            ? esc(title) + "<font color=\"#5c5c64\"> · " + esc(artist) + "</font>"
             : esc(title)
     }
 

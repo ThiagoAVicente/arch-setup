@@ -278,7 +278,7 @@ PanelWindow {
     Item {
         id: card
 
-        // Content only — the LiquidSurface is its surface
+        // Content only: the LiquidSurface is its surface
         x: goo.cardX
         y: goo.cardY
         width: goo.fullW

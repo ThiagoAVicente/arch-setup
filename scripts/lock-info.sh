@@ -9,7 +9,7 @@ case "$1" in
         echo "welcome back, ${n:-$(id -un)}"
         ;;
     music)
-        t=$(playerctl metadata --format '{{artist}} — {{title}}' 2>/dev/null)
+        t=$(playerctl metadata --format '{{artist}} · {{title}}' 2>/dev/null)
         if [ -n "$t" ]; then echo "󰎆  ${t:0:48}"; else echo "󰎊  nothing playing"; fi
         ;;
     battery)

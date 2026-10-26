@@ -6,7 +6,7 @@ import "../.." as Root
 
 // Workspaces 1–8 as a strip of marks:
 // Each monitor has its own 1–8 (laptop panel ids 1–8, other monitors 11–18,
-// 21–28, … — same mapping as hypr/parts/monitor_ws.lua), so the strip only
+// 21–28, …; same mapping as hypr/parts/monitor_ws.lua), so the strip only
 // shows this monitor's block, numbered 1–8.
 //   this monitor's workspace → lit pill
 //   has windows              → solid dot
@@ -77,7 +77,7 @@ Grid {
             Behavior on width  { NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
             Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
 
-            // Soft halo under this monitor's workspace — the one lit element on the bar
+            // Soft halo under this monitor's workspace, the one lit element on the bar
             Rectangle {
                 anchors.centerIn: parent
                 width: parent.width + 8

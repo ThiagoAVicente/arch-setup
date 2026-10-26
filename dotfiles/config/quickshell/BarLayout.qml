@@ -10,7 +10,7 @@ import QtQuick
 Singleton {
     id: layout
 
-    // { "eDP-1": "bottom", ... } — missing screens use the default edge
+    // { "eDP-1": "bottom", ... }; missing screens use the default edge
     property var edges: ({})
     readonly property string defaultEdge: "top"
 
