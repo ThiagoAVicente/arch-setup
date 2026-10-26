@@ -162,10 +162,10 @@ PanelWindow {
         id: dropAnim
         ScriptAction { script: liftAnim.stop() }
         ParallelAnimation {
-            NumberAnimation { target: pill; property: "x"; to: ghost.targetRect.x; duration: 320; easing.type: Easing.OutCubic }
-            NumberAnimation { target: pill; property: "y"; to: ghost.targetRect.y; duration: 320; easing.type: Easing.OutCubic }
-            NumberAnimation { target: pill; property: "width"; to: ghost.targetRect.width; duration: 360; easing.type: Easing.OutCubic }
-            NumberAnimation { target: pill; property: "height"; to: ghost.targetRect.height; duration: 360; easing.type: Easing.OutCubic }
+            NumberAnimation { target: pill; property: "x"; to: ghost.targetRect.x; duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { target: pill; property: "y"; to: ghost.targetRect.y; duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { target: pill; property: "width"; to: ghost.targetRect.width; duration: 260; easing.type: Easing.OutCubic }
+            NumberAnimation { target: pill; property: "height"; to: ghost.targetRect.height; duration: 260; easing.type: Easing.OutCubic }
         }
         ScriptAction { script: ghost.landed() }
     }

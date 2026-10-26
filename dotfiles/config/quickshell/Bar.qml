@@ -65,7 +65,10 @@ Scope {
             readonly property bool fullscreenHere: Hyprland.monitorFor(modelData)?.activeWorkspace?.hasFullscreen ?? false
             property bool raisedOverFullscreen: false
             onFullscreenHereChanged: if (!fullscreenHere) raisedOverFullscreen = false
-            readonly property bool fullSurface: holding || dragging
+            // Ghost has unfurled into the new slot: the bar window shrinks back
+            // to bar size while the ghost still covers it
+            property bool landing: false
+            readonly property bool fullSurface: holding || (dragging && !landing)
             property rect dragFrom
             property real grabAlong: 0
             property real grabAcross: 0
@@ -130,17 +133,21 @@ Scope {
                 Root.BarLayout.setEdge(modelData.name, dropEdge)
                 ghostLoader.item.drop()
             }
-            // Ghost reached the slot: show the real bar once its window has
-            // actually been re-anchored and resized (the compositor answers a
-            // few frames later), then drop the ghost a beat after that, so
-            // there is never a frame without a bar or a half-sized one
-            function landed() { settleCheck.start() }
+            // Ghost reached the slot: shrink the bar window to its final size
+            // under the ghost, show the real bar once the compositor has
+            // resized it (a few frames later), then drop the ghost a couple of
+            // frames after that. Resizing only after the ghost left showed a
+            // frame with no bar at all
+            function landed() {
+                landing = true
+                settleCheck.start()
+            }
             Timer {
                 id: settleCheck
                 interval: 16; repeat: true
                 property int tries: 0
                 onTriggered: {
-                    const ready = hBar.width === perScreen.modelData.width && hBar.height === perScreen.modelData.height
+                    const ready = hBar.width === hBar.implicitWidth && hBar.height === hBar.implicitHeight
                     if (ready || ++tries > 30) {
                         stop(); tries = 0
                         perScreen.carried = false
@@ -151,8 +158,11 @@ Scope {
 
             Timer {
                 id: ghostRelease
-                interval: 120
-                onTriggered: perScreen.dragging = false
+                interval: 50
+                onTriggered: {
+                    perScreen.dragging = false
+                    perScreen.landing = false
+                }
             }
 
             LazyLoader {

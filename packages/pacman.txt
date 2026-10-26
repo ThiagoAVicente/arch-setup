@@ -26,6 +26,7 @@ docker-buildx
 docker-compose
 dosfstools
 efibootmgr
+eza
 fastfetch
 ffmpegthumbnailer
 firefox
