@@ -1,4 +1,4 @@
--- layoutopt:direction:right not yet in Lua workspace_rule API; configure via scrolling block in hyprland.lua
+-- layoutopt:direction:right not yet in Lua workspace_rule API, so configure via scrolling block in hyprland.lua
 
 -- Keep each monitor's own block of workspaces on it (parts/monitor_ws.lua)
 local monitor_ws = require("parts.monitor_ws")

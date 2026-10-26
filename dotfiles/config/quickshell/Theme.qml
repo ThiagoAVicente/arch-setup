@@ -3,7 +3,7 @@ import QtQuick
 import "." as Root
 
 QtObject {
-    // Neutral grayscale palette: lifted to make white borders glow
+    // Neutral grayscale palette, lifted to make white borders glow
     readonly property color bg:       "#1c1c1c"
     readonly property color mantle:   "#161616"
     readonly property color surface:  "#262626"
@@ -14,11 +14,11 @@ QtObject {
     readonly property color text:     "#e6e6e6"
     readonly property color bright:   "#ffffff"
 
-    // Accent: neutral light grey
+    // Accent is a neutral light grey
     readonly property color accent:   "#e0e0e0"
     readonly property color accent2:  "#8a8a8a"
 
-    // Semantic: colorful for state clarity
+    // Semantic colours are colorful for state clarity
     readonly property color ok:       "#7fb98a"
     readonly property color warn:     "#d9c78a"
     readonly property color alert:    "#d9a07a"
@@ -28,13 +28,13 @@ QtObject {
     // One surface, one hairline everywhere (bar, popouts, modals, OSD)
     readonly property color panel:         Qt.rgba(0.063, 0.063, 0.071, 0.92)
     readonly property color panelSolid:    "#0f0f11"
-    // Frosted variant: pair with hyprland layerrule blur on qs-overlay
+    // Frosted variant, pair it with hyprland layerrule blur on qs-overlay
     readonly property color panelFrost:    Qt.rgba(0.055, 0.055, 0.067, 0.72)
     readonly property color hairline:      Qt.rgba(1, 1, 1, 0.09)
     readonly property color panelHi:       Qt.rgba(1, 1, 1, 0.06)
     readonly property color focusRing:     Qt.rgba(1, 1, 1, 0.25)
 
-    // Borders: bright white for glow effect (dark modals)
+    // Borders are bright white for glow effect (dark modals)
     readonly property color border:        Qt.rgba(1, 1, 1, 0.22)
     readonly property color borderStrong:  Qt.rgba(1, 1, 1, 0.40)
     readonly property color hover:         Qt.rgba(1, 1, 1, 0.06)

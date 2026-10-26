@@ -55,7 +55,7 @@ Item {
     function py(u, v) { return edge === "bottom" ? height - v : vertical ? u : v }
 
     // No bar to hang from when it's toggled off or a fullscreen window covers
-    // it; then the drawer drops from that edge of the display instead
+    // it, and then the drawer drops from that edge of the display instead
     // A centred bar is a widget in the middle of the screen, nothing to
     // hang from: drop from the screen edge as if the bar were hidden
     readonly property bool barVisible: !Root.State.barHidden && !Root.BarLayout.isCentered(screen?.name ?? "")
@@ -99,7 +99,7 @@ Item {
 
     // Another drawer takes over: it morphs from this one's shape, so this
     // one tracks the same shape (content hidden) until the new window is
-    // on screen, then goes; no blank frame between the two
+    // on screen, then goes, so there is no blank frame between the two
     function handOff(toW, toH) {
         openAnim.stop()
         morphAnim.stop()

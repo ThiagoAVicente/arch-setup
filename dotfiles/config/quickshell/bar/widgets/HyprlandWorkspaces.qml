@@ -6,7 +6,7 @@ import "../.." as Root
 
 // Workspaces 1–8 as a strip of marks:
 // Each monitor has its own 1–8 (laptop panel ids 1–8, other monitors 11–18,
-// 21–28, …; same mapping as hypr/parts/monitor_ws.lua), so the strip only
+// 21–28, …, same mapping as hypr/parts/monitor_ws.lua), so the strip only
 // shows this monitor's block, numbered 1–8.
 //   this monitor's workspace → lit pill
 //   has windows              → solid dot
