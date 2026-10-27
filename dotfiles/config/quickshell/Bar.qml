@@ -210,7 +210,9 @@ Scope {
 
                 onVisibleChanged: if (visible) barPill.show()
 
-                MouseArea { anchors.fill: parent; z: -1; onClicked: barScope.openPopout = "" }
+                // Click on the bar closes a popout, except the lyrics, which
+                // stay until the now-playing pill is clicked again
+                MouseArea { anchors.fill: parent; z: -1; onClicked: if (barScope.openPopout !== "lyrics") barScope.openPopout = "" }
 
                 Rectangle {
                     id: barPill
@@ -281,26 +283,31 @@ Scope {
                     }
 
                     // Hairline drawn separately so its long-side rows can be
-                    // clipped off while the music wave is out: the wave sits
-                    // under the pill, so it can't cover the line itself, and
-                    // its rim takes over just outside. Only the stretch the
-                    // wave spans (MusicRipple's inset) is cut, so the rounded
-                    // ends stay whole and meet the rim
+                    // clipped off: the outer side while the music wave is out
+                    // (its rim takes over there), the inner side always, where
+                    // it is redrawn below with gaps for open drawers. Only the
+                    // stretch the wave spans (MusicRipple's inset) is cut, so
+                    // the rounded ends stay whole and meet the rim
+                    readonly property int bw: Root.Theme.barBorderWidth
+                    readonly property int edgeInset: 17
+                    // Inner side (facing the screen) is the far side of the pill
+                    readonly property bool innerIsFar: perScreen.edge === "top" || perScreen.edge === "left"
                     Repeater {
                         model: 3
                         Item {
                             required property int index
-                            readonly property int inset: 17
                             readonly property int len: perScreen.vertical ? barPill.height : barPill.width
                             // Along the bar: start and length of this stretch
-                            readonly property int a: index === 0 ? 0 : index === 1 ? inset : len - inset
-                            readonly property int l: index === 1 ? len - 2 * inset : inset
-                            readonly property int cut: index === 1 && Root.Visualizer.playing ? Root.Theme.barBorderWidth : 0
+                            readonly property int a: index === 0 ? 0 : index === 1 ? barPill.edgeInset : len - barPill.edgeInset
+                            readonly property int l: index === 1 ? len - 2 * barPill.edgeInset : barPill.edgeInset
+                            readonly property int cutIn: index === 1 ? barPill.bw : 0
+                            readonly property int cutOut: index === 1 && Root.Visualizer.playing ? barPill.bw : 0
+                            readonly property int lead: barPill.innerIsFar ? cutOut : cutIn
                             clip: true
-                            x: perScreen.vertical ? cut : a
-                            y: perScreen.vertical ? a : cut
-                            width: perScreen.vertical ? barPill.width - 2 * cut : l
-                            height: perScreen.vertical ? l : barPill.height - 2 * cut
+                            x: perScreen.vertical ? lead : a
+                            y: perScreen.vertical ? a : lead
+                            width: perScreen.vertical ? barPill.width - cutIn - cutOut : l
+                            height: perScreen.vertical ? l : barPill.height - cutIn - cutOut
                             Rectangle {
                                 x: -parent.x
                                 y: -parent.y
@@ -309,8 +316,40 @@ Scope {
                                 radius: barPill.radius
                                 color: "transparent"
                                 border.color: Root.Theme.barBorder
-                                border.width: Root.Theme.barBorderWidth
+                                border.width: barPill.bw
                             }
+                        }
+                    }
+                    // Inner straight edge, broken where a drawer or popout hangs
+                    // off the bar so its outline carries on from the bar's.
+                    // While the wave plays its rim draws this edge instead
+                    Repeater {
+                        model: {
+                            const len = perScreen.vertical ? barPill.height : barPill.width
+                            let spans = [[barPill.edgeInset, len - barPill.edgeInset]]
+                            for (const k in Root.State.holes) {
+                                const h = Root.State.holes[k]
+                                if (h.screen !== perScreen.modelData.name) continue
+                                const lo = h.c - barPill.side - h.half, hi = h.c - barPill.side + h.half
+                                const next = []
+                                for (const [s0, s1] of spans) {
+                                    if (hi <= s0 || lo >= s1) { next.push([s0, s1]); continue }
+                                    if (lo > s0) next.push([s0, lo])
+                                    if (hi < s1) next.push([hi, s1])
+                                }
+                                spans = next
+                            }
+                            return Root.Visualizer.playing ? [] : spans
+                        }
+                        Rectangle {
+                            required property var modelData
+                            readonly property real across: barPill.innerIsFar
+                                ? (perScreen.vertical ? barPill.width : barPill.height) - barPill.bw : 0
+                            color: Root.Theme.barBorder
+                            x: perScreen.vertical ? across : modelData[0]
+                            y: perScreen.vertical ? modelData[0] : across
+                            width: perScreen.vertical ? barPill.bw : modelData[1] - modelData[0]
+                            height: perScreen.vertical ? modelData[1] - modelData[0] : barPill.bw
                         }
                     }
 
@@ -397,6 +436,7 @@ Scope {
                         NowPlayingWidget {
                             Layout.alignment: Qt.AlignCenter
                             vertical: perScreen.vertical
+                            onToggleLyrics: barScope.togglePopout("lyrics", perScreen.modelData)
                         }
                     }
 
@@ -589,7 +629,7 @@ Scope {
                                 text: Qt.formatTime(dialClock.date, "HH:mm")
                                 color: Root.Theme.barText
                                 font.family: Root.Theme.fontFamily
-                                font.pixelSize: 46
+                                font.pixelSize: 40
                                 font.weight: Font.DemiBold
                             }
                             Text {
@@ -603,6 +643,7 @@ Scope {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 maxWidth: 150
                                 lead: 0
+                                onToggleLyrics: barScope.togglePopout("lyrics", perScreen.modelData)
                             }
                             HyprlandWorkspaces {
                                 anchors.horizontalCenter: parent.horizontalCenter
@@ -633,7 +674,7 @@ Scope {
                             id: dialTray
                             anchors.fill: parent
                             property var iconCache: ({})
-                            readonly property var angles: [-32, -12, 8, 28]
+                            readonly property var angles: [-28, -8, 12, 32]
                             readonly property var items: SystemTray.items.values
                                 .filter(i => !["nm-applet", "blueman"].includes(i?.id ?? ""))
                                 .slice(0, 2 * angles.length)
@@ -663,10 +704,28 @@ Scope {
         }
     }
 
+    // ── Lyrics drawer (lazy) ───────────────────────────────────────────
+    property bool _lyricsLoaded: false
+    Binding { target: Root.Lyrics; property: "shown"; value: barScope.openPopout === "lyrics" }
+    Variants {
+        model: Quickshell.screens
+        Loader {
+            required property var modelData
+            active: barScope._lyricsLoaded
+            sourceComponent: LyricsPopout {
+                screen: modelData
+                isOpen: barScope.openPopout === "lyrics" && barScope.popoutScreen === modelData
+                hub: barScope
+                onCloseRequested: barScope.openPopout = ""
+            }
+        }
+    }
+
     // ── Network popout (lazy) ──────────────────────────────────────────
     property bool _networkLoaded: false
     onOpenPopoutChanged: {
         if (openPopout === "network") _networkLoaded = true
+        else if (openPopout === "lyrics") _lyricsLoaded = true
         else if (openPopout === "bluetooth") _bluetoothLoaded = true
     }
     Variants {

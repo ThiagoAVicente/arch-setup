@@ -6,7 +6,7 @@ hl.window_rule({
 
 hl.window_rule({
     name   = "float-apps",
-    match  = { class = "^(spotify|pcmanfm|R.float|protonvpn-app|xdg-desktop-portal-gtk|org.pulseaudio.pavucontrol|blueman-manager)$" },
+    match  = { class = "^([Ss]potify|pcmanfm|R.float|protonvpn-app|xdg-desktop-portal-gtk|org.pulseaudio.pavucontrol|blueman-manager)$" },
     float  = true,
     center = true,
     size   = "800 500",

@@ -42,6 +42,10 @@ ShaderEffect {
         while (g.length < 4) g.push(-1e5, 0)
         return Qt.vector4d(g[0], g[1], g[2], g[3])
     }
+    // A drawer or popout hangs off this bar: the inner side settles flat so
+    // the drawer meets a straight edge, the outer side keeps moving
+    property real innerQuiet: gaps.x > -1e4 ? 1 : 0
+    Behavior on innerQuiet { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     readonly property var bands: Root.Visualizer.packed
     readonly property vector4d l0: bands[0] ?? Qt.vector4d(0, 0, 0, 0)
     readonly property vector4d l1: bands[1] ?? Qt.vector4d(0, 0, 0, 0)

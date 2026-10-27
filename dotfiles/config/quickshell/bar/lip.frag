@@ -41,6 +41,8 @@ layout(std140, binding = 0) uniform buf {
     // 0: the wave's body, drawn under the pill; 1: its rim and glow, drawn
     // over the pill so the rim lands exactly where the bar's border was
     float layerMode;
+    // 1 while a drawer hangs off the bar: the inner side lies flat
+    float innerQuiet;
 };
 
 const int BANDS = 32;
@@ -71,6 +73,13 @@ float gInset;
 float gSpan;
 float span() { return gSpan; }
 
+// 0 inside a drawer's footprint on the bar, else 1: the rim stops right where
+// the drawer's own outline takes over
+float clearOfDrawers(float u) {
+    float f = step(gaps.y, abs(u - gaps.x));
+    return min(f, step(gaps.w, abs(u - gaps.z)));
+}
+
 float opening(float u) {
     float f = 1.0;
     f = min(f, clamp((abs(u - gaps.x) - gaps.y) / feather, 0.0, 1.0));
@@ -86,7 +95,7 @@ float tip(int k, bool inner) {
     // max(): sin(PI) comes out a hair below zero in float, and sqrt of that
     // is NaN. Round the circle there are no ends to taper into
     float taper = circle() ? 1.0
-        : max(sin(PI * float(k) / float(N - 1)), 0.0) * (inner ? opening(u) : 1.0);
+        : max(sin(PI * float(k) / float(N - 1)), 0.0) * (inner ? opening(u) * (1.0 - innerQuiet) : 1.0);
     return sqrt(taper) * (1.0 + level(k, inner) * maxDepth);
 }
 
@@ -115,13 +124,16 @@ void main() {
     float u, v;
     bool inner = true;
     if (circle()) {
-        // u round the circle from the bottom, clockwise (bass at the top),
-        // v out from its edge
+        // Both halves of the circle carry the same half profile, mirrored
+        // left to right: bass at the top, treble at the bottom. u maps the
+        // angle from the top onto the profile's second half, v is the
+        // distance out from the circle's edge
         float r = itemSize.x * 0.5 - room;
         vec2 q = p - itemSize * 0.5;
+        float t = abs(atan(q.x, -q.y)) / PI;
         gInset = 0.0;
         gSpan = 2.0 * PI * r;
-        u = (atan(q.x, -q.y) / (2.0 * PI) + 0.5) * gSpan;
+        u = (0.5 + 0.5 * t) * gSpan;
         v = length(q) - r;
     } else {
         // u along the pill from its start, a across from its centre line
@@ -160,7 +172,8 @@ void main() {
             float halo = exp(-out_ / (2.5 + 3.0 * l)) * (0.30 + 0.45 * l) * step(0.0, v);
             float aRim = edge * (0.75 + 0.25 * l);
             float aGlow = halo * (1.0 - edge);
-            col = vec4(tint, 1.0) * (aRim + aGlow);
+            float clear = (inner && !circle()) ? clearOfDrawers(u) : 1.0;
+            col = vec4(tint, 1.0) * (aRim + aGlow) * clear;
         }
     }
     fragColor = col * qt_Opacity;

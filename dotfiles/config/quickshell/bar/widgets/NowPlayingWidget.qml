@@ -2,24 +2,40 @@ import QtQuick
 import QtQuick.Effects
 import "../.." as Root
 
-// "Title · Artist" of whatever is playing, after the clock, as dark text on
-// a glowing white pill. Display only. Slides open while something plays and
-// closes when it stops; hidden on a vertical bar, where there's no room for
-// a line of text.
+// "Title · Artist" of what Spotify is playing, after the clock, as dark text
+// on a glowing white pill. Click it to open or close the lyrics drawer. Slides open while Spotify plays and closes when it stops; other
+// players never show here. Hidden on a vertical bar, where there's no room
+// for a line of text.
 Item {
     id: root
 
     property bool vertical: false
+    signal toggleLyrics()
 
-    readonly property var player: Root.Visualizer.player
+    readonly property var player: Root.Lyrics.player
     readonly property string title: player?.trackTitle ?? ""
     readonly property string artist: player?.trackArtist ?? ""
-    readonly property bool shown: !vertical && title !== ""
+    readonly property bool shown: !vertical && title !== "" && (player?.isPlaying ?? false)
 
     // Kept while closing, so the text doesn't vanish before the slide ends
     property string text: ""
-    onTitleChanged: if (title !== "") text = format()
-    onArtistChanged: if (title !== "") text = format()
+    onTitleChanged: refresh()
+    onArtistChanged: refresh()
+    function refresh() {
+        if (title === "") return
+        const next = format()
+        if (next === text) return
+        pending = next
+        swap.restart()
+    }
+    // Next text, faded in once the current one has faded out
+    property string pending: ""
+    SequentialAnimation {
+        id: swap
+        NumberAnimation { target: label; property: "opacity"; to: 0; duration: 90 }
+        ScriptAction { script: root.text = root.pending }
+        NumberAnimation { target: label; property: "opacity"; to: 1; duration: 140 }
+    }
 
     function esc(s) {
         return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -79,5 +95,12 @@ Item {
         shadowVerticalOffset: 0
         blurMax: 10
         autoPaddingEnabled: true
+    }
+
+    MouseArea {
+        anchors.fill: pill
+        enabled: root.shown
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.toggleLyrics()
     }
 }

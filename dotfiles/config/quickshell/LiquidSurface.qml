@@ -61,9 +61,10 @@ Item {
     readonly property bool barVisible: !Root.State.barHidden && !Root.BarLayout.isCentered(screen?.name ?? "")
         && !((screen ? Hyprland.monitorFor(screen) : Hyprland.focusedMonitor)
              ?.activeWorkspace?.hasFullscreen ?? false)
-    // Overlap the pill's bottom hairline by 1px so the join is seamless
+    // Start halfway into the pill's border: the outline's stroke then runs on
+    // from the bar's border, and the bar leaves a gap in that border here
     readonly property int topY: barVisible
-        ? Root.Theme.barMarginTop + Root.Theme.barThickness - 1 : 0
+        ? Root.Theme.barMarginTop + Root.Theme.barThickness - Math.ceil(Root.Theme.barBorderWidth / 2) : 0
     readonly property int cx: centerX >= 0 ? centerX : Math.round((vertical ? height : width) / 2)
     // Where callers place their content (fixed size, never scaled)
     readonly property int cardX: edge === "left" ? topY + 1
