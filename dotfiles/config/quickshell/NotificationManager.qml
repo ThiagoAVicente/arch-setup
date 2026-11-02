@@ -43,6 +43,9 @@ Scope {
 
     NotificationServer {
         id: server
+        // Firefox only sends web notifications (WhatsApp Web, ...) to servers
+        // that support actions, and silently drops them otherwise
+        actionsSupported: true
 
         onNotification: notification => {
             if (Root.State.notificationsMuted) {

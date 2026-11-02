@@ -151,3 +151,9 @@ wallpaper() {
 
   mv $@ ~/Pictures/Wallpapers/
 }
+
+ls() {
+
+  eza "$@" --icons
+
+}

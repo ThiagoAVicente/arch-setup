@@ -106,6 +106,8 @@ hl.config({
 
 		follow_mouse = 1,
 		sensitivity = 0,
+		-- No mouse acceleration (the touchpad keeps it, see DEVICES)
+		accel_profile = "flat",
 
 		touchpad = {
 			natural_scroll = false,
@@ -156,6 +158,17 @@ hl.device({
 	sensitivity = -0.5,
 })
 
+-- The laptop touchpad keeps acceleration (mice are flat, see input)
+hl.device({
+	name = "elan06fa:00-04f3:327e-touchpad",
+	accel_profile = "adaptive",
+})
+
+-- The PlayStation controller's touchpad would otherwise move the cursor
+hl.device({
+	name = "wireless-controller-touchpad",
+	enabled = false,
+})
 -----------------
 -- RULES       --
 -----------------

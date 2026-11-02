@@ -142,12 +142,16 @@ Item {
 
             // Action buttons
             RowLayout {
-                visible: (popup.notification?.actions?.length ?? 0) > 0
+                id: actionRow
+                // "default" is the click-the-notification action, not a button
+                readonly property var buttons:
+                    (popup.notification?.actions ?? []).filter(a => a.identifier !== "default")
+                visible: buttons.length > 0
                 spacing: 6
                 Layout.bottomMargin: 2
 
                 Repeater {
-                    model: popup.notification?.actions ?? []
+                    model: actionRow.buttons
 
                     // Ghost buttons — hairline outline, invert to white on hover
                     Rectangle {
