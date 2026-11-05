@@ -35,3 +35,6 @@ Thumbs.db
 
 # ISO build output
 out/
+
+# Personal quick access binds live in ~/.local/share/quickshell/quickaccess.json
+dotfiles/config/quickshell/quickaccess.json

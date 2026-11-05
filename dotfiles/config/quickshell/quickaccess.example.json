@@ -1,11 +1,5 @@
 {
   "f": "firefox",
   "t": "foot",
-  "s": "spotify",
-  "d": "discord",
-  "c": "code-oss",
-  "o": "obsidian",
-  "e": "pcmanfm",
-  "g": "steam",
   "b": { "name": "btop", "icon": "utilities-system-monitor", "exec": ["foot", "-e", "btop"] }
 }

@@ -8,7 +8,9 @@ import QtQuick
 import QtQuick.Layouts
 import "." as Root
 
-// Quick access: each key maps to an app (quickaccess.json next to this file).
+// Quick access: each key maps to an app. Binds are personal, so they live in
+// $XDG_DATA_HOME/quickshell/quickaccess.json (not in the dotfiles repo); the
+// first run seeds it from quickaccess.example.json next to this file.
 // Type up to 6 keys to queue apps, Backspace/Delete removes the last one,
 // Enter launches them all at once (detached, like the launcher).
 //
@@ -44,10 +46,23 @@ Scope {
         goo.close()
     }
 
+    // Loose match so "zed" finds dev.zed.Zed and "claude" finds
+    // com.anthropic.Claude: last id segment, display name, or command name
+    function findEntry(name) {
+        const n = name.toLowerCase()
+        for (const e of DesktopEntries.applications.values) {
+            if (e.noDisplay) continue
+            const last = e.id.toLowerCase().split(".").pop()
+            const cmd = (e.command[0] ?? "").split("/").pop().toLowerCase()
+            if (last === n || e.name.toLowerCase() === n || cmd === n) return e
+        }
+        return null
+    }
+
     function resolve(spec) {
         if (typeof spec === "string") {
             const id = spec.replace(/\.desktop$/, "")
-            const e = DesktopEntries.byId(id) ?? DesktopEntries.heuristicLookup(id)
+            const e = DesktopEntries.byId(id) ?? DesktopEntries.heuristicLookup(id) ?? findEntry(id)
             if (!e) return null
             return { name: e.name, icon: Quickshell.iconPath(e.icon, "application-x-executable"), entry: e }
         }
@@ -61,12 +76,18 @@ Scope {
         return null
     }
 
+    // Shown in the drawer when the binds file can't be read
+    property string error: ""
+
     function load(text) {
         let map = {}
         try {
-            map = JSON.parse(text || "{}")
+            // Hand-edited file: tolerate trailing commas
+            map = JSON.parse((text || "{}").replace(/,\s*([}\]])/g, "$1"))
+            error = ""
         } catch (e) {
             console.warn("quickaccess: ignoring unparsable", store.path, e)
+            error = "quickaccess.json: " + e.message
             return
         }
         const out = {}
@@ -105,13 +126,31 @@ Scope {
         visible = false
     }
 
+    readonly property string storePath:
+        (Quickshell.env("XDG_DATA_HOME") || Quickshell.env("HOME") + "/.local/share") + "/quickshell/quickaccess.json"
+
     FileView {
         id: store
-        path: Quickshell.shellDir + "/quickaccess.json"
+        path: qa.storePath
         blockLoading: true
         watchChanges: true
+        printErrors: false
         onLoaded: qa.load(text())
         onFileChanged: reload()
+        onLoadFailed: err => {
+            if (err !== FileViewError.FileNotFound) return
+            const seed = example.text()
+            if (!seed) return
+            setText(seed)
+            qa.load(seed)
+        }
+    }
+
+    FileView {
+        id: example
+        path: Quickshell.shellDir + "/quickaccess.example.json"
+        blockLoading: true
+        printErrors: false
     }
 
     PanelWindow {
@@ -271,9 +310,11 @@ Scope {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
-                    text: qa.queue.length ? qa.queue.map(a => a.name).join("  ·  ") : "type a key"
+                    text: qa.error !== "" ? qa.error
+                        : qa.queue.length ? qa.queue.map(a => a.name).join("  ·  ") : "type a key"
                     font.family: Root.Theme.fontFamily; font.pixelSize: 11
-                    color: qa.queue.length ? Root.Theme.text : Root.Theme.muted
+                    color: qa.error !== "" ? Root.Theme.critical
+                        : qa.queue.length ? Root.Theme.text : Root.Theme.muted
                 }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(1, 1, 1, 0.06) }
