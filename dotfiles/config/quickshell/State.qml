@@ -25,6 +25,26 @@ QtObject {
         // Nothing saved yet
         onLoadFailed: loaded = true
     }
+    // Workspace number drawer on unfocused monitors (bar/popouts/WorkspaceTag.qml),
+    // switched from the bar and kept across restarts
+    property bool workspaceTags: true
+    onWorkspaceTagsChanged: if (tagsStore.loaded) tagsStore.setText(JSON.stringify({ on: workspaceTags }) + "\n")
+    property FileView tagsStore: FileView {
+        property bool loaded: false
+        path: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") || "") + "/.local/state")
+            + "/quickshell/workspace-tags.json"
+        blockLoading: true
+        blockWrites: true
+        atomicWrites: true
+        printErrors: false
+        onLoaded: {
+            try { state.workspaceTags = JSON.parse(text() || "{}").on !== false }
+            catch (e) { console.warn("workspace tags: ignoring unparsable", path, e) }
+            loaded = true
+        }
+        // Nothing saved yet
+        onLoadFailed: loaded = true
+    }
     property string appliedWallpaper: ""
     property bool barHidden: false
     // Where open drawers/popouts meet the bar, so the music lip can part

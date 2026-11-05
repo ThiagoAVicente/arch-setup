@@ -478,6 +478,7 @@ Scope {
                         Item { Layout.preferredWidth: perScreen.vertical ? 1 : 10; Layout.preferredHeight: perScreen.vertical ? 10 : 1 }
                         AccentButton { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         NotificationsToggle { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
+                        WorkspaceTagsToggle { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                     }
                 }
             }
@@ -665,6 +666,7 @@ Scope {
                                 spacing: 4
                                 AccentButton { vertical: false }
                                 NotificationsToggle { vertical: false }
+                                WorkspaceTagsToggle { vertical: false }
                             }
                         }
 
@@ -718,6 +720,16 @@ Scope {
                 hub: barScope
                 onCloseRequested: barScope.openPopout = ""
             }
+        }
+    }
+
+    // ── Workspace tag on unfocused monitors (2+ monitors, toggled on the bar)
+    Variants {
+        model: Quickshell.screens
+        Loader {
+            required property var modelData
+            active: Root.State.workspaceTags && Root.MonitorColors.order.length > 1
+            sourceComponent: WorkspaceTag { screen: modelData }
         }
     }
 

@@ -32,17 +32,8 @@ Grid {
     // Whether this monitor has focus: its current workspace pill is lit only then
     readonly property bool monitorFocused: Hyprland.focusedMonitor?.name === thisMonitor
 
-    // Monitors in colour order: the laptop panel first, the rest by name
-    readonly property var monitorOrder: {
-        const names = Hyprland.monitors.values.map(m => m.name)
-        const panel = names.filter(n => n.startsWith("eDP"))
-        return panel.concat(names.filter(n => !n.startsWith("eDP")).sort())
-    }
-    readonly property var palette: ["#eeeef0", "#5b9cff", "#6fdc8c", "#ffa657", "#f778ba"]
-    function monitorColor(name) {
-        const i = monitorOrder.indexOf(name)
-        return palette[Math.max(0, i) % palette.length]
-    }
+    // Colour of each monitor (MonitorColors.qml)
+    function monitorColor(name) { return Root.MonitorColors.of(name) }
     readonly property color hereColor: monitorColor(thisMonitor)
 
     // Workspace id to the monitor showing it right now
@@ -65,7 +56,7 @@ Grid {
 
     // This monitor's colour, only worth showing with more than one monitor
     Rectangle {
-        visible: root.monitorOrder.length > 1
+        visible: Root.MonitorColors.order.length > 1
         width: root.vertical ? 2 : strip.width
         height: root.vertical ? strip.height : 2
         radius: 1
