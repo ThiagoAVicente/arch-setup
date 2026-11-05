@@ -36,7 +36,7 @@ ShellRoot {
     // Outgoing drawer kept loaded until the incoming one is on screen
     property string handoffModal: ""
     function drawerLoader(name) {
-        return ({ launcher: launcherLoader, todo: todoLoader, wallpaper: wallpaperLoader })[name] ?? null
+        return ({ launcher: launcherLoader, todo: todoLoader, wallpaper: wallpaperLoader, quick: quickLoader })[name] ?? null
     }
     function toggleModal(name) {
         if (name === handoffModal) return
@@ -106,6 +106,15 @@ ShellRoot {
         onLoaded: if (item) { shell.seedMorph(item); item.toggle() }
     }
 
+    Loader {
+        id: quickLoader
+        active: shell.activeModal === "quick" || shell.handoffModal === "quick"
+        sourceComponent: QuickAccess {
+            onVisibleChanged: if (!visible) shell.modalClosed("quick")
+        }
+        onLoaded: if (item) { shell.seedMorph(item); item.toggle() }
+    }
+
     Process {
         id: ipcServer
         running: true
@@ -114,7 +123,7 @@ ShellRoot {
         stdout: SplitParser {
             onRead: data => {
                 const cmd = data.trim()
-                if (["launcher", "wallpaper", "powermenu", "todo"].includes(cmd)) shell.toggleModal(cmd)
+                if (["launcher", "wallpaper", "powermenu", "todo", "quick"].includes(cmd)) shell.toggleModal(cmd)
                 else if (cmd === "bar") bar.toggleBar()
                 else if (cmd === "recording") Root.Recording.refresh()
             }

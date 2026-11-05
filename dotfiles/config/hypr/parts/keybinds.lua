@@ -12,6 +12,7 @@ hl.bind(mainMod .. " + T", hl.dsp.window.float())
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd(qs .. " launcher"))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(qs .. " bar"))
 hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(qs .. " todo"))
+hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(qs .. " quick"))
 
 -- Performance overrides (reverts on hyprctl reload)
 hl.bind(
@@ -44,6 +45,9 @@ hl.bind(mainMod .. " + SHIFT + O", hl.dsp.window.move({ monitor = "+1" }))
 
 hl.bind(mainMod .. " + H", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.window.move({ workspace = "special:magic", follow = false }))
+-- Where Claude puts the windows it opens (browsers, test apps), out of the way
+hl.bind(mainMod .. " + I", hl.dsp.workspace.toggle_special("claude"))
+hl.bind(mainMod .. " + SHIFT + I", hl.dsp.window.move({ workspace = "special:claude", follow = false }))
 
 -- Scroll through workspaces
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "r+1" }))
