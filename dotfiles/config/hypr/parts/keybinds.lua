@@ -31,15 +31,11 @@ hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ direction = "right" 
 hl.bind(mainMod .. " + SHIFT + up", hl.dsp.window.move({ direction = "up" }))
 hl.bind(mainMod .. " + SHIFT + down", hl.dsp.window.move({ direction = "down" }))
 
--- Switch workspaces: each monitor has its own 1–8 (see parts/monitor_ws.lua)
-local monitor_ws = require("parts.monitor_ws")
+-- Switch workspaces: 1–8 are shared by all monitors, so a workspace already
+-- shown on another monitor moves the focus there (see parts/workspaces.lua)
 for i = 1, 8 do
-	hl.bind(mainMod .. " + " .. i, function()
-		hl.dispatch(hl.dsp.focus({ workspace = monitor_ws.here(i) }))
-	end)
-	hl.bind(mainMod .. " + SHIFT + " .. i, function()
-		hl.dispatch(hl.dsp.window.move({ workspace = monitor_ws.here(i) }))
-	end)
+	hl.bind(mainMod .. " + " .. i, hl.dsp.focus({ workspace = i }))
+	hl.bind(mainMod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i }))
 end
 
 -- Other monitor: focus it, or send the focused window there

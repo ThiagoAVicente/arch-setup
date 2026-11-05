@@ -33,6 +33,25 @@ for file in ~/.config/rc/*; do
   fi
 done
 
+# foot integration: tell foot the current directory (new windows open
+# there) and where each command's output starts and ends (so its output
+# can be piped or copied on its own)
+if [[ $TERM == foot* ]]; then
+  autoload -Uz add-zsh-hook
+  _foot_osc7() {
+    emulate -L zsh
+    setopt extendedglob
+    local LC_ALL=C
+    printf '\e]7;file://%s%s\e\\' $HOST ${PWD//(#m)([^@-Za-z&-;_~])/%${(l:2::0:)$(([##16]#MATCH))}}
+  }
+  _foot_output_start() { print -n '\e]133;C\e\\' }
+  _foot_output_end() { print -n '\e]133;D\e\\' }
+  add-zsh-hook chpwd _foot_osc7
+  add-zsh-hook preexec _foot_output_start
+  add-zsh-hook precmd _foot_output_end
+  _foot_osc7
+fi
+
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
