@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import "." as Root
 
 // Quick access: each key maps to an app. Binds are personal, so they live in
@@ -187,8 +188,9 @@ Scope {
 
         Root.LiquidSurface {
             id: goo
-            fullW: 460
-            fullH: Math.round(card.contentHeight)
+            // Fixed size: the key list scrolls instead of growing the card
+            fullW: 560
+            fullH: 206
             onClosed: qa.visible = false
         }
 
@@ -200,7 +202,6 @@ Scope {
             height: goo.fullH - 1
             opacity: goo.contentOpacity
             clip: true
-            readonly property real contentHeight: col.implicitHeight + 32
 
             MouseArea { anchors.fill: parent; onClicked: {} }
 
@@ -244,130 +245,157 @@ Scope {
                     }
                 }
 
-                // ── Slots ──────────────────────────────────────────────────
-                Row {
-                    id: slots
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 10
-                    property real shakeX: 0
-                    transform: Translate { x: slots.shakeX }
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 124
+                    spacing: 14
 
-                    function shake() { shakeAnim.restart() }
+                    // ── Slots + queued names ───────────────────────────────
+                    ColumnLayout {
+                        Layout.alignment: Qt.AlignTop
+                        spacing: 10
 
-                    SequentialAnimation {
-                        id: shakeAnim
-                        NumberAnimation { target: slots; property: "shakeX"; to: -8; duration: 45 }
-                        NumberAnimation { target: slots; property: "shakeX"; to: 7;  duration: 60 }
-                        NumberAnimation { target: slots; property: "shakeX"; to: -4; duration: 60 }
-                        NumberAnimation { target: slots; property: "shakeX"; to: 0;  duration: 50 }
-                    }
+                        Row {
+                            id: slots
+                            spacing: 6
+                            property real shakeX: 0
+                            transform: Translate { x: slots.shakeX }
 
-                    Repeater {
-                        model: qa.maxSlots
+                            function shake() { shakeAnim.restart() }
 
-                        Rectangle {
-                            id: slot
-                            required property int index
-                            readonly property var app: qa.queue[index] ?? null
-
-                            width: 60; height: 60
-                            radius: Root.Theme.radiusMd
-                            color: app ? Root.Theme.surface : "transparent"
-                            border.width: 1
-                            border.color: app ? Root.Theme.hairline
-                                : index === qa.queue.length ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
-                            Behavior on color { ColorAnimation { duration: 120 } }
-
-                            IconImage {
-                                anchors.centerIn: parent
-                                anchors.verticalCenterOffset: -6
-                                visible: slot.app !== null
-                                source: slot.app?.icon ?? ""
-                                implicitSize: 28
-                                scale: visible ? 1 : 0.6
-                                Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack } }
-                            }
-                            Text {
-                                anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 5 }
-                                visible: slot.app !== null
-                                text: slot.app?.key ?? ""
-                                font.family: Root.Theme.fontFamily; font.pixelSize: 10
-                                color: Root.Theme.subtext
+                            SequentialAnimation {
+                                id: shakeAnim
+                                NumberAnimation { target: slots; property: "shakeX"; to: -8; duration: 45 }
+                                NumberAnimation { target: slots; property: "shakeX"; to: 7;  duration: 60 }
+                                NumberAnimation { target: slots; property: "shakeX"; to: -4; duration: 60 }
+                                NumberAnimation { target: slots; property: "shakeX"; to: 0;  duration: 50 }
                             }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: slot.app !== null
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: qa.removeAt(slot.index)
+                            Repeater {
+                                model: qa.maxSlots
+
+                                Rectangle {
+                                    id: slot
+                                    required property int index
+                                    readonly property var app: qa.queue[index] ?? null
+
+                                    width: 42; height: 42
+                                    radius: Root.Theme.radiusSm
+                                    color: app ? Root.Theme.surface : "transparent"
+                                    border.width: 1
+                                    border.color: app ? Root.Theme.hairline
+                                        : index === qa.queue.length ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                                    IconImage {
+                                        anchors.centerIn: parent
+                                        visible: slot.app !== null
+                                        source: slot.app?.icon ?? ""
+                                        implicitSize: 22
+                                        scale: visible ? 1 : 0.6
+                                        Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack } }
+                                    }
+                                    // Key badge in the corner
+                                    Text {
+                                        anchors { right: parent.right; bottom: parent.bottom; rightMargin: 4; bottomMargin: 2 }
+                                        visible: slot.app !== null
+                                        text: slot.app?.key ?? ""
+                                        font.family: Root.Theme.fontFamily; font.pixelSize: 9
+                                        color: Root.Theme.subtext
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        enabled: slot.app !== null
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: qa.removeAt(slot.index)
+                                    }
+                                }
                             }
                         }
+
+                        // Names of what's queued
+                        Text {
+                            Layout.preferredWidth: slots.width
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            text: qa.error !== "" ? qa.error
+                                : qa.queue.length ? qa.queue.map(a => a.name).join("  ·  ") : "type a key"
+                            font.family: Root.Theme.fontFamily; font.pixelSize: 11
+                            color: qa.error !== "" ? Root.Theme.critical
+                                : qa.queue.length ? Root.Theme.text : Root.Theme.muted
+                        }
                     }
-                }
 
-                // Names of what's queued
-                Text {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                    text: qa.error !== "" ? qa.error
-                        : qa.queue.length ? qa.queue.map(a => a.name).join("  ·  ") : "type a key"
-                    font.family: Root.Theme.fontFamily; font.pixelSize: 11
-                    color: qa.error !== "" ? Root.Theme.critical
-                        : qa.queue.length ? Root.Theme.text : Root.Theme.muted
-                }
+                    Rectangle {
+                        Layout.fillHeight: true
+                        width: 1
+                        color: Qt.rgba(1, 1, 1, 0.06)
+                    }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(1, 1, 1, 0.06) }
-
-                // ── Key map ────────────────────────────────────────────────
-                Flow {
-                    Layout.fillWidth: true
-                    spacing: 6
-
-                    Repeater {
+                    // ── Key map (scrolls, sorted by key) ───────────────────
+                    ListView {
+                        id: keyList
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 2
+                        boundsBehavior: Flickable.StopAtBounds
                         model: qa.appKeys
 
-                        Rectangle {
-                            id: chip
+                        ScrollBar.vertical: ScrollBar {
+                            policy: keyList.contentHeight > keyList.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                            width: 4
+                        }
+
+                        delegate: Rectangle {
+                            id: row
                             required property string modelData
                             readonly property var app: qa.apps[modelData]
+                            readonly property bool queued: qa.queue.some(a => a.key === modelData)
 
-                            width: chipRow.implicitWidth + 14
+                            width: keyList.width - 10
                             height: 26
-                            radius: height / 2
-                            color: chipMa.containsMouse ? Root.Theme.hover : "transparent"
-                            border.width: 1
-                            border.color: Root.Theme.hairline
+                            radius: Root.Theme.radiusSm
+                            color: rowMa.containsMouse ? Root.Theme.hover : "transparent"
 
-                            Row {
-                                id: chipRow
-                                anchors.centerIn: parent
-                                spacing: 6
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: chip.modelData
-                                    font.family: Root.Theme.fontFamily; font.pixelSize: 11; font.weight: Font.Medium
-                                    color: Root.Theme.text
+                            RowLayout {
+                                anchors { fill: parent; leftMargin: 6; rightMargin: 6 }
+                                spacing: 8
+
+                                Rectangle {
+                                    Layout.preferredWidth: 20; Layout.preferredHeight: 18
+                                    radius: 4
+                                    color: row.queued ? Root.Theme.selected : "transparent"
+                                    border.width: 1
+                                    border.color: row.queued ? Root.Theme.selectedBorder : Root.Theme.hairline
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: row.modelData
+                                        font.family: Root.Theme.fontFamily; font.pixelSize: 11; font.weight: Font.Medium
+                                        color: Root.Theme.text
+                                    }
                                 }
                                 IconImage {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    source: chip.app?.icon ?? ""
-                                    implicitSize: 14
+                                    source: row.app?.icon ?? ""
+                                    implicitSize: 16
                                 }
                                 Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: chip.app?.name ?? ""
-                                    font.family: Root.Theme.fontFamily; font.pixelSize: 10
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                    text: row.app?.name ?? ""
+                                    font.family: Root.Theme.fontFamily; font.pixelSize: 11
                                     color: Root.Theme.subtext
                                 }
                             }
 
                             MouseArea {
-                                id: chipMa
+                                id: rowMa
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: qa.push(chip.modelData)
+                                onClicked: qa.push(row.modelData)
                             }
                         }
                     }
