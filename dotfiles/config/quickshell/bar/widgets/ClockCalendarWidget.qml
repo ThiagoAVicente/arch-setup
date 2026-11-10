@@ -69,7 +69,7 @@ Item {
         }
     }
 
-    // ── Vertical layout — hour over minute, no colon, no date ────────────
+    // ── Vertical layout — hour over minute, then day over month ────────────
     Column {
         id: vCol
         visible: root.vertical
@@ -94,6 +94,21 @@ Item {
             font.pixelSize: 15
             font.weight: Font.DemiBold
             color: Root.Theme.barText
+        }
+
+        Item { width: 1; height: 6 }
+
+        // Date: day over month, same muted style as the horizontal one
+        Repeater {
+            model: ["dd", "MM"]
+            Text {
+                required property string modelData
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Qt.formatDate(root._time, modelData)
+                font.family: Root.Theme.fontFamily
+                font.pixelSize: 12
+                color: Root.Theme.barSubtext
+            }
         }
     }
 

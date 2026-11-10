@@ -1,5 +1,5 @@
 NetworkManager
-docker
+podman
 tlp
 ufw
 bluetooth

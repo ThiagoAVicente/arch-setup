@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Bluetooth
+import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
@@ -94,6 +95,38 @@ PanelWindow {
         if (s.includes("keyboard")) return "󰌌"
         if (s.includes("joystick") || s.includes("game")) return "󰊖"
         return "󰂯"
+    }
+
+    // BlueZ only knows some batteries (headsets, mice). Controllers like the
+    // DualShock/DualSense report theirs through the kernel HID driver as
+    // /sys/class/power_supply/<name>-<mac>/capacity, so read those too.
+    property var sysBatt: ({})   // lowercase MAC -> percent
+    Process {
+        id: battProc
+        command: ["sh", "-c", "grep -H . /sys/class/power_supply/*/capacity 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const m = {}
+                for (const line of text.split("\n")) {
+                    const r = line.match(/([0-9a-f]{2}(?::[0-9a-f]{2}){5})[^/]*\/capacity:(\d+)/i)
+                    if (r) m[r[1].toLowerCase()] = parseInt(r[2])
+                }
+                root.sysBatt = m
+            }
+        }
+    }
+    Timer {
+        interval: 30000; repeat: true; triggeredOnStart: true
+        running: root.isOpen
+        onTriggered: battProc.running = true
+    }
+
+    // Percent for a connected device, or -1 when unknown
+    function devBattery(d) {
+        if (!d || !d.connected) return -1
+        if (d.batteryAvailable) return Math.round(d.battery * 100)
+        const p = sysBatt[(d.address || "").toLowerCase()]
+        return p === undefined ? -1 : p
     }
 
     function batteryIcon(pct) {
@@ -196,11 +229,9 @@ PanelWindow {
                     Layout.fillWidth: true
                     device: modelData
                     iconText: root.btIcon(modelData.icon)
-                    battText: {
-                        if (!modelData.connected || !modelData.batteryAvailable) return ""
-                        return root.batteryIcon(Math.round(modelData.battery * 100))
-                    }
-                    battLow: modelData.batteryAvailable && modelData.battery < 0.2
+                    readonly property int pct: root.devBattery(modelData)
+                    battText: pct < 0 ? "" : root.batteryIcon(pct) + " " + pct + "%"
+                    battLow: pct >= 0 && pct < 20
                 }
             }
 

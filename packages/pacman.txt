@@ -21,8 +21,6 @@ curl
 direnv
 discord
 dnsmasq
-docker
-docker-buildx
 docker-compose
 dosfstools
 efibootmgr
@@ -73,11 +71,15 @@ obsidian
 obs-studio
 openssh
 papirus-icon-theme
+passt
 pavucontrol
 pcmanfm
 pipewire-alsa
 pipewire-pulse
 playerctl
+podman 
+podman-compose 
+podman-docker 
 protontricks
 proton-vpn-gtk-app
 pyright
