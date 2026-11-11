@@ -456,6 +456,7 @@ Scope {
                         rowSpacing: 2
                         columnSpacing: 2
 
+                        CameraWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         RecordingWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         SystemTrayWidget { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         Item { Layout.preferredWidth: perScreen.vertical ? 1 : 10; Layout.preferredHeight: perScreen.vertical ? 10 : 1 }
@@ -479,6 +480,7 @@ Scope {
                         AccentButton { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         NotificationsToggle { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                         WorkspaceTagsToggle { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
+                        BarLightToggle { Layout.alignment: Qt.AlignCenter; vertical: perScreen.vertical }
                     }
                 }
             }
@@ -667,6 +669,7 @@ Scope {
                                 AccentButton { vertical: false }
                                 NotificationsToggle { vertical: false }
                                 WorkspaceTagsToggle { vertical: false }
+                                BarLightToggle { vertical: false }
                             }
                         }
 

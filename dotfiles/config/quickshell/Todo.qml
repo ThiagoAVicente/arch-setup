@@ -279,12 +279,12 @@ Scope {
                             ctx.reset()
                             ctx.lineWidth = 2
                             ctx.lineCap = "round"
-                            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.12)
+                            ctx.strokeStyle = Root.Theme.ink(0.12)
                             ctx.beginPath()
                             ctx.arc(8, 8, 6.5, 0, Math.PI * 2)
                             ctx.stroke()
                             if (fraction > 0) {
-                                ctx.strokeStyle = "#e9e9ec"
+                                ctx.strokeStyle = Root.Theme.text
                                 ctx.beginPath()
                                 ctx.arc(8, 8, 6.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * fraction)
                                 ctx.stroke()
@@ -324,7 +324,7 @@ Scope {
                 Rectangle {
                     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Root.Theme.ink(0.06)
                 }
             }
 
@@ -337,7 +337,7 @@ Scope {
                 Rectangle {
                     anchors { top: parent.top; left: parent.left; right: parent.right }
                     height: 1
-                    color: inputField.activeFocus ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                    color: inputField.activeFocus ? Root.Theme.focusRing : Root.Theme.ink(0.06)
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
@@ -365,7 +365,7 @@ Scope {
                             font.weight: Font.Light
                             clip: true
                             focus: true
-                            selectionColor: Qt.rgba(1, 1, 1, 0.25)
+                            selectionColor: Root.Theme.ink(0.25)
 
                             Keys.onEscapePressed: todo.close()
                             Keys.onReturnPressed: {
@@ -443,7 +443,7 @@ reuseItems: true
                         anchors.right: parent.right
                         anchors.rightMargin: 3
                         opacity: list.moving ? 1.0 : 0.0
-                        contentItem: Rectangle { radius: 1; color: Qt.rgba(1, 1, 1, 0.18) }
+                        contentItem: Rectangle { radius: 1; color: Root.Theme.ink(0.18) }
                         background: Item {}
                     }
 
@@ -459,7 +459,7 @@ reuseItems: true
                         Rectangle {
                             anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
                             radius: 10
-                            color: row.hovered ? Qt.rgba(1, 1, 1, 0.045) : "transparent"
+                            color: row.hovered ? Root.Theme.ink(0.045) : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
 
@@ -473,9 +473,9 @@ reuseItems: true
                                 Layout.preferredWidth: 17
                                 Layout.preferredHeight: 17
                                 radius: width / 2
-                                color: row.modelData.done ? "#e9e9ec" : "transparent"
-                                border.color: row.modelData.done ? "#e9e9ec"
-                                    : cbMa.containsMouse ? Qt.rgba(1, 1, 1, 0.6) : Qt.rgba(1, 1, 1, 0.28)
+                                color: row.modelData.done ? Root.Theme.text : "transparent"
+                                border.color: row.modelData.done ? Root.Theme.text
+                                    : cbMa.containsMouse ? Root.Theme.ink(0.6) : Root.Theme.ink(0.28)
                                 border.width: 1
                                 Behavior on color { ColorAnimation { duration: 150 } }
                                 Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -486,7 +486,7 @@ reuseItems: true
                                     text: "\u{f00c}"
                                     font.pixelSize: 9
                                     font.family: "FiraCode Nerd Font"
-                                    color: "#0e0e10"
+                                    color: Root.Theme.panelSolid
                                     visible: row.modelData.done
                                     scale: row.modelData.done ? 1 : 0.4
                                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
@@ -523,7 +523,7 @@ reuseItems: true
                                 Layout.preferredWidth: dueLabel.implicitWidth + 16
                                 radius: 10
                                 color: row.modelData.done
-                                    ? Qt.rgba(1, 1, 1, 0.04)
+                                    ? Root.Theme.ink(0.04)
                                     : Qt.rgba(info.color.r, info.color.g, info.color.b, 0.10)
 
                                 Text {

@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
+import "." as Root
 
 Scope {
     id: osdScope
@@ -146,16 +147,16 @@ Scope {
             anchors.verticalCenterOffset: yOffset
             width: 250
             height: 42
-            color: Qt.rgba(0.055, 0.055, 0.067, 0.72)
+            color: Root.Theme.panelFrost
             radius: height / 2
-            border.color: Qt.rgba(1, 1, 1, 0.09)
+            border.color: Root.Theme.ink(0.09)
             border.width: 1
 
             // Inset top highlight
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: parent.radius; rightMargin: parent.radius }
                 height: 1
-                color: Qt.rgba(1, 1, 1, 0.06)
+                color: Root.Theme.ink(0.06)
             }
 
             Row {
@@ -179,7 +180,7 @@ Scope {
                         }
                     }
                     color: osdScope.muted && osdScope.osdType === "volume"
-                        ? "#d97a8e" : "#e9e9ec"
+                        ? Root.Theme.critical : Root.Theme.text
                     font.pixelSize: 16
                     font.family: "FiraCode Nerd Font"
                     Behavior on color { ColorAnimation { duration: 150 } }
@@ -189,14 +190,14 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 150
                     height: 4
-                    color: Qt.rgba(1, 1, 1, 0.12)
+                    color: Root.Theme.ink(0.12)
                     radius: 2
 
                     Rectangle {
                         width: parent.width * Math.min(100, (osdScope.osdType === "volume" ? osdScope.volume : osdScope.brightness)) / 100
                         height: parent.height
                         color: osdScope.muted && osdScope.osdType === "volume"
-                            ? Qt.rgba(0.85, 0.48, 0.55, 0.75) : "#f0f0f2"
+                            ? Qt.rgba(0.85, 0.48, 0.55, 0.75) : Root.Theme.text
                         radius: 2
                         Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                         Behavior on color { ColorAnimation { duration: 150 } }
@@ -209,7 +210,7 @@ Scope {
                     horizontalAlignment: Text.AlignRight
                     text: osdScope.muted && osdScope.osdType === "volume"
                         ? "m" : (osdScope.osdType === "volume" ? osdScope.volume : osdScope.brightness)
-                    color: osdScope.muted && osdScope.osdType === "volume" ? "#d97a8e" : "#8f8f96"
+                    color: osdScope.muted && osdScope.osdType === "volume" ? Root.Theme.critical : Root.Theme.barMuted
                     font.pixelSize: 12
                     font.family: "FiraCode Nerd Font Mono"
                 }

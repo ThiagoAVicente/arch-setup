@@ -284,7 +284,7 @@ Scope {
                                     color: app ? Root.Theme.surface : "transparent"
                                     border.width: 1
                                     border.color: app ? Root.Theme.hairline
-                                        : index === qa.queue.length ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                                        : index === qa.queue.length ? Root.Theme.focusRing : Root.Theme.ink(0.06)
                                     Behavior on color { ColorAnimation { duration: 120 } }
 
                                     IconImage {
@@ -331,7 +331,7 @@ Scope {
                     Rectangle {
                         Layout.fillHeight: true
                         width: 1
-                        color: Qt.rgba(1, 1, 1, 0.06)
+                        color: Root.Theme.ink(0.06)
                     }
 
                     // ── Key map (scrolls, sorted by key) ───────────────────

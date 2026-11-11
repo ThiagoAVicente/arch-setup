@@ -81,7 +81,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 6
-        color: tMa.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+        color: tMa.containsMouse ? Root.Theme.ink(0.1) : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 

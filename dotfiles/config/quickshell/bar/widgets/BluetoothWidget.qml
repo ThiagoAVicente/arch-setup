@@ -23,7 +23,7 @@ Item {
     }
 
     function getBluetoothColor() {
-        if (root.popoutOpen) return Root.Theme.panelSolid
+        if (root.popoutOpen) return Root.Theme.barInverse
         const adapter = Bluetooth.defaultAdapter
         if (!adapter || !adapter.enabled) return Root.Theme.barMuted
         if (hovMa.containsMouse) return Root.Theme.barAccent

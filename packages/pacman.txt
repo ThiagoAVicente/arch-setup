@@ -45,6 +45,7 @@ hyprland
 hyprlock
 hyprpicker
 hyprpwcenter
+inotify-tools
 intel-media-driver
 intel-ucode
 jq

@@ -12,7 +12,7 @@ Item {
         (popup.notification?.urgency ?? NotificationUrgency.Normal) === NotificationUrgency.Critical
 
     // Mono by default; urgency shows only when it matters
-    property color accentColor: isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
+    property color accentColor: isCritical ? Root.Theme.critical : Root.Theme.ink(0.35)
 
     visible: notification !== null && notification !== undefined
     height: visible ? card.implicitHeight : 0
@@ -59,7 +59,7 @@ Item {
                     Layout.preferredHeight: 36
                     Layout.alignment: Qt.AlignVCenter
                     radius: 9
-                    color: Qt.rgba(1, 1, 1, 0.05)
+                    color: Root.Theme.ink(0.05)
                     visible: appIcon.source.toString() !== ""
 
                     Image {
@@ -79,7 +79,7 @@ Item {
 
                     Text {
                         text: (popup.notification?.appName ?? "").toUpperCase()
-                        color: popup.isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
+                        color: popup.isCritical ? Root.Theme.critical : Root.Theme.ink(0.35)
                         font.pixelSize: 9
                         font.letterSpacing: 1.4
                         font.family: "FiraCode Nerd Font"
@@ -90,7 +90,7 @@ Item {
 
                     Text {
                         text: popup.notification?.summary ?? "Notification"
-                        color: Qt.rgba(1, 1, 1, 0.92)
+                        color: Root.Theme.ink(0.92)
                         font.pixelSize: 13
                         font.weight: Font.DemiBold
                         font.family: "FiraCode Nerd Font"
@@ -104,7 +104,7 @@ Item {
                     id: closeBtn
                     width: 20; height: 20
                     radius: 10
-                    color: closeMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
+                    color: closeMouse.containsMouse ? Root.Theme.ink(0.12) : "transparent"
                     Layout.alignment: Qt.AlignTop
 
                     Behavior on color { ColorAnimation { duration: 120 } }
@@ -112,7 +112,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "✕"
-                        color: closeMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.9) : Qt.rgba(1, 1, 1, 0.35)
+                        color: closeMouse.containsMouse ? Root.Theme.ink(0.9) : Root.Theme.ink(0.35)
                         font.pixelSize: 10
 
                         Behavior on color { ColorAnimation { duration: 120 } }
@@ -131,7 +131,7 @@ Item {
             // Body
             Text {
                 text: popup.notification?.body ?? ""
-                color: Qt.rgba(1, 1, 1, 0.62)
+                color: Root.Theme.ink(0.62)
                 font.pixelSize: 12
                 font.family: "FiraCode Nerd Font"
                 wrapMode: Text.WordWrap
@@ -160,9 +160,9 @@ Item {
 
                         Layout.preferredHeight: 26
                         Layout.preferredWidth: Math.max(actionLabel.implicitWidth + 26, 60)
-                        color: actionMouse.containsMouse ? "#eeeef0" : "transparent"
+                        color: actionMouse.containsMouse ? Root.Theme.text : "transparent"
                         radius: 8
-                        border.color: actionMouse.containsMouse ? "transparent" : Qt.rgba(1, 1, 1, 0.12)
+                        border.color: actionMouse.containsMouse ? "transparent" : Root.Theme.ink(0.12)
                         border.width: 1
 
                         Behavior on color { ColorAnimation { duration: 130 } }
@@ -171,7 +171,7 @@ Item {
                             id: actionLabel
                             anchors.centerIn: parent
                             text: parent.modelData?.text ?? ""
-                            color: actionMouse.containsMouse ? "#0e0e10" : Qt.rgba(1, 1, 1, 0.78)
+                            color: actionMouse.containsMouse ? Root.Theme.panelSolid : Root.Theme.ink(0.78)
                             font.pixelSize: 11
                             font.family: "FiraCode Nerd Font"
 
@@ -196,14 +196,14 @@ Item {
             visible: !Root.NotifTimeout.persistent(popup.notification)
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 14; rightMargin: 14; bottomMargin: 1 }
             height: 2
-            color: Qt.rgba(1, 1, 1, 0.06)
+            color: Root.Theme.ink(0.06)
             radius: 1
 
             Rectangle {
                 id: progressFill
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
                 width: parent.width
-                color: popup.isCritical ? Root.Theme.critical : Qt.rgba(1, 1, 1, 0.35)
+                color: popup.isCritical ? Root.Theme.critical : Root.Theme.ink(0.35)
                 radius: 1
 
                 NumberAnimation on width {

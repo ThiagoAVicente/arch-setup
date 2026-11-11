@@ -274,7 +274,7 @@ Scope {
                 Rectangle {
                     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Root.Theme.ink(0.06)
                 }
             }
 
@@ -350,8 +350,8 @@ Scope {
                         width: wallpaperSelector.thumbW
                         height: wallpaperSelector.thumbH
                         radius: 10
-                        color: "#1a1a1c"
-                        border.color: wpItem.isSel ? Qt.rgba(1, 1, 1, 0.35) : Qt.rgba(1, 1, 1, 0.07)
+                        color: Root.Theme.bg
+                        border.color: wpItem.isSel ? Root.Theme.ink(0.35) : Root.Theme.ink(0.07)
                         border.width: 1
 
                         Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -382,7 +382,7 @@ Scope {
                             visible: wpItem.modelData.isVideo && thumbImg.status !== Image.Ready
                             text: "▶"
                             font.pixelSize: 28
-                            color: "#e9e9ec"
+                            color: Root.Theme.text
                             opacity: wpItem.isSel ? 1.0 : (wpMa.containsMouse ? 0.85 : 0.6)
                         }
                     }
@@ -412,7 +412,7 @@ Scope {
                 Rectangle {
                     anchors { top: parent.top; left: parent.left; right: parent.right }
                     height: 1
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Root.Theme.ink(0.06)
                 }
 
                 RowLayout {

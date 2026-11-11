@@ -119,7 +119,7 @@ Scope {
                     width: 64
                     height: 64
                     radius: 18
-                    color: isSel ? "#eeeef0" : Root.Theme.panelFrost
+                    color: isSel ? Root.Theme.text : Root.Theme.panelFrost
                     border.color: isSel ? "transparent" : Root.Theme.hairline
                     border.width: 1
 
@@ -132,7 +132,7 @@ Scope {
                     Text {
                         anchors.centerIn: parent
                         text: tile.modelData.icon
-                        color: tile.isSel ? "#0e0e10" : "#c9c9cf"
+                        color: tile.isSel ? Root.Theme.panelSolid : Root.Theme.barSubtext
                         font.pixelSize: 22
                         font.family: Root.Theme.fontFamily
                         Behavior on color { ColorAnimation { duration: 150 } }

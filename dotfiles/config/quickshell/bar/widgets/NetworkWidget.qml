@@ -30,7 +30,7 @@ Item {
         Text {
             id: wifiIcon
             text: "󰤭"
-            color: root.popoutOpen ? Root.Theme.panelSolid
+            color: root.popoutOpen ? Root.Theme.barInverse
                 : hovMa.containsMouse ? Root.Theme.barAccent : Root.Theme.barSubtext
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
@@ -54,7 +54,7 @@ Item {
             // condition (text === "") still reflects real connection status.
             visible: !root.vertical && text.length > 0
             text: ""
-            color: root.popoutOpen ? Root.Theme.panelSolid
+            color: root.popoutOpen ? Root.Theme.barInverse
                 : hovMa.containsMouse ? Root.Theme.barSubtext : Root.Theme.barMuted
             font.family: Root.Theme.fontMono
             font.pixelSize: 12

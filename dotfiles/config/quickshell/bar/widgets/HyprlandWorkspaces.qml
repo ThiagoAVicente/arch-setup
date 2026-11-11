@@ -117,7 +117,7 @@ Grid {
                         if (slot.isHere) return Qt.rgba(t.r, t.g, t.b, root.monitorFocused ? 1 : 0.5)
                         if (slot.isElsewhere) return Qt.rgba(t.r, t.g, t.b, 0.75)
                         if (slot.hasWindows) return Qt.rgba(t.r, t.g, t.b, slot.showNumber ? 0.32 : 0.7)
-                        return Qt.rgba(1, 1, 1, slot.showNumber ? 0.1 : 0.22)
+                        return Qt.rgba(Root.Theme.barText.r, Root.Theme.barText.g, Root.Theme.barText.b, slot.showNumber ? 0.1 : 0.22)
                     }
 
                     Behavior on color { ColorAnimation { duration: 200 } }

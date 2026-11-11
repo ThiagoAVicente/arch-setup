@@ -75,7 +75,7 @@ Item {
             font.family: Root.Theme.fontFamily
             font.pixelSize: 14
             font.weight: Font.Medium
-            color: Root.Theme.panelSolid
+            color: Root.Theme.barInverse
             textFormat: Text.StyledText
             elide: Text.ElideRight
             text: root.text
@@ -89,7 +89,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 150 } }
         // Soft white halo around the pill
         shadowEnabled: true
-        shadowColor: Qt.rgba(1, 1, 1, 0.45)
+        shadowColor: Qt.rgba(Root.Theme.barText.r, Root.Theme.barText.g, Root.Theme.barText.b, 0.45)
         shadowBlur: 0.9
         shadowHorizontalOffset: 0
         shadowVerticalOffset: 0

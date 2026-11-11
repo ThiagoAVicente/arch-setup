@@ -175,7 +175,7 @@ Scope {
                 Rectangle {
                     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                     height: 1
-                    color: Qt.rgba(1, 1, 1, 0.06)
+                    color: Root.Theme.ink(0.06)
                 }
             }
 
@@ -188,7 +188,7 @@ Scope {
                 Rectangle {
                     anchors { top: parent.top; left: parent.left; right: parent.right }
                     height: 1
-                    color: searchField.activeFocus ? Root.Theme.focusRing : Qt.rgba(1, 1, 1, 0.06)
+                    color: searchField.activeFocus ? Root.Theme.focusRing : Root.Theme.ink(0.06)
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
@@ -216,7 +216,7 @@ Scope {
                             font.weight: Font.Light
                             clip: true
                             focus: true
-                            selectionColor: Qt.rgba(1, 1, 1, 0.25)
+                            selectionColor: Root.Theme.ink(0.25)
 
                             onTextChanged: launcher.filterApps(text)
                             Component.onCompleted: forceActiveFocus()
@@ -313,7 +313,7 @@ reuseItems: true
                         anchors.right: parent.right
                         anchors.rightMargin: 3
                         opacity: appList.moving ? 1.0 : 0.0
-                        contentItem: Rectangle { radius: 1; color: Qt.rgba(1, 1, 1, 0.18) }
+                        contentItem: Rectangle { radius: 1; color: Root.Theme.ink(0.18) }
                         background: Item {}
                     }
 
@@ -331,7 +331,7 @@ reuseItems: true
                             anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
                             radius: 10
                             color: delegateRoot.isSelected
-                                ? Qt.rgba(1, 1, 1, 0.07)
+                                ? Root.Theme.ink(0.07)
                                 : "transparent"
                         }
 
@@ -359,8 +359,8 @@ reuseItems: true
                                 Layout.preferredHeight: 36
                                 radius: 9
                                 color: delegateRoot.isSelected
-                                    ? Qt.rgba(1, 1, 1, 0.08)
-                                    : Qt.rgba(1, 1, 1, 0.04)
+                                    ? Root.Theme.ink(0.08)
+                                    : Root.Theme.ink(0.04)
 
                                 Image {
                                     id: ico
@@ -393,7 +393,7 @@ reuseItems: true
 
                                 Text {
                                     text: modelData.name
-                                    color: delegateRoot.isSelected ? "#ffffff" : launcher.cText
+                                    color: delegateRoot.isSelected ? Root.Theme.bright : launcher.cText
                                     font.pixelSize: 13
                                     font.family: "FiraCode Nerd Font"
                                     font.weight: delegateRoot.isSelected === true ? Font.DemiBold : Font.Normal
